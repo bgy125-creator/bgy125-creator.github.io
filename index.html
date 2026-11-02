@@ -42,7 +42,7 @@ button,input{font-family:inherit}
 .pick2{display:flex!important;align-items:center;justify-content:space-between;gap:10px}.pick2 b{display:flex;align-items:center;gap:8px;font-size:22px}.gi{width:30px;height:30px;flex:none}
 .mini{flex:none;width:72px;height:72px;border:1px solid var(--ln);border-radius:14px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;font-style:normal}.mini img{width:100%;height:100%;object-fit:contain}.mini.em{font-size:40px}
 .pick2{font-size:16px}.pick2 span{display:block;color:var(--mut);margin-top:4px;font-size:15px;line-height:1.4}.pick2.dj{border-color:var(--ac)}
-.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px}.seg button{border:1px solid var(--ln);background:var(--card);color:var(--mut);border-radius:12px;padding:10px 4px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer}.seg button.on{background:var(--ac);border-color:var(--ac);color:#fff}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px}.seg button{border:1px solid var(--ln);background:var(--card);color:var(--mut);border-radius:12px;padding:10px 4px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer}.seg button.on{background:var(--ac);border-color:var(--ac);color:#fff}.seg.mtab{margin-bottom:4px}.seg.mtab button{font-size:13px;padding:10px 2px;word-break:keep-all;line-height:1.3}
 .rrow{display:block;width:100%;text-align:left;border:1px solid var(--ln);border-radius:12px;background:var(--sl);color:var(--tx);padding:10px 12px;margin-top:8px;font-family:inherit;font-size:15px;cursor:pointer}.rrow span{display:block;font-size:13px;color:var(--mut);margin-top:2px}
 .tw{overflow-x:auto;margin:0 -4px}.tt2{border-collapse:collapse;font-size:13px;white-space:nowrap;width:100%}.tt2 th,.tt2 td{padding:6px 5px;border-bottom:1px solid var(--ln);text-align:center}.tt2 th{color:var(--mut);font-weight:700}
 .mini2{border:1px solid var(--ln);background:var(--card);color:var(--tx);border-radius:8px;padding:4px 8px;font-size:12px;font-family:inherit;cursor:pointer;white-space:nowrap}
@@ -1324,18 +1324,24 @@ async function tSchool(){
     const key=nm.replace(/\s+/g,'');if(!(SCH||[]).some(x=>x.nm.replace(/\s+/g,'')===key)&&!confirm(`'${nm}'을(를) 새 학교로 등록할까요?\n목록에 우리 학교가 있으면 [취소]를 누르고 목록에서 골라 주세요.`))return;
     try{const sc=await schoolOf(nm);await DB.doc('teachers/'+TU.uid).update({sc:sc.c,scn:sc.nm});tpage()}catch(e){m.textContent='학교를 정하지 못했어요. 다시 해 주세요.'}};
 }
-// 선생님 첫 화면
+// 선생님 첫 화면. 마스터 계정은 맨 위 탭으로 마스터 화면 / 선생님 화면(다른 선생님과 같은 화면)을 오간다
+let TTAB=null,MTAB='inv',MTU=null; // 큰 탭(m 마스터·t 선생님), 마스터 안쪽 탭, 선생님 관리에서 보고 있는 선생님
+const MTABS=[['inv','🎟️ 선생님 초대'],['tch','🧑‍🏫 선생님 관리'],['sch','🏫 학교 관리']];
 async function tHome(){
-  const isM=TU.email===MASTER;
-  app.innerHTML=tTop("location.hash='';main()",'🧑‍🏫 선생님 화면')+`<div class="card c"><div class="who" style="margin:0">${esc(TD.nm)} 선생님${isM?' 👑':''}</div><div class="sm mut">🏫 ${esc(TD.scn||'')} · ${esc(TU.email)}</div></div>
+  const isM=TU.email===MASTER;TTAB=isM?(TTAB||'m'):'t';
+  const head=tTop("location.hash='';main()",isM&&TTAB==='m'?'👑 마스터 화면':'🧑‍🏫 선생님 화면')+`<div class="card c"><div class="who" style="margin:0">${esc(TD.nm)} 선생님${isM?' 👑':''}</div><div class="sm mut">🏫 ${esc(TD.scn||'')} · ${esc(TU.email)}</div></div>`
+    +(isM?`<div class="seg" style="grid-template-columns:1fr 1fr"><button class="${TTAB==='m'?'on':''}" onclick="TTAB='m';tHome()">👑 마스터 화면</button><button class="${TTAB==='t'?'on':''}" onclick="TTAB='t';tHome()">🧑‍🏫 선생님 화면</button></div>`:'');
+  if(TTAB==='m'){
+    app.innerHTML=head+`<div class="seg mtab">${MTABS.map(([k,l])=>`<button class="${MTAB===k?'on':''}" onclick="MTAB='${k}';MTU=null;tHome()">${l}</button>`).join('')}</div><div id="mb"><div class="card sm mut">불러오는 중…</div></div><button class="btn gh" onclick="tOut()">로그아웃</button>`;
+    return MTAB==='inv'?mInv():MTAB==='sch'?mSchools():MTU?mTeacher(MTU):mTeachers();
+  }
+  app.innerHTML=head+`
   <div class="card"><h3>📚 우리 반</h3><div id="rl" class="sm mut">불러오는 중…</div>
     <div style="display:flex;gap:8px;margin-top:10px"><input class="field" id="rn" maxlength="20" placeholder="반 이름 (예: 1학년 1반)"><button class="btn" style="width:auto;margin:0;padding:0 16px;white-space:nowrap" onclick="tMkRoom()">반 만들기</button></div>
     <div class="msg" id="rm"></div></div>
   <div class="card"><h3>🐂 Bull Run</h3><div class="sm mut" id="bl">불러오는 중…</div>
-    <a class="btn bl" style="text-align:center;text-decoration:none" href="${BR_URL}invest-race.html#host" target="_blank" rel="noopener">진행자 화면 열기 ↗</a></div>
-  <div class="card"><h3>📊 오늘 사용 현황</h3><div id="us" class="sm mut">불러오는 중…</div>
-    ${isM?`<a class="btn gh" style="text-align:center;text-decoration:none" href="https://console.firebase.google.com/project/bullrun-b29a5/usage" target="_blank" rel="noopener">Firebase 사용량 보기 ↗</a>`:''}</div>
-  ${isM?`<div class="card"><h3>👑 마스터</h3><div class="row3"><button class="btn" onclick="mInv()">🎟️ 선생님 초대</button><button class="btn" onclick="mTeachers()">🧑‍🏫 선생님 관리</button><button class="btn" onclick="mSchools()">🏫 학교 관리</button></div></div>`:''}
+    <a class="btn bl" style="text-align:center;text-decoration:none" href="${BR_URL}invest-race.html#host" target="_blank" rel="noopener">진행자 화면 열기</a></div>
+  <div class="card"><h3>📊 오늘 사용 현황</h3><div id="us" class="sm mut">불러오는 중…</div></div>
   <button class="btn gh" onclick="tOut()">로그아웃</button>`;
   // 내 반 방
   try{const sn=await DB.collection('eRooms').where('owner','==',TU.uid).get();const L=sn.docs.map(d=>Object.assign({code:d.id},d.data())).sort((a,b)=>a.t-b.t);
@@ -1423,9 +1429,12 @@ async function tDelRoom(){
   try{await erDel(TR.r.code,TR.r.owner);TR.r.owner===TU.uid?tHome():mTeacher(TR.r.owner)}catch(e){document.getElementById('msg').textContent='지우지 못했어요.'}
 }
 
+// 마스터 안쪽 화면을 그릴 자리(#mb). 마스터 화면이 아니면 먼저 그 탭을 연다
+function mbx(k){if(TTAB==='m'&&document.getElementById('mb')&&MTAB===k)return document.getElementById('mb');TTAB='m';MTAB=k;tHome();return null}
 // ───────── 마스터: 선생님 초대
 async function mInv(){
-  app.innerHTML=tTop('tHome()','🎟️ 선생님 초대')+`<div class="card"><h3>새 선생님 초대 코드</h3>
+  const mb=mbx('inv');if(!mb)return;
+  mb.innerHTML=`<div class="card"><h3>새 선생님 초대 코드</h3>
     <div style="display:flex;gap:8px"><input class="field" id="memo" maxlength="20" placeholder="누구에게 줄지 메모 (예: ○○고 김 선생님)"><button class="btn" style="width:auto;margin:0;padding:0 16px;white-space:nowrap" onclick="mInvNew()">만들기</button></div>
     <div class="sm mut" style="margin-top:6px">코드는 한 번 쓰면 끝이에요.</div></div><div class="card" id="il">불러오는 중…</div>`;
   const sn=await DB.collection('invites').get(),T={};
@@ -1440,24 +1449,26 @@ async function mInvDel(id){if(confirm(id+' 코드를 지울까요?')){await DB.d
 
 // ───────── 마스터: 선생님 관리
 async function mTeachers(){
-  app.innerHTML=tTop('tHome()','🧑‍🏫 선생님 관리')+'<div class="card" id="tl">불러오는 중…</div>';
+  MTU=null;const mb=mbx('tch');if(!mb)return;
+  mb.innerHTML='<div class="card" id="tl">불러오는 중…</div>';
   // 30일 지난 Bull Run 방은 모든 선생님 것까지 정리
   try{const rs=await DB.collection('rooms').get();for(const d of rs.docs){const r=Object.assign({id:d.id},d.data());if(Date.now()-(+r.t||0)>BR_DAYS*864e5)await brDel(r)}}catch(e){}
   const sn=await DB.collection('teachers').get();
   const L=sn.docs.map(d=>Object.assign({uid:d.id},d.data())).sort((a,b)=>a.t-b.t);
   const all=await qCount(DB.collection('eStudents')),td=await qCount(DB.collection('eStudents').where('day','==',today()));
   document.getElementById('tl').innerHTML=`<h3>선생님 ${L.length}명</h3>`+L.map(x=>`<button class="rrow" onclick="mTeacher('${x.uid}')"><b>${esc(x.nm)}${x.em===MASTER?' 👑':''} ${x.st==='ok'?'':'<span class="pill b">정지</span>'}</b><span>${esc(x.scn||'학교 미정')} · ${esc(x.em)} · 반 방 ${x.er}/${x.lim.er} · Bull Run 방 ${x.br}/${x.lim.br}</span></button>`).join('');
-  app.insertAdjacentHTML('beforeend',`<div class="card"><h3>📊 전체 현황</h3><div class="sm">Econ Play 학생 <b>${all}</b>명 · 오늘 접속 <b>${td}</b>명<br>${useLine(td)}<br>저장 공간: 약 ${Math.max(1,Math.round(all*10/1024))}MB / 1GB</div></div>`);
+  mb.insertAdjacentHTML('beforeend',`<div class="card"><h3>📊 전체 현황</h3><div class="sm">Econ Play 학생 <b>${all}</b>명 · 오늘 접속 <b>${td}</b>명<br>${useLine(td)}<br>저장 공간: 약 ${Math.max(1,Math.round(all*10/1024))}MB / 1GB</div><a class="btn gh" style="text-align:center;text-decoration:none" href="https://console.firebase.google.com/project/bullrun-b29a5/usage" target="_blank" rel="noopener">Firebase 사용량 보기</a></div>`);
 }
 let MT=null;
 async function mTeacher(uid){
-  app.innerHTML=tTop('mTeachers()','🧑‍🏫 선생님 자세히')+'<div class="card sm mut">불러오는 중…</div>';
+  MTU=uid;const mb=mbx('tch');if(!mb)return;
+  mb.innerHTML='<div class="card sm mut">불러오는 중…</div>';
   const d=await DB.doc('teachers/'+uid).get();if(!d.exists)return mTeachers();
   const x=Object.assign({uid},d.data());
   const er=(await DB.collection('eRooms').where('owner','==',uid).get()).docs.map(d=>Object.assign({code:d.id},d.data()));
   const br=(await brRooms(uid)).sort((a,b)=>b.t-a.t);MT={x,br};
   const left=r=>Math.max(0,BR_DAYS-Math.floor((Date.now()-(+r.t||0))/864e5));
-  app.innerHTML=tTop('mTeachers()','🧑‍🏫 선생님 자세히')+`
+  mb.innerHTML=`<button class="x" onclick="mTeachers()">← 선생님 목록</button>
   <div class="card c"><div class="who" style="margin:0">${esc(x.nm)} ${x.st==='ok'?'':'<span class="pill b">정지</span>'}</div><div class="sm mut">${esc(x.em)} · ${tdate(x.t)} 등록</div>
     ${x.em===MASTER?'':`<div class="row2"><button class="btn ${x.st==='ok'?'gh':''}" onclick="mStop(${x.st==='ok'})">${x.st==='ok'?'⛔ 정지':'✅ 정지 풀기'}</button><button class="btn gh" style="color:var(--ng)" onclick="mDelT()">🗑️ 선생님 삭제</button></div>`}</div>
   <div class="card"><h3>제한</h3><div class="lim">
@@ -1487,7 +1498,8 @@ async function mDelT(){
 
 // ───────── 마스터: 학교 관리(이름 고치기, 아무도 쓰지 않는 학교 지우기)
 async function mSchools(){
-  app.innerHTML=tTop('tHome()','🏫 학교 관리')+'<div class="card" id="sl">불러오는 중…</div>';
+  const mb=mbx('sch');if(!mb)return;
+  mb.innerHTML='<div class="card" id="sl">불러오는 중…</div>';
   SCH=null;const L=await schools();
   const T=(await DB.collection('teachers').get()).docs.map(d=>d.data());
   const rows=[];for(const x of L){const t=T.filter(y=>y.sc===x.c).length,r=await qCount(DB.collection('eRooms').where('sc','==',x.c)),st=await qCount(DB.collection('eStudents').where('sc','==',x.c));rows.push({x,t,r,st})}
