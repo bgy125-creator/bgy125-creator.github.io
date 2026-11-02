@@ -1322,7 +1322,7 @@ async function tInvite(){
 }
 async function tReqDel(again){try{await DB.doc('tReqs/'+TU.uid).delete()}catch(e){}again?tInvite():tOut()}
 // 학교 이름 칸(이미 등록된 학교는 목록에서 고를 수 있게)
-const schField=()=>`<input class="field" id="scn" maxlength="30" list="schl" placeholder="학교 이름 (예: 해연여자고등학교)"><datalist id="schl">${(SCH||[]).map(x=>`<option value="${esc(x.nm)}">`).join('')}</datalist><div class="sm mut" style="margin-top:4px">줄이지 말고 정식 이름으로 써 주세요. 학생은 로그인할 때 이 이름을 골라요.</div>`;
+const schField=()=>`<input class="field" id="scn" maxlength="30" list="schl" placeholder="학교 이름 (정식 이름)"><datalist id="schl">${(SCH||[]).map(x=>`<option value="${esc(x.nm)}">`).join('')}</datalist><div class="sm mut" style="margin-top:4px">줄이지 말고 정식 이름으로 써 주세요. 학생은 로그인할 때 이 이름을 골라요.</div>`;
 async function tSchool(){
   await schools().catch(()=>[]);
   app.innerHTML=tTop("location.hash='';main()",'🏫 학교 등록')+`<div class="card"><h2>🏫 우리 학교</h2><div class="gw" style="margin-bottom:10px">반을 만들기 전에 학교를 한 번 정해요.</div>${schField()}<div class="msg" id="msg"></div><button class="btn" id="go">학교 정하기</button><button class="btn gh" onclick="tOut()">로그아웃</button></div>`;
