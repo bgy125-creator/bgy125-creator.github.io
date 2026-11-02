@@ -342,7 +342,7 @@ function main(){
         <button class="pick2 dj" onclick="home()"><div><b><svg class="gi" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3.5 L18.6 11 L26 10 L20.2 15 L24.6 22 L17.4 18.6 L13.4 25.6 L13.6 18 L6.2 17.4 L12.4 13.4 Z" fill="#ffd43b" stroke="#e8590c" stroke-width="1.6" stroke-linejoin="round"/><g transform="rotate(-14 9 21)"><path d="M1.5 18 L14 18 L12 21 L14.4 24 L1.5 24 Z" fill="#d9a066" stroke="#3a2e2a" stroke-width="1.6" stroke-linejoin="round"/></g><g transform="rotate(14 23 21)"><path d="M30.5 18 L18 18 L20 21 L17.6 24 L30.5 24 Z" fill="#d9a066" stroke="#3a2e2a" stroke-width="1.6" stroke-linejoin="round"/></g></svg><span class="tt">도장깨기<small>(분개 뽀개기)</small></span></b><span>내 등급: ${rankText()}</span></div><i class="mini"><img src="${charImg(U.dojo.best)}" alt=""></i></button>
     <a class="pick2 br2" href="https://bgy125-creator.github.io/bullrun/" target="_blank" rel="noopener"><div><b><svg class="gi" viewBox="0 0 32 32" aria-hidden="true"><rect x="3" y="4" width="26" height="24" rx="4" fill="#fff4f2" stroke="#3a2e2a" stroke-width="1.8"/><path d="M7 23 L13 16.5 L17.5 19.5 L25 10.5" fill="none" stroke="#e03131" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 10.5 L25 10.5 L25 15.5" fill="none" stroke="#e03131" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="tt">Bull&nbsp;Run<small>(투자 서바이벌 레이스)</small></span></b><span>새 창으로 열려요.</span></div><i class="mini"><img src="${IMG.bull}" alt="" style="width:85%;height:85%"></i></a>
   </div>
-  <div class="card sm c" style="margin-top:16px">${U.me.key?`🎒 ${esc(U.me.sid)} ${esc(U.me.nm)} 로그인 중 · 기록은 내 계정에 저장돼요<br><button class="x" style="color:var(--ac)" onclick="stLogout()">로그아웃</button>`:`🧪 ${esc(U.me.nm)} 체험 중 · 기록은 이 기기에만 저장돼요<br><button class="x" style="color:var(--ac)" onclick="setup('join')">회원 가입하고 기록 옮기기</button> · <button class="x" onclick="if(confirm('이 기기에 저장된 이름과 기록을 모두 지울까요?')){U=fresh();save();setup()}">처음부터 다시 하기</button>`}</div>
+  <div class="card sm c" style="margin-top:16px">${U.me.key?`🎒 ${esc(U.me.scn||"")} ${esc(U.me.sid)} ${esc(U.me.nm)} 로그인 중 · 기록은 내 계정에 저장돼요<br><button class="x" style="color:var(--ac)" onclick="stLogout()">로그아웃</button>`:`🧪 ${esc(U.me.nm)} 체험 중 · 기록은 이 기기에만 저장돼요<br><button class="x" style="color:var(--ac)" onclick="setup('join')">회원 가입하고 기록 옮기기</button> · <button class="x" onclick="if(confirm('이 기기에 저장된 이름과 기록을 모두 지울까요?')){U=fresh();save();setup()}">처음부터 다시 하기</button>`}</div>
   <div class="c"><button class="x" onclick="tpage()">🧑‍🏫 선생님 화면</button></div>
   <div class="c sm mut" style="margin-top:10px">글꼴: 넥슨 Lv.1 고딕(넥슨), 배달의민족 주아(우아한형제들, SIL OFL), 고운돋움(SIL OFL)</div>`;
   scrollTo(0,0);
@@ -1146,16 +1146,26 @@ const _finish=finish,_mfinish=mfinish;
 finish=function(){_finish.apply(this,arguments);cloudSave()};
 mfinish=function(){_mfinish.apply(this,arguments);cloudSave()};
 
+// 학교 목록(선생님이 등록, 학생은 고르기만): 문서 이름 = 띄어쓰기 뺀 이름, c = 계정에 쓰는 영문 6자리
+let SCH=null;
+async function schools(){if(SCH)return SCH;const sn=await DB.collection('schools').get();SCH=sn.docs.map(d=>Object.assign({id:d.id},d.data())).sort((x,y)=>x.nm.localeCompare(y.nm,'ko'));return SCH}
+async function schoolOf(nm){
+  nm=nm.trim();const r=DB.doc('schools/'+nm.replace(/\s+/g,'')),d=await r.get();if(d.exists)return d.data();
+  const x={nm,c:Array.from({length:6},()=>'abcdefghijklmnopqrstuvwxyz0123456789'[Math.random()*36|0]).join(''),t:Date.now()};
+  await r.set(x);SCH=null;return x;
+}
+const lastSc=v=>{try{if(v)localStorage.setItem('ep_school',v);return localStorage.getItem('ep_school')||''}catch(e){return ''}};
+
 // 클라우드 기록 불러오기
 async function stLoad(key){
   const d=await DB.doc('eStudents/'+key).get();if(!d.exists)throw {code:'no-record'};
   const x=d.data();U=Object.assign(fresh(),x.U||{});U.dojo.lives=Math.min(LIVES,U.dojo.lives);
-  U.me={sid:x.sid,nm:x.nm,sex:x.sex||'m',key,code:x.code,em:FBA.currentUser.email};
+  U.me={sid:x.sid,nm:x.nm,sex:x.sex||'m',key,sc:x.sc,scn:x.scn,code:x.code,em:FBA.currentUser.email};
   try{localStorage.setItem(KEY,JSON.stringify(U))}catch(e){}DIRTY=false;
 }
-// 로그인: 가입하지 않았으면 'signup'을 돌려준다
-async function stLogin(code,sid,pin){
-  const key=code+'_'+sid,lg=await DB.doc('eLogins/'+key).get();
+// 로그인(학교 + 학번 + PIN): 가입하지 않았으면 'signup'을 돌려준다
+async function stLogin(sc,sid,pin){
+  const key=sc+'_'+sid,lg=await DB.doc('eLogins/'+key).get();
   if(!lg.exists)return 'signup';
   const em=stEmail(key,lg.data().v),pw=stPw(pin);let reset=false;
   try{await FBA.signInWithEmailAndPassword(em,pw)}
@@ -1166,11 +1176,12 @@ async function stLogin(code,sid,pin){
   }
   await stLoad(key);return reset?'reset':'ok';
 }
-async function stSignup(code,sid,pin,nm,sex){
-  const key=code+'_'+sid,rs=await DB.doc('eRooms/'+code).get();
+// 가입: 1단계(학교·학번·이름·PIN) → 2단계(입장 코드·성별)
+async function stSignup(J,code,sex){
+  const key=J.sc+'_'+J.sid,rs=await DB.doc('eRooms/'+code).get();
   if(!rs.exists)throw {code:'room'};const r=rs.data();
-  if(r.closed)throw {code:'closed'};if(r.n>=r.lim)throw {code:'full'};
-  const em=stEmail(key,1),pw=stPw(pin);
+  if(r.sc!==J.sc)throw {code:'school'};if(r.closed)throw {code:'closed'};if(r.n>=r.lim)throw {code:'full'};
+  const em=stEmail(key,1),pw=stPw(J.pin);
   try{await FBA.createUserWithEmailAndPassword(em,pw)}
   catch(e){if(e.code!=='auth/email-already-in-use')throw e;try{await FBA.signInWithEmailAndPassword(em,pw)}catch(e2){throw {code:'taken'}}}
   // 이 기기에서 하던 기록(로그인 없이 한 기록)이 있으면 그대로 가져간다
@@ -1178,7 +1189,7 @@ async function stSignup(code,sid,pin,nm,sex){
   const b=DB.batch();
   b.set(DB.doc('eLogins/'+key),{v:1});
   b.update(DB.doc('eRooms/'+code),{n:firebase.firestore.FieldValue.increment(1)});
-  b.set(DB.doc('eStudents/'+key),{sid,nm,sex,code,tu:r.owner,t:Date.now(),day:today(),U:g});
+  b.set(DB.doc('eStudents/'+key),{sid:J.sid,nm:J.nm,sex,sc:J.sc,scn:J.scn,code,tu:r.owner,t:Date.now(),day:today(),U:g});
   await b.commit();await stLoad(key);
 }
 async function stLogout(){await cloudSave();try{await FBA.signOut()}catch(e){}U=fresh();try{localStorage.removeItem(KEY)}catch(e){}setup()}
@@ -1193,53 +1204,73 @@ async function boot(){
   main();
 }
 
-// ───────── 처음 화면: 학생 로그인 / 회원 가입 / 로그인 없이 해 보기
+// ───────── 처음 화면: 로그인(학교·학번·PIN) / 회원 가입(2단계) / 체험하기
+let JN=null; // 가입 1단계에서 받은 값
 function setup(mode){
   mode=mode||'login';let sex=null;
-  const tab=(m,l)=>`<button class="${mode===m?'on':''}" onclick="setup('${m}')">${l}</button>`;
+  if(mode!=='join'&&mode!=='join2')JN=null;
+  const tab=(m,l)=>`<button class="${mode===m||(m==='join'&&mode==='join2')?'on':''}" onclick="setup('${m}')">${l}</button>`;
+  const pin=(id,ph,mt)=>`<input class="field" id="${id}" type="password" inputmode="numeric" maxlength="4" placeholder="${ph}" autocomplete="off"${mt?' style="margin-top:8px"':''}>`;
+  const sch='<select class="field" id="sc" style="margin-bottom:8px"><option value="">학교 불러오는 중…</option></select>';
+  const sx='<div class="lb">성별을 골라요</div><div class="pick sx"><button id="pm">남자</button><button id="pf">여자</button></div>';
+  const body={
+    guest:`<h2>체험하기</h2><div class="sm mut" style="margin-bottom:10px">로그인 없이 해 봐요. 기록은 이 기기에만 남고, 선생님은 볼 수 없어요.</div>
+      <input class="field" id="nm" maxlength="10" placeholder="이름">${sx}`,
+    login:`<h2>로그인</h2>${sch}
+      <input class="field" id="sid" inputmode="numeric" maxlength="5" placeholder="학번 (예: 1101)" style="margin-bottom:8px">${pin('pin','PIN 숫자 4자리')}`,
+    join:`<h2>회원 가입 <span class="sm mut">1/2</span></h2>${sch}
+      <input class="field" id="sid" inputmode="numeric" maxlength="5" placeholder="학번 (예: 1101)" style="margin-bottom:8px">
+      <input class="field" id="nm" maxlength="10" placeholder="이름" style="margin-bottom:8px">${pin('pin','PIN 숫자 4자리 정하기')}${pin('pin2','PIN 한 번 더',1)}`,
+    join2:`<h2>회원 가입 <span class="sm mut">2/2</span></h2><div class="sm mut" style="margin-bottom:10px">${JN?esc(JN.scn+' · '+JN.sid+' '+JN.nm):''}</div>
+      <input class="field" id="code" inputmode="numeric" maxlength="4" placeholder="입장 코드 4자리 (선생님께 받아요)">${sx}`};
+  if(mode==='join2'&&!JN)mode='join';
+  const label={guest:'게임 참여하기',login:'로그인',join:'다음',join2:'가입하고 시작하기'}[mode];
   app.innerHTML=`
   <div class="logo"><b>Econ Play</b><div class="mut sm">경제 고수를 꿈꾸며, 게임에 도전하세요!</div></div>
   <div class="seg">${tab('login','로그인')}${tab('join','회원 가입')}${tab('guest','체험하기')}</div>
-  <div class="card">
-    ${mode==='guest'?`<h2>체험하기</h2><div class="sm mut" style="margin-bottom:10px">로그인 없이 해 봐요. 기록은 이 기기에만 남고, 선생님은 볼 수 없어요.</div>
-    <input class="field" id="nm" maxlength="10" placeholder="이름">`
-    :`<h2>${mode==='join'?'회원 가입':'로그인'}</h2>
-    <input class="field" id="code" inputmode="numeric" maxlength="4" placeholder="입장 코드 4자리 (선생님께 받아요)" style="margin-bottom:8px">
-    <input class="field" id="sid" inputmode="numeric" maxlength="5" placeholder="학번 (예: 1101)" style="margin-bottom:8px">
-    ${mode==='join'?`<input class="field" id="nm" maxlength="10" placeholder="이름" style="margin-bottom:8px">`:''}
-    <input class="field" id="pin" type="password" inputmode="numeric" maxlength="4" placeholder="${mode==='join'?'PIN 숫자 4자리 정하기':'PIN 숫자 4자리'}" autocomplete="off">
-    ${mode==='join'?`<input class="field" id="pin2" type="password" inputmode="numeric" maxlength="4" placeholder="PIN 한 번 더" autocomplete="off" style="margin-top:8px">`:''}`}
-    ${mode!=='login'?`<div class="lb">성별을 골라요</div><div class="pick sx"><button id="pm">남자</button><button id="pf">여자</button></div>`:''}
+  <div class="card">${body[mode]}
     <div class="msg" id="msg"></div>
-    <button class="btn" id="go">${mode==='login'?'로그인':mode==='join'?'가입하고 시작하기':'게임 참여하기'}</button>
-    ${mode==='login'?`<div class="sm mut c" style="margin-top:10px">PIN을 잊었으면 선생님께 PIN 초기화를 부탁해요.</div>`:''}
+    <button class="btn" id="go">${label}</button>
+    ${mode==='join2'?`<button class="btn gh" onclick="setup('join')">← 이전으로</button>`:''}
+    ${mode==='login'?'<div class="sm mut c" style="margin-top:10px">PIN을 잊었으면 선생님께 PIN 초기화를 부탁해요.</div>':''}
   </div>
   <div class="c"><button class="x" onclick="tpage()">🧑‍🏫 선생님 화면</button></div>`;
   const $=id=>document.getElementById(id),m=$('msg');
   if($('pm')){$('pm').onclick=()=>{sex='m';$('pm').classList.add('on');$('pf').classList.remove('on')};$('pf').onclick=()=>{sex='f';$('pf').classList.add('on');$('pm').classList.remove('on')}}
+  if(mode==='join'&&JN){$('sid').value=JN.sid;$('nm').value=JN.nm}
+  // 학교 목록 채우기(지난번에 고른 학교를 미리 골라 둔다)
+  if($('sc'))fbInit().then(ok=>ok?schools():[]).then(L=>{const el=$('sc');if(!el)return;const pre=JN?JN.sc:lastSc();
+    el.innerHTML=L.length?'<option value="">학교를 골라요</option>'+L.map(x=>`<option value="${x.c}"${x.c===pre?' selected':''}>${esc(x.nm)}</option>`).join(''):'<option value="">등록된 학교가 없어요</option>'}).catch(()=>{if($('sc'))$('sc').innerHTML='<option value="">학교를 불러오지 못했어요</option>'});
   $('go').onclick=async()=>{
     const v=id=>($(id)?$(id).value.trim():'');m.textContent='';
     if(mode==='guest'){const nm=v('nm');if(!nm)return m.textContent='이름을 써 줘!';if(!sex)return m.textContent='성별을 골라 줘!';
       if(!U.me||U.me.key)U=fresh();U.me={nm,sex};save();return main()}
-    const code=v('code'),sid=v('sid'),pin=v('pin');
-    if(!/^[0-9]{4}$/.test(code))return m.textContent='입장 코드를 숫자 4자리로 써 줘!';
-    if(!/^[0-9]{4,5}$/.test(sid))return m.textContent='학번을 숫자 4~5자리로 써 줘!';
-    if(mode==='join'&&!v('nm'))return m.textContent='이름을 써 줘!';
-    if(!/^[0-9]{4}$/.test(pin))return m.textContent='PIN을 숫자 4자리로 써 줘!';
-    if(mode==='join'&&pin!==v('pin2'))return m.textContent='PIN 두 개가 서로 달라요!';
-    if(mode==='join'&&!sex)return m.textContent='성별을 골라 줘!';
+    if(mode!=='join2'){
+      if(!v('sc'))return m.textContent='학교를 골라 줘!';
+      if(!/^[0-9]{4,5}$/.test(v('sid')))return m.textContent='학번을 숫자 4~5자리로 써 줘!';
+      if(mode==='join'&&!v('nm'))return m.textContent='이름을 써 줘!';
+      if(!/^[0-9]{4}$/.test(v('pin')))return m.textContent='PIN을 숫자 4자리로 써 줘!';
+      if(mode==='join'&&v('pin')!==v('pin2'))return m.textContent='PIN 두 개가 서로 달라요!';
+    }else{
+      if(!/^[0-9]{4}$/.test(v('code')))return m.textContent='입장 코드를 숫자 4자리로 써 줘!';
+      if(!sex)return m.textContent='성별을 골라 줘!';
+    }
     if(!await fbInit())return m.textContent='인터넷에 연결되지 않았어요. 체험하기로 해 볼 수 있어요.';
     $('go').disabled=true;$('go').textContent='잠시만요…';
+    const back=t=>{$('go').disabled=false;$('go').textContent=label;m.textContent=t};
     try{
-      if(mode==='login'){const r=await stLogin(code,sid,pin);
-        if(r==='signup'){$('go').disabled=false;$('go').textContent='로그인';return m.textContent='아직 가입하지 않은 학번이에요. 회원 가입을 먼저 해 줘!'}
+      if(mode==='login'){lastSc(v('sc'));const r=await stLogin(v('sc'),v('sid'),v('pin'));
+        if(r==='signup')return back('아직 가입하지 않은 학번이에요. 회원 가입을 먼저 해 줘!');
         if(r==='reset')alert('새 PIN으로 설정했어요. 다음부터 이 PIN으로 로그인해요.');
-      }else await stSignup(code,sid,pin,v('nm'),sex);
-      main();
+      }else if(mode==='join'){
+        const sc=v('sc'),s0=(await schools()).find(x=>x.c===sc);
+        if((await DB.doc('eLogins/'+sc+'_'+v('sid')).get()).exists)return back('이미 가입된 학번이에요. 로그인해 줘!');
+        JN={sc,scn:s0?s0.nm:'',sid:v('sid'),nm:v('nm'),pin:v('pin')};lastSc(sc);return setup('join2');
+      }else await stSignup(JN,v('code'),sex);
+      JN=null;main();
     }catch(e){
-      $('go').disabled=false;$('go').textContent=mode==='login'?'로그인':'가입하고 시작하기';
       const c=e&&e.code;
-      m.textContent=c==='pin'?'PIN이 맞지 않아요.':c==='room'?'없는 입장 코드예요. 선생님께 다시 확인해 줘!':c==='closed'?'지금은 새 학생을 받지 않는 방이에요.':c==='full'?'방 인원이 가득 찼어요. 선생님께 알려 줘!':c==='taken'?'이미 가입된 학번이에요. 로그인해 줘!':c==='no-record'?'기록을 찾지 못했어요. 선생님께 알려 줘!':errMsg(e);
+      back(c==='pin'?'PIN이 맞지 않아요.':c==='room'?'없는 입장 코드예요. 선생님께 다시 확인해 줘!':c==='school'?'고른 학교의 반이 아니에요. 학교와 입장 코드를 다시 확인해 줘!':c==='closed'?'지금은 새 학생을 받지 않는 방이에요.':c==='full'?'방 인원이 가득 찼어요. 선생님께 알려 줘!':c==='taken'?'이미 가입된 학번이에요. 로그인해 줘!':c==='no-record'?'기록을 찾지 못했어요. 선생님께 알려 줘!':errMsg(e));
     }
   };
 }
@@ -1262,29 +1293,42 @@ async function tpage(){
   try{const d=await DB.doc('teachers/'+u.uid).get();TD=d.exists?d.data():null}catch(e){TD=null}
   if(!TD&&u.email===MASTER){TD={nm:u.displayName||'마스터',em:u.email,t:Date.now(),st:'ok',lim:MLIM,er:0,br:0};await DB.doc('teachers/'+u.uid).set(TD)}
   if(!TD)return tInvite();
+  if(TD.st==='ok'&&!TD.sc)return tSchool();
   if(TD.st!=='ok'){app.innerHTML=tTop("location.hash='';main()",'🧑‍🏫 선생님 화면')+`<div class="card c"><h2>⛔ 이용이 정지된 계정이에요</h2><div class="gw">마스터 선생님께 문의해 주세요.</div><button class="btn gh" onclick="tOut()">로그아웃</button></div>`;return}
   tHome();
 }
 async function tOut(){try{await FBA.signOut()}catch(e){}TU=TD=null;location.hash='';U=fresh();main()}
-function tInvite(){
+async function tInvite(){
+  await schools().catch(()=>[]);
   app.innerHTML=tTop("location.hash='';main()",'🧑‍🏫 선생님 등록')+`<div class="card"><h2>🎟️ 초대 코드 입력</h2>
     <div class="gw" style="margin-bottom:10px">${esc(TU.email)} 계정으로 로그인했어요. 마스터 선생님께 받은 초대 코드를 입력하면 선생님으로 등록돼요.</div>
-    <input class="field" id="ic" maxlength="9" placeholder="예: K7Q2-M9XA" style="text-transform:uppercase">
+    ${schField()}
+    <input class="field" id="ic" maxlength="9" placeholder="초대 코드 (예: K7Q2-M9XA)" style="text-transform:uppercase;margin-top:8px">
     <div class="msg" id="msg"></div><button class="btn" id="go">선생님 등록하기</button><button class="btn gh" onclick="tOut()">로그아웃</button></div>`;
   document.getElementById('go').onclick=async()=>{
     const raw=document.getElementById('ic').value.toUpperCase().replace(/[^A-Z0-9]/g,''),m=document.getElementById('msg');
+    const scn=document.getElementById('scn').value.trim();if(scn.length<2)return m.textContent='학교 이름을 써 주세요.';
     if(raw.length!==8)return m.textContent='초대 코드 8글자를 써 주세요.';
     const code=raw.slice(0,4)+'-'+raw.slice(4);
-    try{const b=DB.batch();
-      b.set(DB.doc('teachers/'+TU.uid),{nm:TU.displayName||TU.email,em:TU.email,t:Date.now(),st:'ok',lim:TLIM,er:0,br:0,inv:code});
+    try{const sc=await schoolOf(scn),b=DB.batch();
+      b.set(DB.doc('teachers/'+TU.uid),{nm:TU.displayName||TU.email,em:TU.email,t:Date.now(),st:'ok',lim:TLIM,er:0,br:0,inv:code,sc:sc.c,scn:sc.nm});
       b.update(DB.doc('invites/'+code),{used:true,by:TU.uid,ut:Date.now()});
       await b.commit();tpage()}catch(e){m.textContent='쓸 수 없는 초대 코드예요. 마스터 선생님께 확인해 주세요.'}
   };
 }
+// 학교 이름 칸(이미 등록된 학교는 목록에서 고를 수 있게)
+const schField=()=>`<input class="field" id="scn" maxlength="30" list="schl" placeholder="학교 이름 (예: 해연여자고등학교)"><datalist id="schl">${(SCH||[]).map(x=>`<option value="${esc(x.nm)}">`).join('')}</datalist><div class="sm mut" style="margin-top:4px">줄이지 말고 정식 이름으로 써 주세요. 학생은 로그인할 때 이 이름을 골라요.</div>`;
+async function tSchool(){
+  await schools().catch(()=>[]);
+  app.innerHTML=tTop("location.hash='';main()",'🏫 학교 등록')+`<div class="card"><h2>🏫 우리 학교</h2><div class="gw" style="margin-bottom:10px">반을 만들기 전에 학교를 한 번 정해요.</div>${schField()}<div class="msg" id="msg"></div><button class="btn" id="go">학교 정하기</button><button class="btn gh" onclick="tOut()">로그아웃</button></div>`;
+  document.getElementById('go').onclick=async()=>{const nm=document.getElementById('scn').value.trim(),m=document.getElementById('msg');
+    if(nm.length<2)return m.textContent='학교 이름을 써 주세요.';
+    try{const sc=await schoolOf(nm);await DB.doc('teachers/'+TU.uid).update({sc:sc.c,scn:sc.nm});tpage()}catch(e){m.textContent='학교를 정하지 못했어요. 다시 해 주세요.'}};
+}
 // 선생님 첫 화면
 async function tHome(){
   const isM=TU.email===MASTER;
-  app.innerHTML=tTop("location.hash='';main()",'🧑‍🏫 선생님 화면')+`<div class="card c"><div class="who" style="margin:0">${esc(TD.nm)} 선생님${isM?' 👑':''}</div><div class="sm mut">${esc(TU.email)}</div></div>
+  app.innerHTML=tTop("location.hash='';main()",'🧑‍🏫 선생님 화면')+`<div class="card c"><div class="who" style="margin:0">${esc(TD.nm)} 선생님${isM?' 👑':''}</div><div class="sm mut">🏫 ${esc(TD.scn||'')} · ${esc(TU.email)}</div></div>
   <div class="card"><h3>📚 우리 반</h3><div id="rl" class="sm mut">불러오는 중…</div>
     <div style="display:flex;gap:8px;margin-top:10px"><input class="field" id="rn" maxlength="20" placeholder="반 이름 (예: 1학년 1반)"><button class="btn" style="width:auto;margin:0;padding:0 16px;white-space:nowrap" onclick="tMkRoom()">반 만들기</button></div>
     <div class="msg" id="rm"></div></div>
@@ -1328,7 +1372,7 @@ async function tMkRoom(){
   if(TD.er>=TD.lim.er)return m.textContent=`반 방은 ${TD.lim.er}개까지 만들 수 있어요.`;
   for(let k=0;k<8;k++){const code=String(1000+Math.random()*9000|0);
     if((await DB.doc('eRooms/'+code).get()).exists)continue;
-    try{const b=DB.batch();b.set(DB.doc('eRooms/'+code),{nm,owner:TU.uid,t:Date.now(),n:0,lim:TD.lim.es,closed:false});
+    try{const b=DB.batch();b.set(DB.doc('eRooms/'+code),{nm,owner:TU.uid,t:Date.now(),n:0,lim:TD.lim.es,closed:false,sc:TD.sc});
       b.update(DB.doc('teachers/'+TU.uid),{er:firebase.firestore.FieldValue.increment(1)});await b.commit();return tHome()}catch(e){}}
   m.textContent='반 방을 만들지 못했어요. 다시 해 주세요.';
 }
@@ -1401,7 +1445,7 @@ async function mTeachers(){
   const sn=await DB.collection('teachers').get();
   const L=sn.docs.map(d=>Object.assign({uid:d.id},d.data())).sort((a,b)=>a.t-b.t);
   const all=await qCount(DB.collection('eStudents')),td=await qCount(DB.collection('eStudents').where('day','==',today()));
-  document.getElementById('tl').innerHTML=`<h3>선생님 ${L.length}명</h3>`+L.map(x=>`<button class="rrow" onclick="mTeacher('${x.uid}')"><b>${esc(x.nm)}${x.em===MASTER?' 👑':''} ${x.st==='ok'?'':'<span class="pill b">정지</span>'}</b><span>${esc(x.em)} · 반 방 ${x.er}/${x.lim.er} · Bull Run 방 ${x.br}/${x.lim.br}</span></button>`).join('');
+  document.getElementById('tl').innerHTML=`<h3>선생님 ${L.length}명</h3>`+L.map(x=>`<button class="rrow" onclick="mTeacher('${x.uid}')"><b>${esc(x.nm)}${x.em===MASTER?' 👑':''} ${x.st==='ok'?'':'<span class="pill b">정지</span>'}</b><span>${esc(x.scn||'학교 미정')} · ${esc(x.em)} · 반 방 ${x.er}/${x.lim.er} · Bull Run 방 ${x.br}/${x.lim.br}</span></button>`).join('');
   app.insertAdjacentHTML('beforeend',`<div class="card"><h3>📊 전체 현황</h3><div class="sm">Econ Play 학생 <b>${all}</b>명 · 오늘 접속 <b>${td}</b>명<br>${useLine(td)}<br>저장 공간: 약 ${Math.max(1,Math.round(all*10/1024))}MB / 1GB</div></div>`);
 }
 let MT=null;
