@@ -1198,7 +1198,7 @@ async function stReq(){
   app.innerHTML=tTop('main()','📮 반 가입 요청')+'<div class="card sm mut">불러오는 중…</div>';
   let L=[];try{L=await schRooms(U.me.sc)}catch(e){}
   app.innerHTML=tTop('main()','📮 반 가입 요청')+`<div class="card"><h2>📮 반 가입 요청</h2><div class="sm mut" style="margin-bottom:8px">${esc((U.me.scn||'')+' · '+U.me.sid+' '+U.me.nm)}<br>선생님이 허용하면 반에 들어가요. 그동안에도 게임은 할 수 있어요.</div>
-    ${L.length?`<div class="rlist">${L.map(r=>`<label><input type="radio" name="rq" value="${r.code}"><b>${esc(r.nm)}</b><span>${esc(r.tn||'')} 선생님</span></label>`).join('')}</div>`:'<div class="sm mut">아직 우리 학교에 가입할 수 있는 반이 없어요. 선생님께 알려 줘!</div>'}
+    ${L.length?`<div class="rlist">${L.map(r=>`<label><input type="radio" name="rq" value="${r.code}"><b>${esc(r.nm)}</b><span>${r.tn?esc(r.tn)+' 선생님':''}</span></label>`).join('')}</div>`:'<div class="sm mut">아직 우리 학교에 가입할 수 있는 반이 없어요. 선생님께 알려 줘!</div>'}
     <div class="msg" id="msg"></div>${L.length?'<button class="btn" id="go">가입 요청 보내기</button>':''}</div>`;
   const go=document.getElementById('go');if(!go)return;
   go.onclick=async()=>{const el=document.querySelector('input[name=rq]:checked'),m=document.getElementById('msg');if(!el)return m.textContent='반을 골라 줘!';
@@ -1252,7 +1252,7 @@ function setup(mode){
   const $=id=>document.getElementById(id),m=$('msg');
   if($('pm')){$('pm').onclick=()=>{sex='m';$('pm').classList.add('on');$('pf').classList.remove('on')};$('pf').onclick=()=>{sex='f';$('pf').classList.add('on');$('pm').classList.remove('on')}}
   if(mode==='join'&&JN){$('sid').value=JN.sid;$('nm').value=JN.nm}
-  if(mode==='join2')schRooms(JN.sc).then(L=>{RL=L;const el=$('rl');if(el)el.innerHTML=L.length?L.map(r=>`<label><input type="radio" name="rq" value="${r.code}"><b>${esc(r.nm)}</b><span>${esc(r.tn||'')} 선생님</span></label>`).join(''):'<div class="sm mut">아직 우리 학교에 가입할 수 있는 반이 없어요. 선생님께 알려 줘!</div>'}).catch(()=>{if($('rl'))$('rl').innerHTML='<div class="sm mut">반 목록을 불러오지 못했어요.</div>'});
+  if(mode==='join2')schRooms(JN.sc).then(L=>{RL=L;const el=$('rl');if(el)el.innerHTML=L.length?L.map(r=>`<label><input type="radio" name="rq" value="${r.code}"><b>${esc(r.nm)}</b><span>${r.tn?esc(r.tn)+' 선생님':''}</span></label>`).join(''):'<div class="sm mut">아직 우리 학교에 가입할 수 있는 반이 없어요. 선생님께 알려 줘!</div>'}).catch(()=>{if($('rl'))$('rl').innerHTML='<div class="sm mut">반 목록을 불러오지 못했어요.</div>'});
   // 학교 목록 채우기(지난번에 고른 학교를 미리 골라 둔다)
   if($('sc'))fbInit().then(ok=>ok?schools():[]).then(L=>{const el=$('sc');if(!el)return;const pre=JN?JN.sc:lastSc();
     el.innerHTML=L.length?'<option value="">학교를 골라요</option>'+L.map(x=>`<option value="${x.c}"${x.c===pre?' selected':''}>${esc(x.nm)}</option>`).join(''):'<option value="">등록된 학교가 없어요</option>'}).catch(()=>{if($('sc'))$('sc').innerHTML='<option value="">학교를 불러오지 못했어요</option>'});
