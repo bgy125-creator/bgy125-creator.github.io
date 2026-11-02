@@ -1340,6 +1340,8 @@ async function tHome(){
   <button class="btn gh" onclick="tOut()">로그아웃</button>`;
   // 내 반 방
   try{const sn=await DB.collection('eRooms').where('owner','==',TU.uid).get();const L=sn.docs.map(d=>Object.assign({code:d.id},d.data())).sort((a,b)=>a.t-b.t);
+    // 학교를 정하기 전에 만든 반에는 선생님 학교를 붙인다
+    for(const r of L)if(!r.sc&&TD.sc){await DB.doc('eRooms/'+r.code).update({sc:TD.sc}).catch(()=>{});r.sc=TD.sc}
     document.getElementById('rl').innerHTML=(L.length?L.map(r=>`<button class="rrow" onclick="tRoom('${r.code}')"><b>${esc(r.nm)}</b><span>입장 코드 <b>${r.code}</b> · ${r.n}/${r.lim}명${r.closed?' · 🔒':''}</span></button>`).join(''):'아직 만든 반이 없어요.')+`<div class="sm mut" style="margin-top:6px">반 방 ${L.length}/${TD.lim.er}개</div>`}catch(e){document.getElementById('rl').textContent='반 목록을 불러오지 못했어요.'}
   // Bull Run 방(30일 지난 방은 정리)
   try{const L=await brRooms(TU.uid);let n=0;for(const r of L)if(Date.now()-(+r.t||0)>BR_DAYS*864e5){await brDel(r);n++}
