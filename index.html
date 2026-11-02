@@ -42,7 +42,8 @@ button,input{font-family:inherit}
 .pick2{display:flex!important;align-items:center;justify-content:space-between;gap:10px}.pick2 b{display:flex;align-items:center;gap:8px;font-size:22px}.gi{width:30px;height:30px;flex:none}
 .mini{flex:none;width:72px;height:72px;border:1px solid var(--ln);border-radius:14px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;font-style:normal}.mini img{width:100%;height:100%;object-fit:contain}.mini.em{font-size:40px}
 .pick2{font-size:16px}.pick2 span{display:block;color:var(--mut);margin-top:4px;font-size:15px;line-height:1.4}.pick2.dj{border-color:var(--ac)}
-.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px}.seg button{border:1px solid var(--ln);background:var(--card);color:var(--mut);border-radius:12px;padding:10px 4px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer}.seg button.on{background:var(--ac);border-color:var(--ac);color:#fff}.seg.mtab{margin-bottom:4px}.seg.mtab button{font-size:13px;padding:10px 2px;word-break:keep-all;line-height:1.3}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px}.seg button{border:1px solid var(--ln);background:var(--card);color:var(--mut);border-radius:12px;padding:10px 4px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer}.seg button.on{background:var(--ac);border-color:var(--ac);color:#fff}
+.rlist{display:grid;gap:6px}.rlist label{display:flex;align-items:center;gap:8px;border:2px solid var(--ln);border-radius:12px;padding:10px 12px;cursor:pointer;background:var(--card)}.rlist label span{margin-left:auto;font-size:13px;color:var(--mut)}.rlist label:has(input:checked){border-color:var(--ac);background:var(--acs)}.seg.mtab{margin-bottom:4px}.seg.mtab button{font-size:13px;padding:10px 2px;word-break:keep-all;line-height:1.3}
 .rrow{display:block;width:100%;text-align:left;border:1px solid var(--ln);border-radius:12px;background:var(--sl);color:var(--tx);padding:10px 12px;margin-top:8px;font-family:inherit;font-size:15px;cursor:pointer}.rrow span{display:block;font-size:13px;color:var(--mut);margin-top:2px}
 .tw{overflow-x:auto;margin:0 -4px}.tt2{border-collapse:collapse;font-size:13px;white-space:nowrap;width:100%}.tt2 th,.tt2 td{padding:6px 5px;border-bottom:1px solid var(--ln);text-align:center}.tt2 th{color:var(--mut);font-weight:700}
 .mini2{border:1px solid var(--ln);background:var(--card);color:var(--tx);border-radius:8px;padding:4px 8px;font-size:12px;font-family:inherit;cursor:pointer;white-space:nowrap}
@@ -342,7 +343,7 @@ function main(){
         <button class="pick2 dj" onclick="home()"><div><b><svg class="gi" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3.5 L18.6 11 L26 10 L20.2 15 L24.6 22 L17.4 18.6 L13.4 25.6 L13.6 18 L6.2 17.4 L12.4 13.4 Z" fill="#ffd43b" stroke="#e8590c" stroke-width="1.6" stroke-linejoin="round"/><g transform="rotate(-14 9 21)"><path d="M1.5 18 L14 18 L12 21 L14.4 24 L1.5 24 Z" fill="#d9a066" stroke="#3a2e2a" stroke-width="1.6" stroke-linejoin="round"/></g><g transform="rotate(14 23 21)"><path d="M30.5 18 L18 18 L20 21 L17.6 24 L30.5 24 Z" fill="#d9a066" stroke="#3a2e2a" stroke-width="1.6" stroke-linejoin="round"/></g></svg><span class="tt">도장깨기<small>(분개 뽀개기)</small></span></b><span>내 등급: ${rankText()}</span></div><i class="mini"><img src="${charImg(U.dojo.best)}" alt=""></i></button>
     <a class="pick2 br2" href="https://bgy125-creator.github.io/bullrun/" target="_blank" rel="noopener"><div><b><svg class="gi" viewBox="0 0 32 32" aria-hidden="true"><rect x="3" y="4" width="26" height="24" rx="4" fill="#fff4f2" stroke="#3a2e2a" stroke-width="1.8"/><path d="M7 23 L13 16.5 L17.5 19.5 L25 10.5" fill="none" stroke="#e03131" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 10.5 L25 10.5 L25 15.5" fill="none" stroke="#e03131" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="tt">Bull&nbsp;Run<small>(투자 서바이벌 레이스)</small></span></b><span>새 창으로 열려요.</span></div><i class="mini"><img src="${IMG.bull}" alt="" style="width:85%;height:85%"></i></a>
   </div>
-  <div class="card sm c" style="margin-top:16px">${U.me.key?`🎒 ${esc(U.me.scn||"")} ${esc(U.me.sid)} ${esc(U.me.nm)} 로그인 중 · 기록은 내 계정에 저장돼요<br><button class="x" style="color:var(--ac)" onclick="stLogout()">로그아웃</button>`:`🧪 ${esc(U.me.nm)} 체험 중 · 기록은 이 기기에만 저장돼요<br><button class="x" style="color:var(--ac)" onclick="setup('join')">회원 가입하고 기록 옮기기</button> · <button class="x" onclick="if(confirm('이 기기에 저장된 이름과 기록을 모두 지울까요?')){U=fresh();save();setup()}">처음부터 다시 하기</button>`}</div>
+  <div class="card sm c" style="margin-top:16px">${U.me.key?`🎒 ${esc(U.me.scn||"")} ${esc(U.me.sid)} ${esc(U.me.nm)} 로그인 중 · 기록은 내 계정에 저장돼요<br>${U.me.code?`📚 ${esc(U.me.cn||"")}`:U.me.rq?`📮 ${esc(U.me.rqn||"")} 가입 요청 중 (선생님이 허용하면 반에 들어가요)`:`${U.me.rj?"반 가입 요청이 받아들여지지 않았어요. ":""}<button class="x" style="color:var(--ac)" onclick="stReq()">📮 반 가입 요청하기</button>`}<br><button class="x" style="color:var(--ac)" onclick="stLogout()">로그아웃</button>`:`🧪 ${esc(U.me.nm)} 체험 중 · 기록은 이 기기에만 저장돼요<br><button class="x" style="color:var(--ac)" onclick="setup('join')">회원 가입하고 기록 옮기기</button> · <button class="x" onclick="if(confirm('이 기기에 저장된 이름과 기록을 모두 지울까요?')){U=fresh();save();setup()}">처음부터 다시 하기</button>`}</div>
   <div class="c"><button class="x" onclick="tpage()">🧑‍🏫 선생님 화면</button></div>
   <div class="c sm mut" style="margin-top:10px">글꼴: 넥슨 Lv.1 고딕(넥슨), 배달의민족 주아(우아한형제들, SIL OFL), 고운돋움(SIL OFL)</div>`;
   scrollTo(0,0);
@@ -1160,7 +1161,7 @@ const lastSc=v=>{try{if(v)localStorage.setItem('ep_school',v);return localStorag
 async function stLoad(key){
   const d=await DB.doc('eStudents/'+key).get();if(!d.exists)throw {code:'no-record'};
   const x=d.data();U=Object.assign(fresh(),x.U||{});U.dojo.lives=Math.min(LIVES,U.dojo.lives);
-  U.me={sid:x.sid,nm:x.nm,sex:x.sex||'m',key,sc:x.sc,scn:x.scn,code:x.code,em:FBA.currentUser.email};
+  U.me={sid:x.sid,nm:x.nm,sex:x.sex||'m',key,sc:x.sc,scn:x.scn,code:x.code||null,cn:x.cn||'',rq:x.rq||null,rqn:x.rqn||'',rj:!!x.rj,em:FBA.currentUser.email};
   try{localStorage.setItem(KEY,JSON.stringify(U))}catch(e){}DIRTY=false;
 }
 // 로그인(학교 + 학번 + PIN): 가입하지 않았으면 'signup'을 돌려준다
@@ -1176,11 +1177,13 @@ async function stLogin(sc,sid,pin){
   }
   await stLoad(key);return reset?'reset':'ok';
 }
-// 가입: 1단계(학교·학번·이름·PIN) → 2단계(입장 코드·성별)
+// 가입: 1단계(학교·학번·이름·PIN) → 2단계(반 고르기·성별) → 그 반에 가입 요청
+// 우리 학교에서 새 학생을 받는 반 목록
+async function schRooms(sc){const sn=await DB.collection('eRooms').where('sc','==',sc).get();return sn.docs.map(d=>Object.assign({code:d.id},d.data())).filter(r=>!r.closed).sort((a,b)=>a.nm.localeCompare(b.nm,'ko',{numeric:true}))}
 async function stSignup(J,code,sex){
   const key=J.sc+'_'+J.sid,rs=await DB.doc('eRooms/'+code).get();
   if(!rs.exists)throw {code:'room'};const r=rs.data();
-  if(r.sc!==J.sc)throw {code:'school'};if(r.closed)throw {code:'closed'};if(r.n>=r.lim)throw {code:'full'};
+  if(r.sc!==J.sc)throw {code:'school'};if(r.closed)throw {code:'closed'};
   const em=stEmail(key,1),pw=stPw(J.pin);
   try{await FBA.createUserWithEmailAndPassword(em,pw)}
   catch(e){if(e.code!=='auth/email-already-in-use')throw e;try{await FBA.signInWithEmailAndPassword(em,pw)}catch(e2){throw {code:'taken'}}}
@@ -1188,9 +1191,19 @@ async function stSignup(J,code,sex){
   if(!(U.me&&!U.me.key))U=fresh();const g=gameData();
   const b=DB.batch();
   b.set(DB.doc('eLogins/'+key),{v:1});
-  b.update(DB.doc('eRooms/'+code),{n:firebase.firestore.FieldValue.increment(1)});
-  b.set(DB.doc('eStudents/'+key),{sid:J.sid,nm:J.nm,sex,sc:J.sc,scn:J.scn,code,tu:r.owner,t:Date.now(),day:today(),U:g});
+  b.set(DB.doc('eStudents/'+key),{sid:J.sid,nm:J.nm,sex,sc:J.sc,scn:J.scn,code:null,tu:null,cn:'',rq:code,rqt:r.owner,rqn:r.nm,rj:false,t:Date.now(),day:today(),U:g});
   await b.commit();await stLoad(key);
+}
+async function stReq(){
+  app.innerHTML=tTop('main()','📮 반 가입 요청')+'<div class="card sm mut">불러오는 중…</div>';
+  let L=[];try{L=await schRooms(U.me.sc)}catch(e){}
+  app.innerHTML=tTop('main()','📮 반 가입 요청')+`<div class="card"><h2>📮 반 가입 요청</h2><div class="sm mut" style="margin-bottom:8px">${esc((U.me.scn||'')+' · '+U.me.sid+' '+U.me.nm)}<br>선생님이 허용하면 반에 들어가요. 그동안에도 게임은 할 수 있어요.</div>
+    ${L.length?`<div class="rlist">${L.map(r=>`<label><input type="radio" name="rq" value="${r.code}"><b>${esc(r.nm)}</b><span>${esc(r.tn||'')} 선생님</span></label>`).join('')}</div>`:'<div class="sm mut">아직 우리 학교에 가입할 수 있는 반이 없어요. 선생님께 알려 줘!</div>'}
+    <div class="msg" id="msg"></div>${L.length?'<button class="btn" id="go">가입 요청 보내기</button>':''}</div>`;
+  const go=document.getElementById('go');if(!go)return;
+  go.onclick=async()=>{const el=document.querySelector('input[name=rq]:checked'),m=document.getElementById('msg');if(!el)return m.textContent='반을 골라 줘!';
+    const r=L.find(x=>x.code===el.value);
+    try{await DB.doc('eStudents/'+U.me.key).update({rq:r.code,rqt:r.owner,rqn:r.nm,rj:false});Object.assign(U.me,{rq:r.code,rqn:r.nm,rj:false});save();main()}catch(e){m.textContent=errMsg(e)}};
 }
 async function stLogout(){await cloudSave();try{await FBA.signOut()}catch(e){}U=fresh();try{localStorage.removeItem(KEY)}catch(e){}setup()}
 
@@ -1221,10 +1234,11 @@ function setup(mode){
     join:`<h2>회원 가입 <span class="sm mut">1/2</span></h2>${sch}
       <input class="field" id="sid" inputmode="numeric" maxlength="5" placeholder="학번 (예: 1101)" style="margin-bottom:8px">
       <input class="field" id="nm" maxlength="10" placeholder="이름" style="margin-bottom:8px">${pin('pin','PIN 숫자 4자리 정하기')}${pin('pin2','PIN 한 번 더',1)}`,
-    join2:`<h2>회원 가입 <span class="sm mut">2/2</span></h2><div class="sm mut" style="margin-bottom:10px">${JN?esc(JN.scn+' · '+JN.sid+' '+JN.nm):''}</div>
-      <input class="field" id="code" inputmode="numeric" maxlength="4" placeholder="입장 코드 4자리 (선생님께 받아요)">${sx}`};
+    join2:`<h2>회원 가입 <span class="sm mut">2/2</span></h2><div class="sm mut" style="margin-bottom:6px">${JN?esc(JN.scn+' · '+JN.sid+' '+JN.nm):''}</div>
+      <div class="lb" style="margin-top:4px">우리 반을 골라요 <span style="font-weight:400">(선생님이 허용하면 반에 들어가요)</span></div><div class="rlist" id="rl"><div class="sm mut">반 목록 불러오는 중…</div></div>${sx}`};
   if(mode==='join2'&&!JN)mode='join';
   const label={guest:'게임 참여하기',login:'로그인',join:'다음',join2:'가입하고 시작하기'}[mode];
+  let RL=[];
   app.innerHTML=`
   <div class="logo"><b>Econ Play</b><div class="mut sm">경제 고수를 꿈꾸며, 게임에 도전하세요!</div></div>
   <div class="seg">${tab('login','로그인')}${tab('join','회원 가입')}${tab('guest','체험하기')}</div>
@@ -1238,6 +1252,7 @@ function setup(mode){
   const $=id=>document.getElementById(id),m=$('msg');
   if($('pm')){$('pm').onclick=()=>{sex='m';$('pm').classList.add('on');$('pf').classList.remove('on')};$('pf').onclick=()=>{sex='f';$('pf').classList.add('on');$('pm').classList.remove('on')}}
   if(mode==='join'&&JN){$('sid').value=JN.sid;$('nm').value=JN.nm}
+  if(mode==='join2')schRooms(JN.sc).then(L=>{RL=L;const el=$('rl');if(el)el.innerHTML=L.length?L.map(r=>`<label><input type="radio" name="rq" value="${r.code}"><b>${esc(r.nm)}</b><span>${esc(r.tn||'')} 선생님</span></label>`).join(''):'<div class="sm mut">아직 우리 학교에 가입할 수 있는 반이 없어요. 선생님께 알려 줘!</div>'}).catch(()=>{if($('rl'))$('rl').innerHTML='<div class="sm mut">반 목록을 불러오지 못했어요.</div>'});
   // 학교 목록 채우기(지난번에 고른 학교를 미리 골라 둔다)
   if($('sc'))fbInit().then(ok=>ok?schools():[]).then(L=>{const el=$('sc');if(!el)return;const pre=JN?JN.sc:lastSc();
     el.innerHTML=L.length?'<option value="">학교를 골라요</option>'+L.map(x=>`<option value="${x.c}"${x.c===pre?' selected':''}>${esc(x.nm)}</option>`).join(''):'<option value="">등록된 학교가 없어요</option>'}).catch(()=>{if($('sc'))$('sc').innerHTML='<option value="">학교를 불러오지 못했어요</option>'});
@@ -1252,7 +1267,7 @@ function setup(mode){
       if(!/^[0-9]{4}$/.test(v('pin')))return m.textContent='PIN을 숫자 4자리로 써 줘!';
       if(mode==='join'&&v('pin')!==v('pin2'))return m.textContent='PIN 두 개가 서로 달라요!';
     }else{
-      if(!/^[0-9]{4}$/.test(v('code')))return m.textContent='입장 코드를 숫자 4자리로 써 줘!';
+      if(!document.querySelector('input[name=rq]:checked'))return m.textContent='우리 반을 골라 줘!';
       if(!sex)return m.textContent='성별을 골라 줘!';
     }
     if(!await fbInit())return m.textContent='인터넷에 연결되지 않았어요. 체험하기로 해 볼 수 있어요.';
@@ -1266,11 +1281,11 @@ function setup(mode){
         const sc=v('sc'),s0=(await schools()).find(x=>x.c===sc);
         if((await DB.doc('eLogins/'+sc+'_'+v('sid')).get()).exists)return back('이미 가입된 학번이에요. 로그인해 줘!');
         JN={sc,scn:s0?s0.nm:'',sid:v('sid'),nm:v('nm'),pin:v('pin')};lastSc(sc);return setup('join2');
-      }else await stSignup(JN,v('code'),sex);
+      }else await stSignup(JN,document.querySelector('input[name=rq]:checked').value,sex);
       JN=null;main();
     }catch(e){
       const c=e&&e.code;
-      back(c==='pin'?'PIN이 맞지 않아요.':c==='room'?'없는 입장 코드예요. 선생님께 다시 확인해 줘!':c==='school'?'고른 학교의 반이 아니에요. 학교와 입장 코드를 다시 확인해 줘!':c==='closed'?'지금은 새 학생을 받지 않는 방이에요.':c==='full'?'방 인원이 가득 찼어요. 선생님께 알려 줘!':c==='taken'?'이미 가입된 학번이에요. 로그인해 줘!':c==='no-record'?'기록을 찾지 못했어요. 선생님께 알려 줘!':errMsg(e));
+      back(c==='pin'?'PIN이 맞지 않아요.':c==='room'||c==='school'?'반을 다시 골라 줘!':c==='closed'?'지금은 새 학생을 받지 않는 반이에요.':c==='taken'?'이미 가입된 학번이에요. 로그인해 줘!':c==='no-record'?'기록을 찾지 못했어요. 선생님께 알려 줘!':errMsg(e));
     }
   };
 }
@@ -1354,7 +1369,9 @@ async function tHome(){
   try{const sn=await DB.collection('eRooms').where('owner','==',TU.uid).get();const L=sn.docs.map(d=>Object.assign({code:d.id},d.data())).sort((a,b)=>a.t-b.t);
     // 학교를 정하기 전에 만든 반에는 선생님 학교를 붙인다
     for(const r of L)if(!r.sc&&TD.sc){await DB.doc('eRooms/'+r.code).update({sc:TD.sc}).catch(()=>{});r.sc=TD.sc}
-    document.getElementById('rl').innerHTML=(L.length?L.map(r=>`<button class="rrow" onclick="tRoom('${r.code}')"><b>${esc(r.nm)}</b><span>입장 코드 <b>${r.code}</b> · ${r.n}/${r.lim}명${r.closed?' · 🔒':''}</span></button>`).join(''):'아직 만든 반이 없어요.')+`<div class="sm mut" style="margin-top:6px">반 방 ${L.length}/${TD.lim.er}개</div>`}catch(e){document.getElementById('rl').textContent='반 목록을 불러오지 못했어요.'}
+    for(const r of L)if(r.tn!==TD.nm)await DB.doc('eRooms/'+r.code).update({tn:TD.nm}).catch(()=>{});
+    const RQ={};try{(await DB.collection('eStudents').where('rqt','==',TU.uid).get()).docs.forEach(d=>{const q=d.data().rq;if(q)RQ[q]=(RQ[q]||0)+1})}catch(e){}
+    document.getElementById('rl').innerHTML=(L.length?L.map(r=>`<button class="rrow" onclick="tRoom('${r.code}')"><b>${esc(r.nm)}</b><span>학생 ${r.n}/${r.lim}명${r.closed?' · 🔒 새 학생 받지 않음':''}${RQ[r.code]?` · <b style="color:var(--ac)">📮 가입 요청 ${RQ[r.code]}명</b>`:''}</span></button>`).join(''):'아직 만든 반이 없어요.')+`<div class="sm mut" style="margin-top:6px">반 방 ${L.length}/${TD.lim.er}개</div>`}catch(e){document.getElementById('rl').textContent='반 목록을 불러오지 못했어요.'}
   // Bull Run 방(30일 지난 방은 정리)
   try{const L=await brRooms(TU.uid);let n=0;for(const r of L)if(Date.now()-(+r.t||0)>BR_DAYS*864e5){await brDel(r);n++}
     document.getElementById('bl').innerHTML=`내 Bull Run 방 ${L.length-n}/${TD.lim.br}개 · 방마다 최대 ${TD.lim.bp}명<br>방은 만든 지 ${BR_DAYS}일이 지나면 자동으로 지워져요.${n?`<br>오늘 ${n}개를 정리했어요.`:''}`}catch(e){document.getElementById('bl').textContent='Bull Run 방을 불러오지 못했어요.'}
@@ -1375,7 +1392,9 @@ async function brDel(r){
 // Econ Play 반 방 지우기: 학생 기록은 남기고 반 연결만 끊는다
 async function erDel(code,owner){
   const sn=await DB.collection('eStudents').where('tu','==',owner).where('code','==',code).get();
-  for(let i=0;i<sn.docs.length;i+=400){const b=DB.batch();sn.docs.slice(i,i+400).forEach(d=>b.update(d.ref,{code:null,tu:null}));await b.commit()}
+  for(let i=0;i<sn.docs.length;i+=400){const b=DB.batch();sn.docs.slice(i,i+400).forEach(d=>b.update(d.ref,{code:null,tu:null,cn:''}));await b.commit()}
+  const rq=await DB.collection('eStudents').where('rqt','==',owner).where('rq','==',code).get();
+  for(let i=0;i<rq.docs.length;i+=400){const b=DB.batch();rq.docs.slice(i,i+400).forEach(d=>b.update(d.ref,{rq:null,rqt:null,rqn:null,rj:true}));await b.commit()}
   await DB.doc('eRooms/'+code).delete();
   await DB.doc('teachers/'+owner).update({er:firebase.firestore.FieldValue.increment(-1)}).catch(()=>{});
 }
@@ -1386,7 +1405,7 @@ async function tMkRoom(){
   if(TD.er>=TD.lim.er)return m.textContent=`반 방은 ${TD.lim.er}개까지 만들 수 있어요.`;
   for(let k=0;k<8;k++){const code=String(1000+Math.random()*9000|0);
     if((await DB.doc('eRooms/'+code).get()).exists)continue;
-    try{const b=DB.batch();b.set(DB.doc('eRooms/'+code),{nm,owner:TU.uid,t:Date.now(),n:0,lim:TD.lim.es,closed:false,sc:TD.sc});
+    try{const b=DB.batch();b.set(DB.doc('eRooms/'+code),{nm,owner:TU.uid,tn:TD.nm,t:Date.now(),n:0,lim:TD.lim.es,closed:false,sc:TD.sc});
       b.update(DB.doc('teachers/'+TU.uid),{er:firebase.firestore.FieldValue.increment(1)});await b.commit();return tHome()}catch(e){}}
   m.textContent='반 방을 만들지 못했어요. 다시 해 주세요.';
 }
@@ -1406,20 +1425,33 @@ async function tRoom(code){
   const r=Object.assign({code},rd.data());
   const sn=await DB.collection('eStudents').where('tu','==',r.owner).where('code','==',code).get();
   const S=sn.docs.map(d=>Object.assign({key:d.id},d.data(),{s:stSum(d.data())})).sort((a,b)=>a.sid.localeCompare(b.sid));
-  TR={r,S};
+  const rq=(await DB.collection('eStudents').where('rqt','==',r.owner).where('rq','==',code).get()).docs.map(d=>Object.assign({key:d.id},d.data())).sort((a,b)=>a.sid.localeCompare(b.sid));
+  TR={r,S,rq};
   // 반 전체 부분별 정답률
   const tg={};S.forEach(x=>Object.entries(x.s.tg).forEach(([k,v])=>{tg[k]=tg[k]||{c:0,n:0};tg[k].c+=v.c;tg[k].n+=v.n}));
   app.innerHTML=tTop('tHome()','📚 반 관리')+`
-  <div class="card c"><div class="who" style="margin:0">${esc(r.nm)}</div><div class="sm mut">입장 코드</div><div style="font-size:40px;font-weight:800;letter-spacing:6px">${code}</div>
-    <div class="sm mut">학생 ${r.n}/${r.lim}명</div>
+  <div class="card c"><div class="who" style="margin:0">${esc(r.nm)}</div><div class="sm mut">학생 ${r.n}/${r.lim}명 · 학생은 회원 가입 때 이 반을 골라 가입 요청을 보내요</div>
     <button class="btn ${r.closed?'':'gh'}" onclick="tClose(${!r.closed})">${r.closed?'🔓 새 학생 다시 받기':'🔒 새 학생 받지 않기'}</button></div>
+  ${rq.length?`<div class="card"><h3>📮 가입 요청 (${rq.length}명)</h3>${rq.map((x,i)=>`<div class="wl" style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span><b>${esc(x.sid)} ${esc(x.nm)}</b><br><span class="sm mut">${tdate(x.t)} 가입</span></span><span style="white-space:nowrap"><button class="mini2" onclick="tReq([${i}],1)">✅ 허용</button> <button class="mini2" onclick="tReq([${i}],0)">거절</button></span></div>`).join('')}
+    <button class="btn" onclick="tReq(TR.rq.map((x,i)=>i),1)">✅ 모두 허용</button></div>`:''}
   <div class="card"><h3>👥 학생 (${S.length}명)</h3>
     ${S.length?`<div class="tw"><table class="tt2"><tr><th>학번</th><th>이름</th><th>띠</th><th>탐정</th><th>메달</th><th>분개</th><th>계정</th><th>최근</th><th></th></tr>
     ${S.map((x,i)=>`<tr><td>${esc(x.sid)}</td><td>${esc(x.nm)}</td><td>${x.s.belt}</td><td>${x.s.det}</td><td>${x.s.med}</td><td>${x.s.jr}</td><td>${x.s.ar}</td><td>${x.day?esc(x.day.slice(5).replace('-','/')):'-'}</td><td><button class="mini2" onclick="tPin(${i})">PIN 초기화</button></td></tr>`).join('')}</table></div>
-    <button class="btn gh" onclick="tCsv()">📥 엑셀(CSV) 내려받기</button>`:'<div class="sm mut">아직 가입한 학생이 없어요. 학생에게 입장 코드를 알려 주세요.</div>'}</div>
+    <button class="btn gh" onclick="tCsv()">📥 엑셀(CSV) 내려받기</button>`:'<div class="sm mut">아직 반에 들어온 학생이 없어요. 학생이 회원 가입 때 이 반을 고르면 위에 가입 요청이 떠요.</div>'}</div>
   ${Object.keys(tg).length?`<div class="card"><h3>📊 우리 반 분개 정답률</h3>${Object.keys(TAGS).filter(k=>tg[k]).map(k=>{const p=Math.round(tg[k].c/tg[k].n*100);return `<div class="br"><span>${TAGS[k]}</span><div class="t"><i style="width:${p}%;background:${p>=80?'var(--ok)':p>=60?'#3b82f6':'var(--ng)'}"></i></div><span class="v">${p}% · ${tg[k].n}건</span></div>`}).join('')}</div>`:''}
   <div class="msg" id="msg"></div>
   <button class="btn gh" style="color:var(--ng)" onclick="tDelRoom()">🗑️ 이 반 지우기</button>`;
+}
+// 가입 요청 허용(ok=1)·거절(ok=0)
+async function tReq(ix,ok){
+  const L=ix.map(i=>TR.rq[i]).filter(Boolean),r=TR.r;if(!L.length)return;
+  if(ok&&r.n+L.length>r.lim)return alert(`이 반은 ${r.lim}명까지예요. 지금 ${r.n}명이라 ${r.lim-r.n}명만 더 허용할 수 있어요.`);
+  if(!ok&&!confirm(`${L.map(x=>x.nm).join(', ')} 학생의 가입 요청을 거절할까요?`))return;
+  try{for(let i=0;i<L.length;i+=400){const b=DB.batch(),P=L.slice(i,i+400);
+      P.forEach(x=>b.update(DB.doc('eStudents/'+x.key),ok?{code:r.code,tu:r.owner,cn:r.nm,rq:null,rqt:null,rqn:null,rj:false}:{rq:null,rqt:null,rqn:null,rj:true}));
+      if(ok)b.update(DB.doc('eRooms/'+r.code),{n:firebase.firestore.FieldValue.increment(P.length)});
+      await b.commit()}
+    tRoom(r.code)}catch(e){alert('처리하지 못했어요. 다시 해 주세요.')}
 }
 async function tClose(v){try{await DB.doc('eRooms/'+TR.r.code).update({closed:v})}catch(e){}tRoom(TR.r.code)}
 async function tPin(i){
