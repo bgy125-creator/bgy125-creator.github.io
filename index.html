@@ -954,7 +954,7 @@ function mrender(){
     return `<button class="ob ${cl}" ${dn?'disabled':''} onclick="mpickA(${esc(JSON.stringify(v))})">${lab}</button>`};
   let body='';
   if(q.t==='g')body=`<div class="acc">${esc(a[0])}</div><div class="gw sm mut c">이 계정과목은 어느 바구니에 들어갈까?</div>
-    <div class="bk">${GRPS.map(g=>opt(g,`${GICON[g]}<br>${g}`)).join('')}</div>`;
+    <div class="bk">${[GRPS[0],GRPS[1],GRPS[2],GRPS[4],GRPS[3]].map(g=>opt(g,`${GICON[g]}<br>${g}`)).join('')}</div>`;
   else if(q.t==='c')body=`<div class="acc">${esc(a[0])}</div><div class="gw sm mut c">이 자본 계정은 어느 부류일까?</div>${CAPS.map(g=>opt(g,g)).join('')}`;
   else if(q.t==='o')body=`<div class="q">🔎 ${esc(a[3])}</div><div class="gw sm mut" style="margin-top:6px">이 설명에 맞는 계정과목은?</div>${q.opts.map(o=>opt(o,esc(o))).join('')}`;
   else body=`<div class="q">🔎 ${esc(a[3])}</div><div class="gw sm mut" style="margin-top:6px">이 설명에 맞는 계정과목을 직접 써요.</div>
