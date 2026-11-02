@@ -1298,22 +1298,29 @@ async function tpage(){
   tHome();
 }
 async function tOut(){try{await FBA.signOut()}catch(e){}TU=TD=null;location.hash='';U=fresh();main()}
+// 선생님 가입 요청: 보낸 뒤에는 기다림·거절 상태를 보여 준다
 async function tInvite(){
-  app.innerHTML=tTop("location.hash='';main()",'🧑‍🏫 선생님 등록')+`<div class="card"><h2>🎟️ 초대 코드 입력</h2>
-    <div class="gw" style="margin-bottom:10px">${esc(TU.email)} 계정으로 로그인했어요. 마스터 선생님께 받은 초대 코드를 입력하면 선생님으로 등록돼요.</div>
-    <input class="field" id="ic" maxlength="9" placeholder="초대 코드 (예: K7Q2-M9XA)" style="text-transform:uppercase">
-    <div class="sm mut" style="margin-top:4px">등록하면 다음 화면에서 학교를 정해요.</div>
-    <div class="msg" id="msg"></div><button class="btn" id="go">선생님 등록하기</button><button class="btn gh" onclick="tOut()">로그아웃</button></div>`;
+  let rq=null;try{const d=await DB.doc('tReqs/'+TU.uid).get();rq=d.exists?d.data():null}catch(e){}
+  const top=tTop("location.hash='';main()",'🧑‍🏫 선생님 가입');
+  if(rq&&rq.st==='wait'){app.innerHTML=top+`<div class="card c"><h2>📮 가입 요청을 보냈어요</h2><div class="gw">마스터 선생님이 허용하면 바로 쓸 수 있어요.<br>허용된 뒤 이 화면을 새로고침해 주세요.</div>
+    <div class="sm mut" style="margin-top:8px">${esc(rq.nm)} · ${esc(rq.scn)} · ${tdate(rq.t)} 요청</div>
+    <button class="btn" onclick="tpage()">새로고침</button><button class="btn gh" onclick="tReqDel()">요청 취소</button><button class="btn gh" onclick="tOut()">로그아웃</button></div>`;return}
+  if(rq&&rq.st==='no'){app.innerHTML=top+`<div class="card c"><h2>가입 요청이 받아들여지지 않았어요</h2><div class="gw">궁금한 점은 마스터 선생님께 문의해 주세요.</div>
+    <button class="btn" onclick="tReqDel(1)">다시 요청하기</button><button class="btn gh" onclick="tOut()">로그아웃</button></div>`;return}
+  app.innerHTML=top+`<div class="card"><h2>📮 선생님 가입 요청</h2>
+    <div class="gw" style="margin-bottom:10px">${esc(TU.email)} 계정으로 로그인했어요. 가입 요청을 보내면 마스터 선생님이 확인하고 허용해요.</div>
+    <input class="field" id="nm" maxlength="20" placeholder="이름" value="${esc(TU.displayName||'')}" style="margin-bottom:8px">
+    <input class="field" id="scn" maxlength="30" placeholder="학교 이름 (정식 이름)" style="margin-bottom:8px">
+    <input class="field" id="memo" maxlength="200" placeholder="한마디 (선택, 예: 담당 과목)">
+    <div class="msg" id="msg"></div><button class="btn" id="go">가입 요청 보내기</button><button class="btn gh" onclick="tOut()">로그아웃</button></div>`;
   document.getElementById('go').onclick=async()=>{
-    const raw=document.getElementById('ic').value.toUpperCase().replace(/[^A-Z0-9]/g,''),m=document.getElementById('msg');
-    if(raw.length!==8)return m.textContent='초대 코드 8글자를 써 주세요.';
-    const code=raw.slice(0,4)+'-'+raw.slice(4);
-    try{const b=DB.batch();
-      b.set(DB.doc('teachers/'+TU.uid),{nm:TU.displayName||TU.email,em:TU.email,t:Date.now(),st:'ok',lim:TLIM,er:0,br:0,inv:code});
-      b.update(DB.doc('invites/'+code),{used:true,by:TU.uid,ut:Date.now()});
-      await b.commit();tpage()}catch(e){m.textContent='쓸 수 없는 초대 코드예요. 마스터 선생님께 확인해 주세요.'}
+    const v=id=>document.getElementById(id).value.trim(),m=document.getElementById('msg');
+    if(!v('nm'))return m.textContent='이름을 써 주세요.';if(v('scn').length<2)return m.textContent='학교 이름을 써 주세요.';
+    try{await DB.doc('tReqs/'+TU.uid).set({nm:v('nm'),em:TU.email,t:Date.now(),scn:v('scn'),memo:v('memo'),st:'wait'});tInvite()}
+    catch(e){m.textContent='요청을 보내지 못했어요. 다시 해 주세요.'}
   };
 }
+async function tReqDel(again){try{await DB.doc('tReqs/'+TU.uid).delete()}catch(e){}again?tInvite():tOut()}
 // 학교 이름 칸(이미 등록된 학교는 목록에서 고를 수 있게)
 const schField=()=>`<input class="field" id="scn" maxlength="30" list="schl" placeholder="학교 이름 (예: 해연여자고등학교)"><datalist id="schl">${(SCH||[]).map(x=>`<option value="${esc(x.nm)}">`).join('')}</datalist><div class="sm mut" style="margin-top:4px">줄이지 말고 정식 이름으로 써 주세요. 학생은 로그인할 때 이 이름을 골라요.</div>`;
 async function tSchool(){
@@ -1326,7 +1333,7 @@ async function tSchool(){
 }
 // 선생님 첫 화면. 마스터 계정은 맨 위 탭으로 마스터 화면 / 선생님 화면(다른 선생님과 같은 화면)을 오간다
 let TTAB=null,MTAB='inv',MTU=null; // 큰 탭(m 마스터·t 선생님), 마스터 안쪽 탭, 선생님 관리에서 보고 있는 선생님
-const MTABS=[['inv','🎟️ 선생님 초대'],['tch','🧑‍🏫 선생님 관리'],['sch','🏫 학교 관리']];
+const MTABS=[['inv','📮 가입 요청'],['tch','🧑‍🏫 선생님 관리'],['sch','🏫 학교 관리']];
 async function tHome(){
   const isM=TU.email===MASTER;TTAB=isM?(TTAB||'m'):'t';
   const head=tTop("location.hash='';main()",isM&&TTAB==='m'?'👑 마스터 화면':'🧑‍🏫 선생님 화면')+`<div class="card c"><div class="who" style="margin:0">${esc(TD.nm)} 선생님${isM?' 👑':''}</div><div class="sm mut">🏫 ${esc(TD.scn||'')} · ${esc(TU.email)}</div></div>`
@@ -1431,21 +1438,23 @@ async function tDelRoom(){
 
 // 마스터 안쪽 화면을 그릴 자리(#mb). 마스터 화면이 아니면 먼저 그 탭을 연다
 function mbx(k){if(TTAB==='m'&&document.getElementById('mb')&&MTAB===k)return document.getElementById('mb');TTAB='m';MTAB=k;tHome();return null}
-// ───────── 마스터: 선생님 초대
+// ───────── 마스터: 가입 요청(허용·거절만)
 async function mInv(){
   const mb=mbx('inv');if(!mb)return;
-  mb.innerHTML=`<div class="card"><h3>새 선생님 초대 코드</h3>
-    <div style="display:flex;gap:8px"><input class="field" id="memo" maxlength="20" placeholder="누구에게 줄지 메모 (예: ○○고 김 선생님)"><button class="btn" style="width:auto;margin:0;padding:0 16px;white-space:nowrap" onclick="mInvNew()">만들기</button></div>
-    <div class="sm mut" style="margin-top:6px">코드는 한 번 쓰면 끝이에요.</div></div><div class="card" id="il">불러오는 중…</div>`;
-  const sn=await DB.collection('invites').get(),T={};
-  const L=sn.docs.map(d=>Object.assign({id:d.id},d.data())).sort((a,b)=>b.t-a.t);
-  document.getElementById('il').innerHTML=L.length?L.map(x=>`<div class="wl"><b style="font-size:20px;letter-spacing:2px">${x.id}</b> ${x.used?'<span class="pill g">사용함</span>':'<span class="pill b">사용 전</span>'}<div class="sm mut">${esc(x.memo||'')} · ${tdate(x.t)} 만듦${x.used?' · '+tdate(x.ut)+' 사용':''}</div>${x.used?'':`<button class="x" style="color:var(--ng)" onclick="mInvDel('${x.id}')">지우기</button>`}</div>`).join(''):'<div class="sm mut">만든 초대 코드가 없어요.</div>';
+  mb.innerHTML='<div class="card" id="il">불러오는 중…</div>';
+  const L=(await DB.collection('tReqs').get()).docs.map(d=>Object.assign({uid:d.id},d.data())).sort((a,b)=>(a.st==='wait'?0:1)-(b.st==='wait'?0:1)||b.t-a.t);
+  const w=L.filter(x=>x.st==='wait').length,tb=document.querySelector('.mtab button');if(tb)tb.textContent='📮 가입 요청'+(w?' ('+w+')':'');
+  document.getElementById('il').innerHTML=`<h3>가입 요청 ${w}건</h3>`+(L.length?L.map(x=>`<div class="wl"><b>${esc(x.nm)}</b> ${x.st==='wait'?'<span class="pill b">기다리는 중</span>':'<span class="pill">거절함</span>'}
+    <div class="sm mut">${esc(x.em)} · 🏫 ${esc(x.scn)} · ${tdate(x.t)}</div>${x.memo?`<div class="sm" style="margin-top:2px">💬 ${esc(x.memo)}</div>`:''}
+    ${x.st==='wait'?`<div class="row2"><button class="btn" onclick="mReqOk('${x.uid}')">✅ 허용</button><button class="btn gh" onclick="mReqNo('${x.uid}')">거절</button></div>`:`<button class="mini2" style="margin-top:6px" onclick="mReqDel('${x.uid}')">기록 지우기</button>`}</div>`).join(''):'<div class="sm mut">가입 요청이 없어요.</div>');
 }
-async function mInvNew(){
-  const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',r=()=>Array.from({length:4},()=>A[Math.random()*A.length|0]).join('');
-  const code=r()+'-'+r();await DB.doc('invites/'+code).set({t:Date.now(),used:false,by:null,memo:document.getElementById('memo').value.trim()});mInv();
+async function mReqOk(uid){
+  const d=await DB.doc('tReqs/'+uid).get();if(!d.exists)return mInv();const x=d.data();
+  if(!confirm(`${x.nm} 선생님(${x.em})의 가입을 허용할까요?`))return;
+  try{const b=DB.batch();b.set(DB.doc('teachers/'+uid),{nm:x.nm,em:x.em,t:Date.now(),st:'ok',lim:TLIM,er:0,br:0});b.delete(DB.doc('tReqs/'+uid));await b.commit();mInv()}catch(e){alert('허용하지 못했어요.')}
 }
-async function mInvDel(id){if(confirm(id+' 코드를 지울까요?')){await DB.doc('invites/'+id).delete();mInv()}}
+async function mReqNo(uid){if(!confirm('이 가입 요청을 거절할까요?'))return;try{await DB.doc('tReqs/'+uid).update({st:'no'});mInv()}catch(e){alert('거절하지 못했어요.')}}
+async function mReqDel(uid){try{await DB.doc('tReqs/'+uid).delete();mInv()}catch(e){}}
 
 // ───────── 마스터: 선생님 관리
 async function mTeachers(){
