@@ -468,12 +468,10 @@ const PERF=[{u:'Ⅲ',nm:'Ⅲ. 손익 계산서 계정의 회계정보처리',lis
 {g:'혼자하기',lv:2,dt:'10월 10일',q:'특수 관계자인 대주주로부터 토지 ₩30,000을 무상으로 기증받다.',d:[['토지',30000]],k:[['자산수증이익',30000]]},
 {g:'혼자하기',lv:2,dt:'10월 13일',q:'보유 중인 단기매매증권 (주)한결 발행의 주식 40주를 1주당 ₩12,000(취득 금액 @₩9,000)에 처분하고, 수수료 ₩6,000을 차감한 잔액은 당좌 예금(누리은행) 계좌에 입금되다.',d:[['당좌예금',474000]],k:[['단기매매증권',360000],['단기투자자산처분이익',114000]]},
 {g:'혼자하기',lv:2,dt:'10월 23일',q:'(주)나래의 장기 대여금에 대한 이자 ₩30,000이 보통 예금(바다은행) 계좌에 입금되다.',d:[['보통예금',30000]],k:[['이자수익',30000]]},
-// ── III-3 따라하기 03 영업 외 비용 거래(139쪽)
+// ── III-3 따라하기 03 영업 외 비용 거래(139쪽, 사채 이자 문제는 뺌)
 {g:'따라하기',lv:1,dt:'11월 12일',q:'행복나눔 복지재단에 불우 이웃 돕기 성금 ₩500,000을 현금으로 기탁하다.',d:[['기부금',500000]],k:[['현금',500000]]},
-{g:'따라하기',lv:2,dt:'12월 31일',q:'사채(9월 10일 발행)에 대한 이자를 지급하다. (이자 현금 지급액 90,000원, 사채할인발행차금 상각액 6,000원)',d:[['이자비용',96000]],k:[['사채할인발행차금',6000],['현금',90000]]},
-// ── III-3 혼자하기 03 영업 외 비용 거래(139쪽)
+// ── III-3 혼자하기 03 영업 외 비용 거래(139쪽, 사채 이자 문제는 뺌)
 {g:'혼자하기',lv:1,dt:'10월 24일',q:'사회 복지 공동체에 ₩300,000을 현금으로 기부하다.',d:[['기부금',300000]],k:[['현금',300000]]},
-{g:'혼자하기',lv:2,dt:'12월 31일',q:'사채(9월 1일 발행)에 대한 이자를 지급하다. (이자 현금 지급액 20,000원, 사채할인발행차금 상각액 4,000원)',d:[['이자비용',24000]],k:[['현금',20000],['사채할인발행차금',4000]]},
 // ── 대단원 실습 손익 계산서 계정 종합(144쪽)
 {g:'대단원 실습',lv:1,dt:'5월 1일',q:'당점 거래 은행의 보통 예금 계좌(누리은행)에 이자 ₩98,000이 입금됨을 확인하고 회계 처리하다.',d:[['보통예금',98000]],k:[['이자수익',98000]]},
 {g:'대단원 실습',lv:1,dt:'5월 3일',q:'영업용 화물차의 엔진 오일 등을 쌩쌩카센터에서 교체하고, 교체 대금을 현금으로 지급하다.',doc:{t:'rc',h:'영수증',b:'쌩쌩카센터',it:[['엔진오일',120000],['오일필터',50000],['에어컨필터',30000]]},d:[['차량유지비',200000]],k:[['현금',200000]]},
@@ -555,17 +553,18 @@ function perf(){
 }
 // 2단계: 풀이 방식 고르기
 function perfMode(set){
-  PS=set;const n=plist().length,rec=m=>{const r=U.perf[PERF[PU].u+'|'+PS+'|'+m];return r&&r.lt?`최고 ${r.n}/${r.N} · ${r.c||0}회 통과`:'아직 기록이 없어요'};
+  PS=set;const n=plist().length,rec=m=>{const r=U.perf[PERF[PU].u+'|'+PS+'|'+m];return (r&&r.lt?`최고 ${r.n}/${r.N} · ${r.c||0}회 통과`:'아직 기록이 없어요')+(r&&r.p1?'<br>✅ 1단계 통과 · 다음은 2단계부터':'')};
+  const p1=m=>{const r=U.perf[PERF[PU].u+'|'+PS+'|'+m];return r&&r.p1};
   app.innerHTML=`<div class="top"><div class="tb"><button class="x" onclick="perf()">← 뒤로</button><span>📝 ${PSET[PS][0]}</span><span></span></div></div>
-  <div class="card"><h3 style="margin:2px 0 4px">어떤 모드로 풀까요?</h3><div class="sm mut gw" style="margin-bottom:10px">${esc(PERF[PU].nm)} · ${PSET[PS][0]} ${n}문제<br>1단계 쉬운 문제 ${plist().filter(p=>p.lv===1).length}개 → 2단계 어려운 문제 ${plist().filter(p=>p.lv===2).length}개<br>하트 2개로 시작하고, 1단계를 통과하면 하트 1개를 더 받아요.</div>
+  <div class="card"><h3 style="margin:2px 0 4px">어떤 모드로 풀까요?</h3><div class="sm mut gw" style="margin-bottom:10px">${esc(PERF[PU].nm)} · ${PSET[PS][0]} ${n}문제<br>1단계 쉬운 문제 ${plist().filter(p=>p.lv===1).length}개 → 2단계 어려운 문제 ${plist().filter(p=>p.lv===2).length}개<br>단계마다 하트 2개로 시작해요. 1단계를 통과하면 다음부터는 2단계(1단계에서 틀린 문제 포함)부터 풀어요.</div>
   </div>
   <div class="two">
     <div class="card c tbox pmode ez"><h3>🟢 Easy Mode<br><span class="sm mut" style="font-weight:400">(카드 놓기)</span></h3>
       <div class="sm gw">계정과목 카드와 금액 카드를 빈칸에 끌어다 놓아요.</div><div class="sm mut" style="margin-top:6px">${rec('card')}</div>
-      <button class="btn ok" onclick="PM='card';perfGo()">Easy 시작!</button></div>
+      <button class="btn ok" onclick="PM='card';perfGo()">Easy ${p1('card')?'2단계 ':''}시작!</button>${p1('card')?`<button class="x sm" onclick="PM='card';perfGo(1)">1단계부터 다시 풀기</button>`:''}</div>
     <div class="card c tbox pmode hd"><h3>🔴 Hard Mode<br><span class="sm mut" style="font-weight:400">(직접 쓰기)</span></h3>
       <div class="sm gw">계정과목과 금액을 직접 써요.</div><div class="sm mut" style="margin-top:6px">${rec('write')}</div>
-      <button class="btn" onclick="PM='write';perfGo()">Hard 시작!</button></div>
+      <button class="btn" onclick="PM='write';perfGo()">Hard ${p1('write')?'2단계 ':''}시작!</button>${p1('write')?`<button class="x sm" onclick="PM='write';perfGo(1)">1단계부터 다시 풀기</button>`:''}</div>
   </div>`;
   scrollTo(0,0);
 }
@@ -574,14 +573,17 @@ function countdown(fn){
   let n=3;const show=()=>{if(!n)return fn();app.innerHTML=`<div class="cdw"><div class="cdn" key="${n}">${n}</div><div class="sm mut">곧 시작해요!</div></div>`;n--;setTimeout(show,800)};
   scrollTo(0,0);show();
 }
-// 1단계(쉬운 문제)는 하트 2개로, 통과하면 하트 1개를 더 받고 2단계(어려운 문제)로
+// 1단계(쉬운 문제) → 2단계(어려운 문제 + 1단계에서 틀린 문제). 하트는 단계마다 2개(최대 2개).
+// 1단계를 한 번 통과하면(r.p1) 다음부터는 2단계부터 바로 시작(1단계에서 틀린 문제 r.w1도 함께)
 let PST=null;
 const ph=(n,m)=>'❤️'.repeat(Math.max(0,n))+'🤍'.repeat(Math.max(0,m-n));
-function perfGo(){
-  const k=PKEY(),L=plist(),r=U.perf[k]=U.perf[k]||{n:0,N:L.length,c:0,s:0};r.s=(r.s||0)+1;save();
-  const pk=lv=>shuf(L.filter(p=>p.lv===lv)).map(p=>[Object.assign({t:'pl'},p)]);
-  PST={part:1,lives:2,ok:0,wrong:[],st:PM==='card'?9:7,N:L.length,L2:pk(2)};
-  countdown(()=>start('perf',PST.st,pk(1)));
+function perfL2(w1){const all=PERF[PU].list;return shuf([...plist().filter(p=>p.lv===2),...(w1||[]).map(i=>all[i]).filter(Boolean)]).map(p=>[Object.assign({t:'pl',ix:all.indexOf(p)},p)])}
+function perfGo(from1){
+  const k=PKEY(),L=plist(),all=PERF[PU].list,r=U.perf[k]=U.perf[k]||{n:0,N:L.length,c:0,s:0};r.s=(r.s||0)+1;save();
+  PST={part:1,lives:2,ok:0,wrong:[],st:PM==='card'?9:7};
+  if(r.p1&&!from1){PST.part=2;PST.L2=perfL2(r.w1);PST.N=PST.L2.length;return countdown(()=>start('perf',PST.st,PST.L2))}
+  const L1=shuf(L.filter(p=>p.lv===1)).map(p=>[Object.assign({t:'pl',ix:all.indexOf(p)},p)]);PST.N=L.length;
+  countdown(()=>start('perf',PST.st,L1));
 }
 function perfPart2(){countdown(()=>start('perf',PST.st,PST.L2))}
 // 대회 목록
@@ -775,7 +777,7 @@ const tm=s=>`${Math.floor(s/60)}분 ${String(s%60).padStart(2,'0')}초`;
 function render(){
   clearGhost();
   const C=G.cur,p=C.p,dn=C.done;
-  const right=G.mode==='perf'?`<span class="hearts">${ph(PST.lives,PST.part===1?2:3)}</span>`:G.mode==='dojo'?`<span class="hearts">${hearts(U.dojo.lives)}</span>`:G.mode==='cup'?`⏱️ <span id="tm">${tm(Math.floor((Date.now()-G.t0)/1000))}</span>`:'';
+  const right=G.mode==='perf'?`<span class="hearts">${ph(PST.lives,2)}</span>`:G.mode==='dojo'?`<span class="hearts">${hearts(U.dojo.lives)}</span>`:G.mode==='cup'?`⏱️ <span id="tm">${tm(Math.floor((Date.now()-G.t0)/1000))}</span>`:'';
   let body='';
   if(C.type==='s'){
     const col=s=>C.inp[s].map((r,li)=>{const mk=dn?dn.mark[s][li]:null;return `<div class="ln">
@@ -1000,12 +1002,13 @@ function finish(){
       <div class="g2"><button class="btn" onclick="cup(${st})">다시 출전하기</button>${st<CUP.length?`<button class="btn bl" onclick="cup(${st+1})">다음 대회 출전하기</button>`:''}<button class="btn sub" onclick="wrongPg()">틀린 문제 확인하기${WR.length?` (${WR.length})`:''}</button><button class="btn sub" onclick="home()">체육관으로 돌아가기</button></div></div>`;
   }else if(G.mode==='perf'){
     PST.ok+=G.ok;PST.wrong.push(...G.wrong);
-    if(PST.lives>0&&PST.part===1){ // 1단계 통과: 하트 +1, 2단계로
-      PST.part=2;PST.lives++;
+    if(PST.lives>0&&PST.part===1){ // 1단계 통과: 기록하고 2단계로(틀린 문제도 함께, 하트 2개로 다시)
+      const r1=U.perf[PKEY()],w1=[...new Set(G.wrong.map(w=>w.p.ix))];r1.p1=1;r1.w1=w1;save();
+      PST.part=2;PST.lives=2;PST.L2=perfL2(w1);PST.N=G.N+PST.L2.length;
       h=`<div class="card c"><div class="big cheer">🎉</div><h2 class="say">1단계 통과!</h2>
-        <div class="mut">${G.N}문제 중 ${G.ok}문제 정답 · 하트 1개 추가!</div>
-        <div class="hearts" style="font-size:28px;margin:10px 0">${ph(PST.lives,3)}</div>
-        <div class="gw">이제 2단계, 조금 더 어려운 문제 ${PST.L2.length}개예요.</div>
+        <div class="mut">${G.N}문제 중 ${G.ok}문제 정답</div>
+        <div class="hearts" style="font-size:28px;margin:10px 0">${ph(2,2)}</div>
+        <div class="gw">이제 2단계, 조금 더 어려운 문제${w1.length?`와 1단계에서 틀린 문제 ${w1.length}개`:''}까지 ${PST.L2.length}문제예요.<br>하트 2개로 시작해요.</div>
         <button class="btn" onclick="perfPart2()">2단계 시작!</button></div>`;
     }else{
       const pass=PST.lives>0,n=PST.ok,N=PST.N,k=PKEY(),r=U.perf[k]=U.perf[k]||{n:0,N,c:0,s:1},best=r.lt==null||n>r.n;
@@ -1774,7 +1777,7 @@ async function tMove(i,isReq){
 const pfRec=(x,u,m)=>x.s.pf[u+'|'+m]; // m = 묶음|방식(fh|card 등)
 const PFC=[['fh|card','따라하기·혼자하기 Easy'],['fh|write','따라하기·혼자하기 Hard'],['ex|card','대단원 실습 Easy'],['ex|write','대단원 실습 Hard']];
 function pfCell(r){if(!r||!r.s)return '<span class="mut">미도전</span>';
-  const q=r.s-(r.c||0);return r.lt?`${r.c?r.c+'회 통과':'<span style="color:var(--ng)">아직 통과 못 함</span>'} · 최고 <b>${r.n}/${r.N}</b><br><span class="sm mut">최근 ${r.l}/${r.N} (${tdate(r.lt)})${q>0?' · 실패·중단 '+q+'회':''}</span>`:`<span class="sm mut">시작 ${r.s}회 · 아직 끝까지 안 풂</span>`}
+  const q=r.s-(r.c||0);return r.lt?`${r.c?r.c+'회 통과':r.p1?'<span style="color:#b7791f">1단계 통과 · 2단계 도전 중</span>':'<span style="color:var(--ng)">아직 통과 못 함</span>'} · 최고 <b>${r.n}/${r.N}</b><br><span class="sm mut">최근 ${r.l}/${r.N} (${tdate(r.lt)})${q>0?' · 실패·중단 '+q+'회':''}</span>`:`<span class="sm mut">시작 ${r.s}회 · 아직 끝까지 안 풂</span>`}
 function tPerf(S,pu){
   const st=m=>{const L=S.map(x=>pfRec(x,pu.u,m)).filter(r=>r&&r.lt),P=L.filter(r=>r.c).length;return L.length?`${P}명 통과 · ${L.length}명 도전 · 최고 평균 ${Math.round(L.reduce((a,r)=>a+r.n,0)/L.length*10)/10}/${L[0].N}`:'도전한 학생 없음'};
   return `<div class="card"><h3>📝 수행평가 연습 · ${esc(pu.nm)}</h3>
