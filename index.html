@@ -1833,8 +1833,8 @@ async function tRoom(code,quiet){
   ${tTg('mg',`👥 학생 관리 (${S.length}명)`,`<div class="tw"><table class="tt2"><tr><th>학번</th><th>이름</th><th>최근 접속</th><th></th></tr>
     ${S.map((x,i)=>`<tr><td>${esc(x.sid)}</td><td>${esc(x.nm)}</td><td>${x.day?esc(x.day.slice(5).replace('-','/')):'-'}</td><td><button class="mini2" onclick="tMove(${i})">반 바꾸기</button> <button class="mini2" onclick="tPin(${i})">PIN 초기화</button></td></tr>`).join('')}</table></div>
     <button class="btn gh" onclick="tCsv()">📥 엑셀(CSV) 내려받기</button>`)}
-  ${tTg('lv','🏅 학생 레벨',`${tLvCnt(S)}<div class="tw"><table class="tt2"><tr><th>학번</th><th>이름</th><th>🥋 태권도 급수</th><th>🕵️ 탐정 레벨</th></tr>
-    ${S.map(x=>`<tr><td>${esc(x.sid)}</td><td>${esc(x.nm)}</td><td>${x.s.rank}</td><td>${x.s.det}</td></tr>`).join('')}</table></div>`)}
+  ${tTg('lv','🏅 학생 레벨',`${tLvCnt(S)}${tTg('lvl','👤 학생별 레벨',`<div class="tw"><table class="tt2"><tr><th>학번</th><th>이름</th><th>🥋 태권도 급수</th><th>🕵️ 탐정 레벨</th></tr>
+    ${S.map(x=>`<tr><td>${esc(x.sid)}</td><td>${esc(x.nm)}</td><td>${x.s.rank}</td><td>${x.s.det}</td></tr>`).join('')}</table></div>`,1)}`)}
   ${tTg('pf','📝 수행평가 연습',PERF.map(pu=>tPerf(S,pu)).join(''))}`:'<div class="card sm mut">아직 반에 들어온 학생이 없어요. 학생이 회원 가입 때 이 반을 고르면 위에 가입 요청이 떠요.</div>'}
   ${Object.keys(tg).length?`<div class="card"><h3>📊 우리 반 분개 정답률</h3>${Object.keys(TAGS).filter(k=>tg[k]).map(k=>{const p=Math.round(tg[k].c/tg[k].n*100);return `<div class="br"><span>${TAGS[k]}</span><div class="t"><i style="width:${p}%;background:${p>=80?'var(--ok)':p>=60?'#3b82f6':'var(--ng)'}"></i></div><span class="v">${p}% · ${tg[k].n}건</span></div>`}).join('')}</div>`:''}
   <div class="msg" id="msg"></div>
@@ -1882,7 +1882,7 @@ function tLvCnt(S){
     <div class="sm mut" style="margin:10px 0 4px">🕵️ 탐정 레벨</div><div class="cntrow det">${MLV.map((m,i)=>`<span class="${dc[i]?'':'z'}"><b>${dc[i]}명</b><i class="${i?'':'g'}"><img src="${IMG['d_m'+Math.max(1,i)]}" alt=""></i><small>${['지망생','견습','초보','정식','명탐정','수사 반장','전설'][i]}</small></span>`).join('')}</div>`;
 }
 // 펼치고 접는 상자: 열림 상태를 기억해 새로고침해도 그대로(학생 관리는 처음에 닫힘)
-const TOPEN={mg:false,lv:false,pf:false};
+const TOPEN={mg:false,lv:false,pf:false,lvl:false};
 const tTg=(k,title,body,sub)=>`<details class="tg${sub?' sub':''}" ${(k in TOPEN?TOPEN[k]:true)?'open':''} ontoggle="TOPEN['${k}']=this.open"><summary>${title}<span class="ar">▾</span></summary><div class="tgb">${body}</div></details>`;
 function tPerf(S,pu){
   const pc=(x,set,m)=>{const r=pfRec(x,pu.u,set+'|'+m);return r&&r.c||0};
