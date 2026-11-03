@@ -551,7 +551,8 @@ function mk(p,st){
     for(const x of amts)for(const y of amts)if(x>y)ex.push(x-y,x+y);
     ex=shuf([...new Set(ex)].filter(v=>v>0&&!S.has(v)));
     const am=[...new Set(amts),...ex.slice(0,cf.amt)]; // 같은 금액 카드는 하나만(여러 칸에 쓸 수 있음)
-    let id=0;C.cards=[...shuf(accs).map(t=>({id:id++,kind:'a',t,used:false})),...am.slice().sort((x,y)=>x-y).map(v=>({id:id++,kind:'m',t:fmt(v),v,used:false}))];
+    // 계정 카드는 가나다 순, 금액 카드는 작은 금액부터
+    let id=0;C.cards=[...accs.slice().sort((x,y)=>x.localeCompare(y,'ko')).map(t=>({id:id++,kind:'a',t,used:false})),...am.slice().sort((x,y)=>x-y).map(v=>({id:id++,kind:'m',t:fmt(v),v,used:false}))];
   }
   return C;
 }
