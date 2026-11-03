@@ -292,6 +292,15 @@ const GRP={};
  ['E','급여 임차료 통신비 수도광열비 복리후생비 기업업무추진비 기부금 광고선전비 여비교통비 차량유지비 세금과공과 소모품비 도서인쇄비 보험료 운반비 이자비용 수수료비용 매출채권처분손실 단기매매증권처분손실 유형자산처분손실'],
  ['xA','감가상각누계액'],['xL','사채할인발행차금'],['xR','매출할인'],['xP','매입할인 매입환출및에누리'],['T','현금과부족']
 ].forEach(([g,s])=>s.split(' ').forEach(a=>GRP[a]=g));
+// 계정 카드 순서: 자산 → 부채 → 자본 → 수익 → 비용, 각각 유동성 순서(차감 계정은 짝 계정 바로 뒤)
+const ORD=('현금 현금과부족 당좌예금 보통예금 정기예금 단기매매증권 외상매출금 받을어음 단기대여금 미수금 선급금 가지급금 상품 매입할인 매입환출및에누리 '
+ +'토지 건물 차량운반구 비품 감가상각누계액 건설중인자산 특허권 상표권 개발비 소프트웨어 임차보증금 '
+ +'외상매입금 지급어음 미지급금 예수금 가수금 선수금 상품권선수금 단기차입금 당좌차월 사채 사채할인발행차금 장기차입금 퇴직급여충당부채 '
+ +'자본금 '
+ +'상품매출 매출할인 이자수익 임대료 수수료수익 단기매매증권처분이익 유형자산처분이익 '
+ +'급여 복리후생비 여비교통비 기업업무추진비 통신비 수도광열비 세금과공과 임차료 보험료 차량유지비 운반비 도서인쇄비 소모품비 수수료비용 광고선전비 '
+ +'이자비용 기부금 매출채권처분손실 단기매매증권처분손실 유형자산처분손실').split(' ');
+const ordOf=a=>{const i=ORD.indexOf(a);return i>=0?i:ORD.length+'ALCSRE'.indexOf((GRP[a]||'E')[0])};
 const EL8=['자산의 증가','부채의 감소','자본의 감소','비용의 발생','자산의 감소','부채의 증가','자본의 증가','수익의 발생'];
 function el(a,s){
   const g=GRP[a];
@@ -551,8 +560,8 @@ function mk(p,st){
     for(const x of amts)for(const y of amts)if(x>y)ex.push(x-y,x+y);
     ex=shuf([...new Set(ex)].filter(v=>v>0&&!S.has(v)));
     const am=[...new Set(amts),...ex.slice(0,cf.amt)]; // 같은 금액 카드는 하나만(여러 칸에 쓸 수 있음)
-    // 계정 카드는 가나다 순, 금액 카드는 작은 금액부터
-    let id=0;C.cards=[...accs.slice().sort((x,y)=>x.localeCompare(y,'ko')).map(t=>({id:id++,kind:'a',t,used:false})),...am.slice().sort((x,y)=>x-y).map(v=>({id:id++,kind:'m',t:fmt(v),v,used:false}))];
+    // 계정 카드는 자산·부채·자본·수익·비용 순(각각 유동성 순서), 금액 카드는 작은 금액부터
+    let id=0;C.cards=[...accs.slice().sort((x,y)=>ordOf(x)-ordOf(y)||x.localeCompare(y,'ko')).map(t=>({id:id++,kind:'a',t,used:false})),...am.slice().sort((x,y)=>x-y).map(v=>({id:id++,kind:'m',t:fmt(v),v,used:false}))];
   }
   return C;
 }
