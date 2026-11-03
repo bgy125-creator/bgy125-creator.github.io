@@ -218,6 +218,20 @@ const PB=[
 {s:3,t:'rp',w:[['상품','상품'],['현금','현금'],['외상','외상매입금']],q:'상품 350,000원을 매입하고 대금 중 150,000원은 현금으로 지급하고, 잔액은 외상으로 하다.',d:[['상품',350000]],k:[['현금',150000],['외상매입금',200000]],n:'주는 방법이 두 가지이면 대변에 두 줄을 써요.'},
 {s:3,t:'rp',w:[['상품','상품매출'],['현금','현금'],['외상','외상매출금']],q:'상품 600,000원을 매출하고 대금 중 200,000원은 현금으로 받고, 잔액은 외상으로 하다.',d:[['현금',200000],['외상매출금',400000]],k:[['상품매출',600000]],n:'받는 방법이 두 가지이면 차변에 두 줄을 써요.'},
 
+// 2026-11-03 추가: 기본 채권·채무(외상매출금·받을어음·단기대여금·외상매입금·지급어음·단기차입금) 한 줄 분개, 교과서 거래에서 거래처·금액을 바꿈
+{s:3,t:'rp',q:'조은상사의 외상매출금 중 100,000원을 현금으로 회수하다.',d:[['현금',100000]],k:[['외상매출금',100000]]},
+{s:3,t:'rp',q:'새봄전자에 상품(전자 부품 400개, @1,500원)을 외상으로 매출하다.',d:[['외상매출금',600000]],k:[['상품매출',600000]]},
+{s:3,t:'rp',q:'하늘상사의 외상매입금 중 300,000원을 현금으로 지급하다.',d:[['외상매입금',300000]],k:[['현금',300000]]},
+{s:3,t:'rp',q:'우리상사의 외상매입금 중 600,000원을 보통예금 계좌에서 이체하여 지급하다.',d:[['외상매입금',600000]],k:[['보통예금',600000]]},
+{s:3,t:'rp',q:'거래처 한길상사에 지급할 외상매입금 800,000원을 약속어음을 발행하여 지급하다.',d:[['외상매입금',800000]],k:[['지급어음',800000]],x:'외상 대금을 어음으로 갚았으니 외상매입금은 줄고, 갚을 어음(지급어음)이 새로 생겨요.'},
+{s:3,t:'rp',q:'별빛상사의 외상매출금 중 150,000원을 동점 발행의 약속어음으로 받다.',d:[['받을어음',150000]],k:[['외상매출금',150000]],x:'외상 대금을 어음으로 받았으니 외상매출금은 줄고, 받을 어음(받을어음)이 생겨요.'},
+{s:3,t:'rp',q:'추심 의뢰한 약속어음 350,000원이 당좌예금 계좌에 입금되었다는 통지를 받다.',d:[['당좌예금',350000]],k:[['받을어음',350000]],x:'추심은 은행이 어음 대금을 대신 받아 주는 것이에요. 어음 대금이 들어왔으니 받을어음이 줄어요.'},
+{s:3,t:'rp',q:'강원상사의 외상매출금 중 500,000원을 회수하여 당좌예금 계좌에 입금하다.',d:[['당좌예금',500000]],k:[['외상매출금',500000]]},
+{s:3,t:'rp',q:'소망상사에 발행한 약속어음 250,000원이 만기가 되어 보통예금 계좌에서 결제되다.',d:[['지급어음',250000]],k:[['보통예금',250000]]},
+{s:3,t:'rp',q:'우리상사에 상품 매입 대금으로 발행한 약속어음 200,000원이 만기가 되어 현금으로 지급하다.',d:[['지급어음',200000]],k:[['현금',200000]]},
+{s:3,t:'rp',q:'거래처 다온상사에 1년 뒤 상환 조건으로 600,000원을 대여하고, 보통예금 계좌에서 이체하여 지급하다.',d:[['단기대여금',600000]],k:[['보통예금',600000]]},
+{s:3,t:'rp',q:'거래처 세움상사에 당좌수표 400,000원을 발행하여 3개월간 대여하고 차용증서를 받다.',d:[['단기대여금',400000]],k:[['당좌예금',400000]]},
+{s:3,t:'rp',q:'사업 확장을 위해 나라은행에서 2,000,000원을 6개월간 차입하여 당좌예금 계좌로 이체받다.',d:[['당좌예금',2000000]],k:[['단기차입금',2000000]]},
 // ── 4단계: 복합 분개
 {s:4,t:'inv',q:'상품 300,000원을 외상으로 매입하고, 인수운임 10,000원은 현금으로 지급하다.',d:[['상품',310000]],k:[['외상매입금',300000],['현금',10000]],x:'살 때 드는 인수운임은 운반비가 아니라 상품 원가에 포함해요.',n:'살 때 드는 운임은 상품 원가에 넣어요. 상품 = 300,000 + 10,000.'},
 {s:4,t:'inv',q:'상품 500,000원을 외상으로 매출하고, 발송운임 20,000원은 현금으로 지급하다.',d:[['외상매출금',500000],['운반비',20000]],k:[['상품매출',500000],['현금',20000]],x:'팔 때 드는 발송운임은 상품 원가가 아니라 운반비(비용)예요.',n:'팔 때 드는 운임은 상품 원가가 아니라 운반비(비용)예요.'},
@@ -294,16 +308,17 @@ const CONF={'현금':'당좌예금 보통예금 현금과부족','보통예금':
 const TAGS={el:'거래의 8요소',cur:'당좌자산',inv:'재고자산',rp:'채권·채무',nca:'비유동자산',pl:'수익·비용'};
 const BELT=[{k:'w',nm:'흰띠',g:'6급',c:'#ffffff'},{k:'y',nm:'노란띠',g:'5급',c:'#f2c94c'},{k:'g',nm:'초록띠',g:'4급',c:'#3aa35b'},{k:'b',nm:'파란띠',g:'3급',c:'#1d5bb8'},
 {k:'r',nm:'빨간띠',g:'2급',c:'#d93a3a'},{k:'p',nm:'품띠',g:'1급',c:'linear-gradient(90deg,#d93a3a 50%,#1b1b1b 50%)'},{k:'k',nm:'검은띠',g:'1단',c:'#1b1b1b'}];
-// 단계: 1 단서 찾기, 2·3 분개 카드, 4 8요소, 5·6 분개 카드, 7 주관식(검은띠 뒤 단 심사)
+// 단계: 1 단서 찾기, 2~6 분개 카드, 7 주관식(검은띠 뒤 단 심사). 대회 8번 8요소 오픈 챌린지는 특별전(승급 심사 없음)
 const CUP=[['🧩','단서의 조각','거래 문장에서 계정과목의 단서가 되는 말에 동그라미!'],
-['🧳','사라진 자산을 찾아서','현금·예금·상품은 어디로 갔을까? 한 줄 분개'],
-['🧾','외상 장부 리그','받을 돈과 갚을 돈, 채권·채무 분개'],
-['⚖️','8요소 오픈','거래를 보고 차변 요소와 대변 요소를 찾아요.'],
+['🧳','사라진 자산을 찾아서','현금·예금·상품은 어디로 갔을까? 자산·수익·비용 한 줄 분개'],
+['🌱','외상 장부 루키전','외상·어음·대여·차입, 기본 채권·채무 분개'],
+['🧾','외상 장부 리그','받을 돈과 갚을 돈, 모든 채권·채무 분개'],
 ['🃏','복합 사건 챔피언십','한쪽이 여러 줄인 복합 분개'],
 ['🏛️','회계 그랑프리','무형자산·비유동부채까지 모든 분개'],
-['🖋️','마스터즈','계정과목과 금액을 직접 쓰는 주관식']];
-const STG={1:'거래 단서 찾기',2:'교환·손익 거래',3:'채권·채무 거래',4:'거래의 8요소',5:'복합 분개',6:'종합 분개',7:'분개 직접 입력'};
-const CFG={2:{acc:4,amt:1},3:{acc:6,amt:2},5:{acc:8,amt:3},6:{acc:8,amt:3}};
+['🖋️','마스터즈','계정과목과 금액을 직접 쓰는 주관식'],
+['⚖️','8요소 오픈 챌린지','특별전! 거래를 보고 차변 요소와 대변 요소를 찾아요.']];
+const STG={1:'거래 단서 찾기',2:'자산·손익 거래',3:'기본 채권·채무 거래',4:'채권·채무 거래',5:'복합 분개',6:'종합 분개',7:'분개 직접 입력'};
+const CFG={2:{acc:4,amt:1},3:{acc:5,amt:2},4:{acc:6,amt:2},5:{acc:8,amt:3},6:{acc:8,amt:3}};
 const SAY={go:'자, 기합 넣고 시작!',ok:'좋아! 정확해!',ng:'흔들리면 안 돼! 다시 해보자!',last:'마지막 기회야. 집중!',
 fail:'오늘은 여기까지. 기본기가 중요한 거 알지?',gold:'완벽한 경기였다! 금메달 축하해!',silver:'좋은 경기였어! 은메달 축하해!',bronze:'끝까지 잘 버텼어! 동메달 축하해!',none:'아쉽다! 14개 이상 맞히면 메달이야.',empty:'빈칸을 모두 채워야지!'};
 
@@ -312,9 +327,10 @@ const KEY='accountMasters_v2';
 let U={me:null,dojo:{cur:1,best:0,lives:2,dan:0},cup:{},st:{tag:{},conf:{}}};
 try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.dojo)U=Object.assign(U,s)}catch(e){}
 U.dojo.lives=Math.min(2,U.dojo.lives);upU();
-// 지난 기록 옮기기(2026-11-03 단계 바꿈): 도장 대회 2·3·4번 순서(예전 8요소 2 → 4, 3 → 2, 4 → 3), 탐정 레벨에 정식 탐정(3) 끼움
+// 지난 기록 옮기기(2026-11-03 단계 바꿈): 도장 대회 2·3·4번 순서(예전 8요소 2 → 4, 3 → 2, 4 → 3), 다시 3 → 4·4 → 8(dv 3), 탐정 레벨에 정식 탐정(3) 끼움
 function upU(){
   if(!U.dv){const c=U.cup||{},n=Object.assign({},c);delete n[2];delete n[3];delete n[4];if(c[2])n[4]=c[2];if(c[3])n[2]=c[3];if(c[4])n[3]=c[4];U.cup=n;U.dv=2}
+  if(U.dv===2){const c=U.cup||{},n=Object.assign({},c);delete n[3];delete n[4];if(c[3])n[4]=c[3];if(c[4])n[8]=c[4];U.cup=n;U.dv=3}
   if(U.my&&!U.my.v){if(U.my.clear>=3)U.my.clear++;U.my.best={};U.my.v=2}
 }
 const mclr=m=>m.v?m.clear||0:(m.clear>=3?m.clear+1:m.clear||0);
@@ -378,7 +394,7 @@ function home(){
     <div class="card c tbox" style="cursor:pointer" onclick="cupList()">
       <h3>🏆 대회 출전<br><span class="sm mut" style="font-weight:400">(단계별 연습모드)</span></h3>
       <div class="shelf big">${CUP.map((c,i)=>{const r=U.cup[i+1],m=r&&medal(r.n);return `<span class="${m?'':'no'}">${m||'○'}<small>${i+1}</small></span>`}).join('')}</div>
-      <div class="sm mut">메달 ${mc}개 / 7개</div>
+      <div class="sm mut">메달 ${mc}개 / ${CUP.length}개</div>
       <button class="btn bl" onclick="event.stopPropagation();cupList()">대회 출전!</button>
     </div>
     <div class="card c tbox">
@@ -405,11 +421,23 @@ function cupList(){
 }
 // ───────── 문제 고르기
 const simple=p=>!p.b&&[...p.d,...p.k].every(x=>'ALCRES'.includes(GRP[x[0]]))&&new Set(p.d.map(x=>el(x[0],'d'))).size<=2&&new Set(p.k.map(x=>el(x[0],'k'))).size<=2;
+// 기본 채권·채무 계정(3단계): 한 줄 분개에서 이 계정만 채권·채무로 나오는 문제
+const EASYRP=['단기대여금','외상매출금','받을어음','외상매입금','지급어음','단기차입금'],RECV=['외상매출금','받을어음','단기대여금','미수금','선급금','가지급금'];
+const easyRP=p=>p.d.length===1&&p.k.length===1&&[...p.d,...p.k].some(x=>EASYRP.includes(x[0]))&&[...p.d,...p.k].every(([a])=>'ALSRE'.includes(GRP[a])&&(EASYRP.includes(a)||!(RECV.includes(a)||GRP[a]==='L')));
 function pool(st){
   if(st===1)return PB.filter(p=>p.w);
-  if(st===4)return PB.filter(p=>p.s<=3&&simple(p));
-  if(st<6)return PB.filter(p=>p.s===(st===5?4:st));
+  if(st===2)return PB.filter(p=>p.s===2);
+  if(st===3)return PB.filter(easyRP);
+  if(st===4)return PB.filter(p=>p.t==='rp'&&p.s===3);
+  if(st===5)return PB.filter(p=>p.s===4);
+  if(st===8)return PB.filter(p=>p.s<=3&&simple(p));
   return PB.filter(p=>p.s<=5);
+}
+// 2단계는 외상매입금 한 줄 분개(부채 증가·감소)를 1문제 꼭 냄
+const AP2=PB.filter(p=>p.s===3&&!p.b&&p.d.length===1&&p.k.length===1&&[...p.d,...p.k].some(x=>x[0]==='외상매입금')&&[...p.d,...p.k].every(([a])=>a==='외상매입금'||GRP[a]==='A'));
+function spick(st,N){
+  if(st===2&&AP2.length)return shuf([...pickN(pool(2),N-1),[shuf(AP2)[0]]]);
+  return pickN(pool(st),N,st===6?(N===15?6:8):0);
 }
 function units(list){
   const set=new Set(list.map(p=>p.i));
@@ -438,20 +466,20 @@ function dojo(){
     <img class="char cheer" src="${charImg(U.dojo.best)}" alt="">
     <h2 class="say" style="margin-top:12px">${SAY.go}<br>${b}, 준비!</h2>
     <div class="mut">${STG[st]} · 15문제<br>목숨 <span class="hearts">${hearts(U.dojo.lives)}</span></div>
-    <button class="btn" onclick="start('dojo',${st},pickN(pool(${st}),15,${st===6?6:0}))">시작!</button>
+    <button class="btn" onclick="start('dojo',${st},spick(${st},15))">시작!</button>
     <button class="btn gh" onclick="home()">체육관으로 돌아가기</button></div>`;
   scrollTo(0,0);
 }
-function cup(st){start('cup',st,pickN(pool(st),20,st===6?8:0))}
+function cup(st){start('cup',st,spick(st,20))}
 function train(tags){
   let list=PB.filter(p=>tags.includes(p.t)&&p.s<=5);
   const elw=tags.includes('el');
   let us=pickN(list,elw?5:10);
-  if(elw)us=shuf([...us,...pickN(pool(4),10-us.reduce((s,u)=>s+u.length,0)).map(u=>[Object.assign({},u[0],{e8:1})])]);
+  if(elw)us=shuf([...us,...pickN(pool(8),10-us.reduce((s,u)=>s+u.length,0)).map(u=>[Object.assign({},u[0],{e8:1})])]);
   if(!us.length)us=pickN(PB,10);
   start('train',0,us);
 }
-const SST={2:2,3:3,4:5,5:6};
+const SST={2:2,3:4,4:5,5:6};
 function next(){
   G.i++;
   if(G.i>=G.N||(G.mode==='dojo'&&U.dojo.lives<=0))return finish();
@@ -459,7 +487,7 @@ function next(){
   if(due>=0)p=G.pend.splice(due,1)[0].p;
   else if(G.queue.length)p=G.queue.shift();
   else p=G.pend.shift().p;
-  const st=G.mode==='train'?(p.e8?4:SST[p.s]):G.st;
+  const st=G.mode==='train'?(p.e8?8:SST[p.s]):G.st;
   G.cur=mk(p,st);
   render();scrollTo(0,0);
 }
@@ -467,7 +495,7 @@ function mk(p,st){
   const C={p,st,sel:null,done:null};
   if(st===1){
     C.type='w';C.ch=chunks(p.q,p.w);C.on=[];C.t0=Date.now();
-  }else if(st===4){
+  }else if(st===8){
     C.type='e';
     C.ans={d:[...new Set(p.d.map(x=>el(x[0],'d')))],k:[...new Set(p.k.map(x=>el(x[0],'k')))]};
     C.slots=[...C.ans.d.map(()=>({side:'d',kind:'e',v:null})),...C.ans.k.map(()=>({side:'k',kind:'e',v:null}))];
@@ -945,7 +973,7 @@ function mopts(a,n,mx){
   const c=shuf((MCONF[a[0]]||'').split(' ').filter(x=>pool.includes(x)));
   const same=shuf(pool.filter(x=>MBY[x][1]===a[1]&&!c.includes(x)));
   const rest=shuf(pool.filter(x=>!c.includes(x)&&!same.includes(x)));
-  return shuf([a[0],...[...c,...same,...rest].slice(0,n-1)]);
+  return [a[0],...[...c,...same,...rest].slice(0,n-1)].sort((x,y)=>x.localeCompare(y,'ko')); // 보기는 가나다 순
 }
 function mq(t,a,mx){
   if(t==='o3'||t==='o5')return {t:'o',a,opts:mopts(a,t==='o3'?3:5,mx)};
