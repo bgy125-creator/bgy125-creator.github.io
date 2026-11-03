@@ -433,6 +433,7 @@ const simple=p=>!p.b&&[...p.d,...p.k].every(x=>'ALCRES'.includes(GRP[x[0]]))&&ne
 const RECV=['외상매출금','받을어음','단기대여금','미수금','선급금','가지급금'];
 const rpUp=p=>p.d.some(x=>RECV.includes(x[0]))||p.k.some(x=>GRP[x[0]]==='L');
 const rpDn=p=>p.k.some(x=>RECV.includes(x[0]))||p.d.some(x=>GRP[x[0]]==='L');
+const pool0=st=>pool(st);
 function pool(st){
   if(st===1)return PB.filter(p=>p.w);
   if(st===2)return PB.filter(p=>p.s===2);
@@ -444,7 +445,8 @@ function pool(st){
 }
 // 2단계는 외상매입금 한 줄 분개(부채 증가·감소)를 1문제 꼭 냄
 const AP2=PB.filter(p=>p.s===3&&!p.b&&p.d.length===1&&p.k.length===1&&[...p.d,...p.k].some(x=>x[0]==='외상매입금')&&[...p.d,...p.k].every(([a])=>a==='외상매입금'||GRP[a]==='A'));
-function spick(st,N){
+function spick(st,N,ex=[]){
+  const pool=k=>pool0(k).filter(p=>!ex.includes(p));
   if(st===2&&AP2.length)return shuf([...pickN(pool(2),N-1),[shuf(AP2)[0]]]);
   // 4단계: 회수·상환 문제를 65%쯤(연속 사건은 발생+회수 2문제로 함께) 먼저 채우고, 나머지는 발생 문제
   if(st===4){const us=shuf(units(pool(4))),D=us.filter(u=>u.some(rpDn)),Up=us.filter(u=>!u.some(rpDn)),nd=Math.round(N*.65),out=[];let n=0;
@@ -458,6 +460,16 @@ function spick(st,N){
     L.forEach(p=>{if(out.length<N&&ok(p))out.push(p)});
     return shuf(out).map(p=>[p])}
   return pickN(pool(st),N,st===6?(N===15?6:8):0);
+}
+// 승급 심사 문제: 3·4단계는 1~2번에 앞 단계 복습 문제 2개(내가 틀렸던 문제 먼저, 그다음 헷갈리는 문제가 잘 뽑힘), 화면 표시는 없음
+function dpick(st){
+  if(st!==3&&st!==4)return spick(st,15);
+  const PW=U.st.pw||{},bad=p=>{const r=PW[p.q];return r&&r.w&&!r.ov};
+  const prev=[...new Set([2,3].filter(k=>k<st).flatMap(k=>pool(k)))].filter(p=>!p.b);
+  // 틀리고 아직 극복하지 못한 문제를 먼저, 모자라면 해설 붙은 헷갈리는 문제를 더 잘 뽑히게(2:1)
+  const rv=[...shuf(prev.filter(bad)),...prev.filter(p=>!bad(p)).map(p=>[Math.pow(Math.random(),1/(p.x?2:1)),p]).sort((a,b)=>b[0]-a[0]).map(x=>x[1])].slice(0,2);
+  const ex=[...rv,...rv.filter(p=>p.id&&NEXT[p.id]).map(p=>NEXT[p.id])];
+  return [...rv.map(p=>[p]),...spick(st,13,ex)];
 }
 function units(list){
   const set=new Set(list.map(p=>p.i));
@@ -486,7 +498,7 @@ function dojo(){
     <img class="char cheer" src="${charImg(U.dojo.best)}" alt="">
     <h2 class="say" style="margin-top:12px">${SAY.go}<br>${b}, 준비!</h2>
     <div class="mut">${STG[st]} · 15문제<br>목숨 <span class="hearts">${hearts(U.dojo.lives)}</span></div>
-    <button class="btn" onclick="start('dojo',${st},spick(${st},15))">시작!</button>
+    <button class="btn" onclick="start('dojo',${st},dpick(${st}))">시작!</button>
     <button class="btn gh" onclick="home()">체육관으로 돌아가기</button></div>`;
   scrollTo(0,0);
 }
@@ -732,6 +744,7 @@ function check(){
   if(!ok&&(C.type==='j'||C.type==='s')){for(const s of['d','k']){const ua=user[s].map(x=>x[0]),pa=p[s].map(x=>x[0]);
     const miss=pa.filter(a=>!ua.includes(a)),extra=ua.filter(a=>!pa.includes(a));
     miss.forEach((a,i)=>{if(extra[i]){const k=a+'|'+extra[i];S.conf[k]=(S.conf[k]||0)+1}})}}
+  {const pw=S.pw=S.pw||{},r=pw[p.q]=pw[p.q]||{n:0,w:0};r.n++;if(ok){r.s=(r.s||0)+1;if(r.w&&r.s>=2)r.ov=1}else{r.w++;r.s=0;r.ov=0}}
   G.res.push(ok);if(ok)G.ok++;
   if(!ok)G.wrong.push({p,type:C.type,user,ans:C.ans});
   if(G.mode==='dojo'&&!ok)U.dojo.lives=Math.max(0,U.dojo.lives-1);
@@ -785,10 +798,10 @@ function finish(){
   if(G.mode==='dojo'){
     const d=U.dojo,st=G.st;
     if(d.lives<=0){
-      d.cur=Math.max(1,st-2);d.lives=LIVES;save();
+      d.lives=LIVES;save();
       h=`<div class="card c"><img class="char" src="${charImg(d.best)}" alt="">
         <h2 class="say" style="margin-top:12px">${SAY.fail}</h2>
-        <div class="mut">${G.ok}문제 맞히고 목숨을 모두 잃었어요.<br>다음 도전은 <b>${testName(d.cur)}(${STG[d.cur]})</b>부터 다시 시작해요.</div>
+        <div class="mut">${G.ok}문제 맞히고 목숨을 모두 잃었어요.<br>다시 도전해 보세요!</div>
         ${resBtns('다시 도전하기')}</div>`;
     }else{
       let msg,up=true;
