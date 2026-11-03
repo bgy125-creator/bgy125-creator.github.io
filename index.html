@@ -451,6 +451,12 @@ function spick(st,N){
     let dn=0;for(const u of D){const k=u.filter(rpDn).length;if(dn<nd&&n+u.length<=N&&(dn+k<=nd||u.length===1)){out.push(u);n+=u.length;dn+=k}}
     for(const u of [...Up,...D])if(n<N&&!out.includes(u)&&n+u.length<=N){out.push(u);n+=u.length}
     return shuf(out)}
+  // 5단계부터는 연속 사건을 짝으로 내지 않음(낱문제로만, 한 판에 짝 중 하나만)
+  if(st>=5){const L=shuf(pool(st)),need=st===6?(N===15?6:8):0,out=[];
+    const ok=p=>!out.includes(p)&&!out.some(q=>(p.b&&q.id===p.b)||(q.b&&p.id===q.b));
+    L.filter(p=>p.s===5).forEach(p=>{if(out.length<need&&ok(p))out.push(p)});
+    L.forEach(p=>{if(out.length<N&&ok(p))out.push(p)});
+    return shuf(out).map(p=>[p])}
   return pickN(pool(st),N,st===6?(N===15?6:8):0);
 }
 function units(list){
