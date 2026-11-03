@@ -1498,7 +1498,7 @@ function confetti(){
 // ───────── Firebase 연결 (Bull Run과 같은 프로젝트·같은 주소)
 const FB_CFG={apiKey:"AIzaSyDbc2Oay0tG5RdNy6kT3swj0PU9n7NBvzg",authDomain:"bullrun-b29a5.firebaseapp.com",projectId:"bullrun-b29a5",storageBucket:"bullrun-b29a5.firebasestorage.app",messagingSenderId:"736419764381",appId:"1:736419764381:web:3b05ccc733a91665679c74"};
 const MASTER='bgy125@gmail.com',SDOM='@econplay.app',BR_URL='https://bgy125-creator.github.io/bullrun/';
-const TLIM={er:10,es:40,br:5,bp:100},MLIM={er:999,es:999,br:999,bp:999},BR_DAYS=30;
+const TLIM={er:10,es:30,br:5,bp:100},MLIM={er:999,es:30,br:999,bp:999},ES_MAX=30; // 반 인원은 누구든 30명까지,BR_DAYS=30;
 let FBA=null,DB=null,DIRTY=false;
 function loadJs(src){return new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=no;document.head.appendChild(s)})}
 async function fbInit(){
@@ -1786,7 +1786,7 @@ async function tMkRoom(){
   if(TD.er>=TD.lim.er)return m.textContent=`반 방은 ${TD.lim.er}개까지 만들 수 있어요.`;
   for(let k=0;k<8;k++){const code=String(1000+Math.random()*9000|0);
     if((await DB.doc('eRooms/'+code).get()).exists)continue;
-    try{const b=DB.batch();b.set(DB.doc('eRooms/'+code),{nm,owner:TU.uid,tn:TD.nm,t:Date.now(),n:0,lim:TD.lim.es,closed:false,sc:TD.sc});
+    try{const b=DB.batch();b.set(DB.doc('eRooms/'+code),{nm,owner:TU.uid,tn:TD.nm,t:Date.now(),n:0,lim:Math.min(TD.lim.es,ES_MAX),closed:false,sc:TD.sc});
       b.update(DB.doc('teachers/'+TU.uid),{er:firebase.firestore.FieldValue.increment(1)});await b.commit();return tHome()}catch(e){}}
   m.textContent='반 방을 만들지 못했어요. 다시 해 주세요.';
 }
@@ -1814,6 +1814,7 @@ async function tRoom(code,quiet){
   const S=sn.docs.map(d=>Object.assign({key:d.id},d.data(),{s:stSum(d.data())})).sort((a,b)=>a.sid.localeCompare(b.sid));
   const rq=(await DB.collection('eStudents').where('rqt','==',r.owner).where('rq','==',code).get()).docs.map(d=>Object.assign({key:d.id},d.data())).sort((a,b)=>a.sid.localeCompare(b.sid));
   if(r.n!==S.length){const n=Math.min(S.length,r.lim);DB.doc('eRooms/'+code).update({n}).catch(()=>{});r.n=n}
+  if(r.lim>ES_MAX&&r.n<=ES_MAX){DB.doc('eRooms/'+code).update({lim:ES_MAX}).catch(()=>{});r.lim=ES_MAX}
   TR={r,S,rq};
   // 반 전체 부분별 정답률
   const tg={};S.forEach(x=>Object.entries(x.s.tg).forEach(([k,v])=>{tg[k]=tg[k]||{c:0,n:0};tg[k].c+=v.c;tg[k].n+=v.n}));
@@ -1944,7 +1945,7 @@ async function mTeacher(uid){
   <div class="card c"><div class="who" style="margin:0">${esc(x.nm)} ${x.st==='ok'?'':'<span class="pill b">정지</span>'}</div><div class="sm mut">${esc(x.em)} · ${tdate(x.t)} 등록</div>
     ${x.em===MASTER?'':`<div class="row2"><button class="btn ${x.st==='ok'?'gh':''}" onclick="mStop(${x.st==='ok'})">${x.st==='ok'?'⛔ 정지':'✅ 정지 풀기'}</button><button class="btn gh" style="color:var(--ng)" onclick="mDelT()">🗑️ 선생님 삭제</button></div>`}</div>
   <div class="card"><h3>제한</h3><div class="lim">
-    <label>반 방 수<input class="field" id="l_er" inputmode="numeric" value="${x.lim.er}"></label><label>반당 학생<input class="field" id="l_es" inputmode="numeric" value="${x.lim.es}"></label>
+    <label>반 방 수<input class="field" id="l_er" inputmode="numeric" value="${x.lim.er}"></label><label>반당 학생(최대 30)<input class="field" id="l_es" inputmode="numeric" value="${x.lim.es}"></label>
     <label>Bull Run 방 수<input class="field" id="l_br" inputmode="numeric" value="${x.lim.br}"></label><label>방당 참가자<input class="field" id="l_bp" inputmode="numeric" value="${x.lim.bp}"></label></div>
     <button class="btn" onclick="mLim()">제한 저장</button><div class="sm mut" style="margin-top:6px">이미 만든 방의 인원 제한은 그대로이고, 새로 만드는 방부터 적용돼요.</div></div>
   <div class="card"><h3>📚 Econ Play 반 방 (${er.length})</h3>${er.length?er.map(r=>`<div class="wl" style="display:flex;justify-content:space-between;align-items:center;gap:8px"><button class="x" style="color:var(--tx);text-align:left" onclick="tRoom('${r.code}')"><b>${esc(r.nm)}</b><br><span class="sm mut">${r.code} · 학생 ${r.n}명 · ${tdate(r.t)}</span></button><button class="mini2" onclick="mDelER('${r.code}',${r.n})">🗑️</button></div>`).join(''):'<div class="sm mut">없어요.</div>'}</div>
@@ -1953,7 +1954,7 @@ async function mTeacher(uid){
 async function mStop(stop){await DB.doc('teachers/'+MT.x.uid).update({st:stop?'stop':'ok'});mTeacher(MT.x.uid)}
 async function mLim(){
   const g=k=>Math.max(0,parseInt(document.getElementById('l_'+k).value,10)||0);
-  await DB.doc('teachers/'+MT.x.uid).update({lim:{er:g('er'),es:g('es'),br:g('br'),bp:g('bp')}});alert('저장했어요.');mTeacher(MT.x.uid);
+  await DB.doc('teachers/'+MT.x.uid).update({lim:{er:g('er'),es:Math.min(ES_MAX,g('es')),br:g('br'),bp:g('bp')}});alert('저장했어요.');mTeacher(MT.x.uid);
 }
 async function mDelER(code,n){if(!confirm(`이 반 방(학생 ${n}명)을 지울까요? 학생 기록은 남아요.`))return;await erDel(code,MT.x.uid);mTeacher(MT.x.uid)}
 async function mDelBR(ix){
