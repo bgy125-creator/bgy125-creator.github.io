@@ -1494,7 +1494,7 @@ async function stLogout(){await cloudSave();try{await FBA.signOut()}catch(e){}U=
 // 첫 화면에 들어가기 전: 로그인한 학생이면 클라우드 기록을 불러온다
 async function boot(){
   app.innerHTML='<div class="logo"><b>Econ Play</b><div class="mut sm">불러오는 중…</div></div>';
-  if(location.hash==='#teacher'){await fbInit();return tpage()}
+  if(/^#teacher/.test(location.hash)){await fbInit();return tpage()}
   const ok=await fbInit(),u=ok&&FBA.currentUser;
   if(isStudent(u)){const key=u.email.replace(SDOM,'').replace(/-v\d+$/,'');try{await stLoad(key)}catch(e){}}
   else if(U.me&&U.me.key){U=fresh()} // 로그아웃된 학생 기록은 이 기기에 남기지 않는다
@@ -1594,9 +1594,10 @@ async function tpage(){
   if(!TD)return tInvite();
   if(TD.st==='ok'&&!TD.sc)return tSchool();
   if(TD.st!=='ok'){app.innerHTML=tTop("location.hash='';main()",'🧑‍🏫 선생님 화면')+`<div class="card c"><h2>⛔ 이용이 정지된 계정이에요</h2><div class="gw">마스터 선생님께 문의해 주세요.</div><button class="btn gh" onclick="tOut()">로그아웃</button></div>`;return}
+  const m=location.hash.match(/^#teacher\/(\w+)/);if(m)return tRoom(m[1]);
   tHome();
 }
-async function tOut(){try{await FBA.signOut()}catch(e){}TU=TD=null;location.hash='';U=fresh();main()}
+async function tOut(){clearInterval(TRT);TRT=null;try{await FBA.signOut()}catch(e){}TU=TD=null;location.hash='';U=fresh();main()}
 // 선생님 가입 요청: 보낸 뒤에는 기다림·거절 상태를 보여 준다
 async function tInvite(){
   let rq=null;try{const d=await DB.doc('tReqs/'+TU.uid).get();rq=d.exists?d.data():null}catch(e){}
@@ -1634,6 +1635,7 @@ async function tSchool(){
 let TTAB=null,MTAB='inv',MTU=null; // 큰 탭(m 마스터·t 선생님), 마스터 안쪽 탭, 선생님 관리에서 보고 있는 선생님
 const MTABS=[['inv','📮 가입 요청'],['tch','🧑‍🏫 선생님 관리'],['sch','🏫 학교 관리']];
 async function tHome(){
+  clearInterval(TRT);TRT=null;setHash('#teacher');
   const isM=TU.email===MASTER;TTAB=isM?(TTAB||'m'):'t';
   const head=tTop("location.hash='';main()",isM&&TTAB==='m'?'👑 마스터 화면':'🧑‍🏫 선생님 화면')+`<div class="card c"><div class="who" style="margin:0">${esc(TD.nm)} 선생님${isM?' 👑':''}</div><div class="sm mut">🏫 ${esc(TD.scn||'')} · ${esc(TU.email)}</div></div>`
     +(isM?`<div class="seg" style="grid-template-columns:1fr 1fr"><button class="${TTAB==='m'?'on':''}" onclick="TTAB='m';tHome()">👑 마스터 화면</button><button class="${TTAB==='t'?'on':''}" onclick="TTAB='t';tHome()">🧑‍🏫 선생님 화면</button></div>`:'');
@@ -1703,8 +1705,14 @@ function stSum(x){
     med:Object.values(u.cup||{}).filter(c=>medal(c.n)).length,jr:pc(j),ar:pc(a),tg,pf:u.perf||{}};
 }
 let TR=null; // 지금 보는 반
-async function tRoom(code){
-  app.innerHTML=tTop('tHome()','📚 반 관리')+'<div class="card sm mut">불러오는 중…</div>';
+// 반 관리 화면 주소(#teacher/반번호): 새로고침하거나 즐겨찾기로 열어도 이 반으로 바로 들어옴
+const setHash=h=>{try{if(location.hash!==h)history.replaceState(null,'',h)}catch(e){}};
+let TRT=null; // 자동 새로고침 타이머
+function tAuto(on){clearInterval(TRT);TRT=null;try{localStorage.setItem('ep_auto',on?'1':'')}catch(e){}
+  if(on&&TR)TRT=setInterval(()=>{if(!TR||!document.getElementById('trbar')){clearInterval(TRT);TRT=null;return}tRoom(TR.r.code,1)},30000)}
+async function tRoom(code,quiet){
+  setHash('#teacher/'+code);
+  if(!quiet)app.innerHTML=tTop('tHome()','📚 반 관리')+'<div class="card sm mut">불러오는 중…</div>';
   const rd=await DB.doc('eRooms/'+code).get();if(!rd.exists)return tHome();
   const r=Object.assign({code},rd.data());
   const sn=await DB.collection('eStudents').where('tu','==',r.owner).where('code','==',code).get();
@@ -1714,7 +1722,10 @@ async function tRoom(code){
   TR={r,S,rq};
   // 반 전체 부분별 정답률
   const tg={};S.forEach(x=>Object.entries(x.s.tg).forEach(([k,v])=>{tg[k]=tg[k]||{c:0,n:0};tg[k].c+=v.c;tg[k].n+=v.n}));
+  const url=location.href.split('#')[0]+'#teacher/'+code,auto=(()=>{try{return localStorage.getItem('ep_auto')==='1'}catch(e){return false}})(),now=new Date();
   app.innerHTML=tTop('tHome()','📚 반 관리')+`
+  <div class="card sm" id="trbar" style="display:flex;flex-wrap:wrap;align-items:center;gap:8px"><button class="mini2" onclick="tRoom('${code}',1)">🔄 새로고침</button><label style="display:flex;align-items:center;gap:4px"><input type="checkbox" ${auto?'checked':''} onchange="tAuto(this.checked)">30초마다 자동</label><span class="mut">마지막 확인 ${now.toLocaleTimeString('ko-KR')}</span>
+    <div style="flex-basis:100%" class="mut">이 반 바로 가기: <b style="word-break:break-all">${esc(url)}</b> <button class="mini2" onclick="navigator.clipboard&&navigator.clipboard.writeText('${url}').then(()=>this.textContent='복사됨!')">주소 복사</button></div></div>
   <div class="card c"><div class="who" style="margin:0">${esc(r.nm)}</div><div class="sm mut">학생 ${r.n}/${r.lim}명 · 학생은 회원 가입 때 이 반을 골라 가입 요청을 보내요</div>
     <button class="btn ${r.closed?'':'gh'}" onclick="tClose(${!r.closed})">${r.closed?'🔓 새 학생 다시 받기':'🔒 새 학생 받지 않기'}</button></div>
   ${rq.length?`<div class="card"><h3>📮 가입 요청 (${rq.length}명)</h3>${rq.map((x,i)=>`<div class="wl"><b>${esc(x.sid)} ${esc(x.nm)}</b> <span class="sm mut">${tdate(x.t)} 가입${x.cn?' · 지금 '+esc(x.cn):''}</span><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"><button class="mini2" onclick="tReq([${i}],1)">✅ 허용</button><button class="mini2" onclick="tReq([${i}],0)">거절</button><button class="mini2" onclick="tMove(${i},1)">반 바꾸기</button><button class="mini2" onclick="tPin(${i},1)">PIN 초기화</button></div></div>`).join('')}
@@ -1727,6 +1738,7 @@ async function tRoom(code){
   ${S.length?PERF.map(pu=>tPerf(S,pu)).join(''):''}
   <div class="msg" id="msg"></div>
   <button class="btn gh" style="color:var(--ng)" onclick="tDelRoom()">🗑️ 이 반 지우기</button>`;
+  if(auto&&!TRT)tAuto(1);
 }
 // 가입 요청 허용(ok=1)·거절(ok=0)
 async function tReq(ix,ok){
