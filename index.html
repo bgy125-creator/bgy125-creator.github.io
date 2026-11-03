@@ -553,18 +553,19 @@ function perf(){
 }
 // 2단계: 풀이 방식 고르기
 function perfMode(set){
-  PS=set;const n=plist().length,rec=m=>{const r=U.perf[PERF[PU].u+'|'+PS+'|'+m];return (r&&r.lt?`최고 ${r.n}/${r.N} · ${r.c||0}회 통과`:'아직 기록이 없어요')+(r&&r.p1?'<br>✅ 1단계 통과 · 다음은 2단계부터':'')};
-  const p1=m=>{const r=U.perf[PERF[PU].u+'|'+PS+'|'+m];return r&&r.p1};
+  PS=set;const n=plist().length,rec=m=>{const r=U.perf[PERF[PU].u+'|'+PS+'|'+m];return (r&&r.lt?`최고 ${r.n}/${r.N} · ${r.c||0}회 통과`:'아직 기록이 없어요')+(perfP1()?'<br>✅ 1단계 통과':'')};
+  const p1=()=>!!perfP1(); // 1단계 통과는 Easy·Hard 어느 쪽이든 인정
+  const btns=(m,cl,nm)=>p1()?`<button class="btn sub" onclick="PM='${m}';perfGo(1)" style="margin-bottom:6px">1단계부터<br>다시 학습하기</button><button class="btn ${cl}" onclick="PM='${m}';perfGo()" style="margin-top:0">2단계<br>시작하기</button>`:`<button class="btn ${cl}" onclick="PM='${m}';perfGo()">${nm} 시작!</button>`;
   app.innerHTML=`<div class="top"><div class="tb"><button class="x" onclick="perf()">← 뒤로</button><span>📝 ${PSET[PS][0]}</span><span></span></div></div>
   <div class="card"><h3 style="margin:2px 0 4px">어떤 모드로 풀까요?</h3><div class="sm mut gw" style="margin-bottom:10px">${esc(PERF[PU].nm)} · ${PSET[PS][0]} ${n}문제<br>1단계 쉬운 문제 ${plist().filter(p=>p.lv===1).length}개 → 2단계 어려운 문제 ${plist().filter(p=>p.lv===2).length}개<br>단계마다 하트 2개로 시작해요. 1단계를 통과하면 다음부터는 2단계(1단계에서 틀린 문제 포함)부터 풀어요.</div>
   </div>
   <div class="two">
     <div class="card c tbox pmode ez"><h3>🟢 Easy Mode<br><span class="sm mut" style="font-weight:400">(카드 놓기)</span></h3>
       <div class="sm gw">계정과목 카드와 금액 카드를 빈칸에 끌어다 놓아요.</div><div class="sm mut" style="margin-top:6px">${rec('card')}</div>
-      <button class="btn ok" onclick="PM='card';perfGo()">Easy ${p1('card')?'2단계 ':''}시작!</button>${p1('card')?`<button class="x sm" onclick="PM='card';perfGo(1)">1단계부터 다시 풀기</button>`:''}</div>
+      ${btns('card','ok','Easy')}</div>
     <div class="card c tbox pmode hd"><h3>🔴 Hard Mode<br><span class="sm mut" style="font-weight:400">(직접 쓰기)</span></h3>
       <div class="sm gw">계정과목과 금액을 직접 써요.</div><div class="sm mut" style="margin-top:6px">${rec('write')}</div>
-      <button class="btn" onclick="PM='write';perfGo()">Hard ${p1('write')?'2단계 ':''}시작!</button>${p1('write')?`<button class="x sm" onclick="PM='write';perfGo(1)">1단계부터 다시 풀기</button>`:''}</div>
+      ${btns('write','','Hard')}</div>
   </div>`;
   scrollTo(0,0);
 }
@@ -578,10 +579,12 @@ function countdown(fn){
 let PST=null;
 const ph=(n,m)=>'❤️'.repeat(Math.max(0,n))+'🤍'.repeat(Math.max(0,m-n));
 function perfL2(w1){const all=PERF[PU].list;return shuf([...plist().filter(p=>p.lv===2),...(w1||[]).map(i=>all[i]).filter(Boolean)]).map(p=>[Object.assign({t:'pl',ix:all.indexOf(p)},p)])}
+// 이 묶음에서 1단계를 통과한 기록(지금 모드 먼저, 없으면 다른 모드)
+function perfP1(){const b=PERF[PU].u+'|'+PS+'|',a=U.perf[b+PM],o=U.perf[b+(PM==='card'?'write':'card')];return a&&a.p1?a:o&&o.p1?o:null}
 function perfGo(from1){
   const k=PKEY(),L=plist(),all=PERF[PU].list,r=U.perf[k]=U.perf[k]||{n:0,N:L.length,c:0,s:0};r.s=(r.s||0)+1;save();
   PST={part:1,lives:2,ok:0,wrong:[],st:PM==='card'?9:7};
-  if(r.p1&&!from1){PST.part=2;PST.L2=perfL2(r.w1);PST.N=PST.L2.length;return countdown(()=>start('perf',PST.st,PST.L2))}
+  const q1=perfP1();if(q1&&!from1){PST.part=2;PST.L2=perfL2(r.p1?r.w1:q1.w1);PST.N=PST.L2.length;return countdown(()=>start('perf',PST.st,PST.L2))}
   const L1=shuf(L.filter(p=>p.lv===1)).map(p=>[Object.assign({t:'pl',ix:all.indexOf(p)},p)]);PST.N=L.length;
   countdown(()=>start('perf',PST.st,L1));
 }
@@ -1109,7 +1112,7 @@ const MA=[
 ['배당금수익','수익',2,'보유한 주식에서 받은 배당금'],
 ['채무면제이익','수익',3,'갚아야 할 채무를 채권자로부터 면제받아 생긴 이익'],
 ['자산수증이익','수익',3,'대주주 등으로부터 자산을 대가 없이 받아 생긴 이익'],
-['단기투자자산처분이익','수익',3,'단기 시세 차익을 얻을 목적으로 산 주식 등을 장부금액보다 비싸게 처분해 생긴 이익(예전 이름: 단기매매증권처분이익)'],
+['단기매매증권처분이익','수익',3,'단기 시세 차익을 얻을 목적으로 산 주식 등을 장부금액보다 비싸게 처분해 생긴 이익'],
 ['복리후생비','비용',1,'종업원의 복지를 위해 쓴 비용(결혼 축의금, 식대 보조금, 경조금 등)'],
 ['기업업무추진비','비용',1,'영업과 관련된 거래처를 접대하기 위한 비용(예전 이름: 접대비)'],
 ['기부금','비용',1,'불우이웃돕기 성금처럼 대가 없이 내놓은 금액'],
@@ -1179,7 +1182,7 @@ const MCONF={'현금':'당좌예금 보통예금','당좌예금':'보통예금 �
 '단기대여금':'단기차입금 미수금','단기차입금':'단기대여금 장기차입금','장기차입금':'단기차입금 사채','사채':'장기차입금 퇴직급여충당부채',
 '상품':'비품 소모품','소모품':'소모품비 비품','비품':'상품 기계장치','건물':'건설중인자산 토지','토지':'건물 광업권','차량운반구':'비품 차량유지비','기계장치':'비품 차량운반구','건설중인자산':'건물 기계장치',
 '이자수익':'이자비용 수수료수익','이자비용':'이자수익 수수료비용','임대료':'임차료 임차보증금','임차료':'임대료 임차보증금','수수료수익':'수수료비용 임대료','수수료비용':'수수료수익 이자비용',
-'수선비':'차량유지비 소모품비','배당금수익':'이자수익 잡이익','채무면제이익':'자산수증이익 잡이익','자산수증이익':'채무면제이익 잡이익','단기투자자산처분이익':'단기매매증권 잡이익','잡이익':'잡손실 수수료수익','잡손실':'잡이익 기부금','복리후생비':'기업업무추진비 급여','기업업무추진비':'복리후생비 기부금','기부금':'기업업무추진비 잡손실',
+'수선비':'차량유지비 소모품비','배당금수익':'이자수익 잡이익','채무면제이익':'자산수증이익 잡이익','자산수증이익':'채무면제이익 잡이익','단기매매증권처분이익':'단기매매증권 잡이익','잡이익':'잡손실 수수료수익','잡손실':'잡이익 기부금','복리후생비':'기업업무추진비 급여','기업업무추진비':'복리후생비 기부금','기부금':'기업업무추진비 잡손실',
 '급여':'복리후생비 퇴직급여충당부채','여비교통비':'차량유지비 운반비','차량유지비':'여비교통비 세금과공과','운반비':'여비교통비 차량유지비','통신비':'수도광열비 도서인쇄비','수도광열비':'통신비 세금과공과',
 '세금과공과':'보험료 차량유지비','보험료':'세금과공과 수수료비용','소모품비':'소모품 도서인쇄비','도서인쇄비':'소모품비 광고선전비','광고선전비':'도서인쇄비 기업업무추진비',
 '자본금':'인출금 보통주자본금','인출금':'자본금 단기대여금',
@@ -1191,7 +1194,7 @@ const MCONF={'현금':'당좌예금 보통예금','당좌예금':'보통예금 �
 '매도가능증권평가이익':'매도가능증권평가손실 단기매매증권','매도가능증권평가손실':'매도가능증권평가이익 잡손실',
 '이익준비금':'별도적립금 사업확장적립금','사업확장적립금':'감채적립금 이익준비금','감채적립금':'사업확장적립금 결손보전적립금','배당평균적립금':'결손보전적립금 별도적립금',
 '결손보전적립금':'배당평균적립금 감채적립금','별도적립금':'이익준비금 배당평균적립금','퇴직급여적립금':'퇴직급여충당부채 별도적립금','미처분이익잉여금':'이익준비금 별도적립금'};
-const MALIAS={'단기투자자산처분이익':['단기매매증권처분이익'],'기업업무추진비':['접대비'],'컴퓨터소프트웨어':['소프트웨어']};
+const MALIAS={'단기매매증권처분이익':['단기투자자산처분이익'],'기업업무추진비':['접대비'],'컴퓨터소프트웨어':['소프트웨어']};
 const MSAY={ok:'좋아, 명추리야!',ng:'아깝다! 단서를 다시 살펴보자!',fail:'오늘 수사는 여기까지. 단서를 다시 모아 보자!',last:'마지막 기회야. 집중해서 추리해!'};
 function MY(){if(!U.my)U.my={v:2,clear:0,lives:LIVES,best:{},st:{grp:{},conf:{}}};U.my.lives=Math.min(LIVES,U.my.lives);return U.my}
 // 초성 단서
