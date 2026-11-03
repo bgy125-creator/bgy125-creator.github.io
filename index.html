@@ -952,7 +952,14 @@ function mq(t,a,mx){
   if(t==='w'||t==='wn')return {t:'w',a,inp:'',hint:false,nohint:t==='wn'};
   return {t,a};
 }
+// 채권·채무 계정: 초보 탐정은 3개 이상, 정식 탐정은 5개 이상 꼭 나오게(맞을 때까지 다시 뽑음)
+const MRP=['단기대여금','외상매출금','받을어음','미수금','선급금','매출채권','외상매입금','지급어음','단기차입금','미지급금','선수금','매입채무'];
+const MRPN={2:3,3:5};
 function mpick(st){
+  for(let k=0;k<300;k++){const L=mpick1(st);if(L.filter(q=>MRP.includes(q.a[0])).length>=(MRPN[st]||0))return L}
+  return mpick1(st);
+}
+function mpick1(st){
   const mx=st===5?3:2,L=[];
   // 1~3단계는 바구니 고르기가 쉬운 수익·비용보다 자산·부채 계정을 더 자주(무게 3:1로 뽑기)
   const wt=a=>st<=3&&(a[1]==='자산'||a[1]==='부채')?3:1;
