@@ -347,13 +347,19 @@ function main(){
   <div class="choose">
     <button class="pick2 ms" onclick="mystery()"><div><b><svg class="gi" viewBox="0 0 32 32" aria-hidden="true"><path d="M19.5 19.5 L27 27" stroke="#3a2e2a" stroke-width="6" stroke-linecap="round"/><path d="M19.5 19.5 L27 27" stroke="#8b5a2b" stroke-width="3.4" stroke-linecap="round"/><circle cx="13" cy="13" r="9" fill="#bfe3ff" stroke="#3a2e2a" stroke-width="1.8"/><circle cx="13" cy="13" r="6.6" fill="none" stroke="#7a8794" stroke-width="1.6"/><path d="M9 10.5 a5 5 0 0 1 4 -3" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/></svg><span class="tt">미스터리 사건파일<small>(계정과목 수사하기)</small></span></b><span>내 등급: ${MLV[MY().clear][1]}</span></div><i class="mini"><img src="${detImg(MY().clear)}" alt=""></i></button>
         <button class="pick2 dj" onclick="home()"><div><b><svg class="gi" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3.5 L18.6 11 L26 10 L20.2 15 L24.6 22 L17.4 18.6 L13.4 25.6 L13.6 18 L6.2 17.4 L12.4 13.4 Z" fill="#ffd43b" stroke="#e8590c" stroke-width="1.6" stroke-linejoin="round"/><g transform="rotate(-14 9 21)"><path d="M1.5 18 L14 18 L12 21 L14.4 24 L1.5 24 Z" fill="#d9a066" stroke="#3a2e2a" stroke-width="1.6" stroke-linejoin="round"/></g><g transform="rotate(14 23 21)"><path d="M30.5 18 L18 18 L20 21 L17.6 24 L30.5 24 Z" fill="#d9a066" stroke="#3a2e2a" stroke-width="1.6" stroke-linejoin="round"/></g></svg><span class="tt">도장깨기<small>(분개 뽀개기)</small></span></b><span>내 등급: ${rankText()}</span></div><i class="mini"><img src="${charImg(U.dojo.best)}" alt=""></i></button>
-    <a class="pick2 br2" href="https://bgy125-creator.github.io/bullrun/" target="_blank" rel="noopener"><div><b><svg class="gi" viewBox="0 0 32 32" aria-hidden="true"><rect x="3" y="4" width="26" height="24" rx="4" fill="#fff4f2" stroke="#3a2e2a" stroke-width="1.8"/><path d="M7 23 L13 16.5 L17.5 19.5 L25 10.5" fill="none" stroke="#e03131" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 10.5 L25 10.5 L25 15.5" fill="none" stroke="#e03131" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="tt">Bull&nbsp;Run<small>(투자 서바이벌 레이스)</small></span></b><span>새 창으로 열려요.</span></div><i class="mini"><img src="${IMG.bull}" alt="" style="width:85%;height:85%"></i></a>
+    <a class="pick2 br2" href="https://bgy125-creator.github.io/bullrun/" target="_blank" rel="noopener"><div><b><svg class="gi" viewBox="0 0 32 32" aria-hidden="true"><rect x="3" y="4" width="26" height="24" rx="4" fill="#fff4f2" stroke="#3a2e2a" stroke-width="1.8"/><path d="M7 23 L13 16.5 L17.5 19.5 L25 10.5" fill="none" stroke="#e03131" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 10.5 L25 10.5 L25 15.5" fill="none" stroke="#e03131" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="tt">Bull&nbsp;Run<small>(투자 서바이벌 레이스)</small></span></b><span>${brInfo()}</span></div><i class="mini"><img src="${IMG.bull}" alt="" style="width:85%;height:85%"></i></a>
   </div>
   <div class="card sm c" style="margin-top:16px">${U.me.key?`🎒 ${esc(U.me.scn||"")} ${esc(U.me.sid)} ${esc(U.me.nm)} 로그인 중 · 기록은 내 계정에 저장돼요<br>${U.me.code?`📚 ${esc(U.me.cn||"")}${U.me.rq?` · 📮 ${esc(U.me.rqn||"")}(으)로 옮기기 요청 중`:""} <button class="x" style="color:var(--ac)" onclick="stReq()">🔀 반 바꾸기</button>`:U.me.rq?`📮 ${esc(U.me.rqn||"")} 가입 요청 중 (선생님이 허용하면 반에 들어가요) <button class="x" style="color:var(--ac)" onclick="stReq()">🔀 반 바꾸기</button>`:`${U.me.rj?"반 가입 요청이 받아들여지지 않았어요. ":""}<button class="x" style="color:var(--ac)" onclick="stReq()">📮 반 가입 요청하기</button>`}<br><button class="x" style="color:var(--ac)" onclick="stLogout()">로그아웃</button>`:`🧪 ${esc(U.me.nm)} 체험 중 · 기록은 이 기기에만 저장돼요<br><button class="x" style="color:var(--ac)" onclick="setup('join')">회원 가입하고 기록 옮기기</button> · <button class="x" onclick="if(confirm('이 기기에 저장된 이름과 기록을 모두 지울까요?')){U=fresh();save();setup()}">처음부터 다시 하기</button>`}</div>
   <div class="c"><button class="x" onclick="tpage()">🧑‍🏫 관리자 입장하기(교사)</button></div>
   <div class="c sm mut" style="margin-top:10px">글꼴: 넥슨 Lv.1 고딕(넥슨), 배달의민족 주아(우아한형제들, SIL OFL), 고운돋움(SIL OFL)</div>`;
   scrollTo(0,0);
 }
+// Bull Run 참가 기록(같은 주소의 Bull Run이 이 기기에 남김): 최근 접속일과 데이터 삭제 예정일(방을 만든 날, 혼자 연습은 참가한 날부터 30일)
+const ymd=t=>{const d=new Date(t);return `${d.getFullYear()}.${d.getMonth()+1}.${d.getDate()}.`};
+function brInfo(){let p=null;try{p=JSON.parse(localStorage.getItem('bullrun_play'))}catch(e){}
+  if(!p||!p.t)return '아직 참가 기록이 없어요.';
+  const nw=x=>`<span style="white-space:nowrap">${x}</span>`;
+  return `${nw('최근 접속: '+ymd(p.t)+' /')} ${nw('데이터 삭제: '+ymd((p.rt||p.t)+30*864e5)+'(예정)')}`}
 // 도장깨기 화면
 function home(){
   if(!U.me)return setup();
@@ -821,7 +827,7 @@ const MA=[
 ['건물','자산',1,'영업용으로 사용하는 점포·사무실·창고 등'],
 ['차량운반구','자산',1,'영업용으로 사용하는 승용차·트럭 등'],
 ['비품','자산',1,'영업용으로 1년 이상 사용하는 책상·의자·컴퓨터 등'],
-['외상매입금','부채',2,'상품을 외상으로 매입하고 아직 지급하지 않은 금액'],
+['외상매입금','부채',1,'상품을 외상으로 매입하고 아직 지급하지 않은 금액'],
 ['지급어음','부채',2,'상품을 매입하고 그 대금으로 발행해 준 약속어음상의 채무'],
 ['매입채무','부채',3,'상품을 매입하고 1년 이내 지급할 예정인 외상매입금과 지급어음'],
 ['단기차입금','부채',2,'1년 이내에 갚을 목적으로 남에게서 빌려온 돈'],
@@ -946,7 +952,9 @@ function mq(t,a,mx){
 }
 function mpick(st){
   const mx=st===5?3:2,L=[];
-  MPLAN[st].forEach(([t,ds,n])=>shuf(MA.filter(a=>ds.includes(a[2])&&!L.some(q=>q.a===a))).slice(0,n).forEach(a=>L.push(mq(t,a,mx))));
+  // 1~3단계는 바구니 고르기가 쉬운 수익·비용보다 자산·부채 계정을 더 자주(무게 3:1로 뽑기)
+  const wt=a=>st<=3&&(a[1]==='자산'||a[1]==='부채')?3:1;
+  MPLAN[st].forEach(([t,ds,n])=>MA.filter(a=>ds.includes(a[2])&&!L.some(q=>q.a===a)).map(a=>[Math.pow(Math.random(),1/wt(a)),a]).sort((x,y)=>y[0]-x[0]).slice(0,n).forEach(([,a])=>L.push(mq(t,a,mx))));
   return shuf(L);
 }
 let MG=null,MRES='',MWR=[];
