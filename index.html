@@ -353,7 +353,8 @@ function upU(){
 const mclr=m=>m.v?m.clear||0:(m.clear>=3?m.clear+1:m.clear||0);
 
 const app=document.getElementById('app');
-const fmt=n=>Number(n).toLocaleString('ko-KR');
+// 금액은 숫자와 천 단위 쉼표로만(만·천 같은 한글 단위는 쓰지 않음, 기기 언어 설정과 상관없이 같게)
+const fmt=n=>String(Math.round(Number(n)||0)).replace(/\B(?=(\d{3})+(?!\d))/g,',');
 const num=s=>Number(String(s).replace(/[^0-9]/g,''))||0;
 const shuf=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
