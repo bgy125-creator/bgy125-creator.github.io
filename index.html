@@ -544,13 +544,13 @@ function perf(){
   <div>${PERF.map((x,i)=>`<span class="utab" style="${i===PU?'':'opacity:.5'}" onclick="PU=${i};perf()">${esc(x.nm)}</span>`).join(' ')}</div>
   <div class="card" style="margin-top:0;border-top-left-radius:0">
     <div class="seg2"><button class="${PM==='card'?'on':''}" onclick="PM='card';perf()">🃏 카드 놓기</button><button class="${PM==='write'?'on':''}" onclick="PM='write';perf()">✍️ 직접 쓰기</button></div>
-    <div class="sm mut gw" style="margin:4px 0 10px">${PM==='card'?'계정과목 카드와 금액 카드를 빈칸에 끌어다 놓아요.':'계정과목과 금액을 직접 써요. (판) 같은 괄호는 쓰지 않아도 돼요.'}<br>교과서 문제 ${L.length}개가 무작위 순서로 나와요.</div>
+    <div class="sm mut gw" style="margin:4px 0 10px">${PM==='card'?'계정과목 카드와 금액 카드를 빈칸에 끌어다 놓아요.':'계정과목과 금액을 직접 써요.'}<br>교과서 문제 ${L.length}개가 무작위 순서로 나와요.</div>
     <div class="c sm mut">${r?`최고 기록 ${r.n} / ${r.N}`:'아직 기록이 없어요.'}</div>
     <button class="btn" onclick="perfGo()">${PM==='card'?'🃏':'✍️'} ${L.length}문제 시작!</button>
   </div>`;
   scrollTo(0,0);
 }
-function perfGo(){start('perf',PM==='card'?5:7,shuf(PERF[PU].list).map(p=>[Object.assign({t:'pl'},p)]))}
+function perfGo(){const k=PKEY(),r=U.perf[k]=U.perf[k]||{n:0,N:PERF[PU].list.length,c:0,s:0};r.s=(r.s||0)+1;save();start('perf',PM==='card'?5:7,shuf(PERF[PU].list).map(p=>[Object.assign({t:'pl'},p)]))}
 // 대회 목록
 function cupList(){
   clearInterval(T);clearInterval(TW);
@@ -963,9 +963,9 @@ function finish(){
       <div class="stat"><div><b>${n}/20</b>정답</div><div><b>${tm(sec)}</b>걸린 시간</div><div><b>${best?'🆕':(medal(U.cup[st].n)||'-')}</b>${best?'최고 기록!':'최고 '+U.cup[st].n+'/20'}</div></div>
       <div class="g2"><button class="btn" onclick="cup(${st})">다시 출전하기</button>${st<CUP.length?`<button class="btn bl" onclick="cup(${st+1})">다음 대회 출전하기</button>`:''}<button class="btn sub" onclick="wrongPg()">틀린 문제 확인하기${WR.length?` (${WR.length})`:''}</button><button class="btn sub" onclick="home()">체육관으로 돌아가기</button></div></div>`;
   }else if(G.mode==='perf'){
-    const k=PKEY(),r=U.perf[k],n=G.ok,N=G.N,best=!r||n>r.n;if(best){U.perf[k]={n,N};save()}
+    const k=PKEY(),r=U.perf[k]=U.perf[k]||{n:0,N:G.N,c:0,s:1},n=G.ok,N=G.N,best=!r.c||n>r.n;if(best)r.n=n;r.N=N;r.c=(r.c||0)+1;r.l=n;r.lt=Date.now();save();
     h=`<div class="card c"><div class="big">📝</div><h2 class="say">${N}문제 중 ${n}문제 정답!</h2>
-      <div class="mut">${PERF[PU].nm}<br>${PM==='card'?'🃏 카드 놓기':'✍️ 직접 쓰기'} · ${best?'🆕 최고 기록!':'최고 '+r.n+'/'+r.N}</div>
+      <div class="mut">${PERF[PU].nm}<br>${PM==='card'?'🃏 카드 놓기':'✍️ 직접 쓰기'} · ${best?'🆕 최고 기록!':'최고 '+r.n+'/'+r.N} · ${r.c}번째 완료</div>
       <div class="g2"><button class="btn" onclick="perfGo()">다시 풀기</button><button class="btn sub" onclick="wrongPg()">틀린 문제 확인하기${WR.length?` (${WR.length})`:''}</button><button class="btn sub" onclick="perf()">수행평가 연습으로 돌아가기</button></div></div>`;
   }else{
     h=`<div class="card c"><div class="big">🎯</div><h2>훈련 끝! ${G.N}문제 중 ${G.ok}개 정답</h2>
@@ -1653,7 +1653,7 @@ function stSum(x){
   const tg={};Object.values((u.st||{}).tag||{}).forEach(o=>Object.entries(o).forEach(([k,v])=>{tg[k]=tg[k]||{c:0,n:0};tg[k].c+=v.c;tg[k].n+=v.n}));
   const j=sum(tg),a=sum((my.st||{}).grp),pc=s=>s[1]?Math.round(s[0]/s[1]*100)+'%':'-';
   return {belt:d.best===6?(d.dan||1)+'단 검은띠':BELT[d.best||0].nm,det:MLV[mclr(my)][1],
-    med:Object.values(u.cup||{}).filter(c=>medal(c.n)).length,jr:pc(j),ar:pc(a),tg};
+    med:Object.values(u.cup||{}).filter(c=>medal(c.n)).length,jr:pc(j),ar:pc(a),tg,pf:u.perf||{}};
 }
 let TR=null; // 지금 보는 반
 async function tRoom(code){
@@ -1677,6 +1677,7 @@ async function tRoom(code){
     ${S.map((x,i)=>`<tr><td>${esc(x.sid)}</td><td>${esc(x.nm)}</td><td>${x.s.belt}</td><td>${x.s.det}</td><td>${x.s.med}</td><td>${x.s.jr}</td><td>${x.s.ar}</td><td>${x.day?esc(x.day.slice(5).replace('-','/')):'-'}</td><td><button class="mini2" onclick="tMove(${i})">반 바꾸기</button> <button class="mini2" onclick="tPin(${i})">PIN 초기화</button></td></tr>`).join('')}</table></div>
     <button class="btn gh" onclick="tCsv()">📥 엑셀(CSV) 내려받기</button>`:'<div class="sm mut">아직 반에 들어온 학생이 없어요. 학생이 회원 가입 때 이 반을 고르면 위에 가입 요청이 떠요.</div>'}</div>
   ${Object.keys(tg).length?`<div class="card"><h3>📊 우리 반 분개 정답률</h3>${Object.keys(TAGS).filter(k=>tg[k]).map(k=>{const p=Math.round(tg[k].c/tg[k].n*100);return `<div class="br"><span>${TAGS[k]}</span><div class="t"><i style="width:${p}%;background:${p>=80?'var(--ok)':p>=60?'#3b82f6':'var(--ng)'}"></i></div><span class="v">${p}% · ${tg[k].n}건</span></div>`}).join('')}</div>`:''}
+  ${S.length?PERF.map(pu=>tPerf(S,pu)).join(''):''}
   <div class="msg" id="msg"></div>
   <button class="btn gh" style="color:var(--ng)" onclick="tDelRoom()">🗑️ 이 반 지우기</button>`;
 }
@@ -1710,13 +1711,27 @@ async function tMove(i,isReq){
     if(!isReq)b.update(DB.doc('eRooms/'+TR.r.code),{n:inc(-1)});
     try{await b.commit();tRoom(TR.r.code)}catch(e){m.textContent='옮기지 못했어요. 다시 해 주세요.'}};
 }
+// 수행평가 연습 현황: 방식(카드 놓기·직접 쓰기)마다 끝까지 푼 횟수·최고·최근 점수, 시작만 하고 그만둔 횟수
+const pfRec=(x,u,m)=>x.s.pf[u+'|'+m];
+function pfCell(r){if(!r||!r.s)return '<span class="mut">미도전</span>';
+  const q=r.s-(r.c||0);return r.c?`${r.c}회 완료 · 최고 <b>${r.n}/${r.N}</b><br><span class="sm mut">최근 ${r.l}/${r.N}${r.lt?' ('+tdate(r.lt)+')':''}${q>0?' · 중단 '+q+'회':''}</span>`:`<span class="sm mut">시작 ${r.s}회 · 아직 끝까지 안 풂</span>`}
+function tPerf(S,pu){
+  const st=m=>{const L=S.map(x=>pfRec(x,pu.u,m)).filter(r=>r&&r.c);return {n:L.length,avg:L.length?Math.round(L.reduce((a,r)=>a+r.n,0)/L.length*10)/10:0,N:pu.list.length}};
+  const a=st('card'),b=st('write');
+  return `<div class="card"><h3>📝 수행평가 연습 · ${esc(pu.nm)}</h3>
+    <div class="sm mut" style="margin-bottom:6px">🃏 카드 놓기: ${a.n}명 완료${a.n?' · 최고 점수 평균 '+a.avg+'/'+a.N:''} &nbsp;|&nbsp; ✍️ 직접 쓰기: ${b.n}명 완료${b.n?' · 최고 점수 평균 '+b.avg+'/'+b.N:''}</div>
+    <div class="tw"><table class="tt2"><tr><th>학번</th><th>이름</th><th>🃏 카드 놓기</th><th>✍️ 직접 쓰기</th></tr>
+    ${S.map(x=>`<tr><td>${esc(x.sid)}</td><td>${esc(x.nm)}</td><td>${pfCell(pfRec(x,pu.u,'card'))}</td><td>${pfCell(pfRec(x,pu.u,'write'))}</td></tr>`).join('')}</table></div></div>`;
+}
 async function tClose(v){try{await DB.doc('eRooms/'+TR.r.code).update({closed:v})}catch(e){}tRoom(TR.r.code)}
 async function tPin(i,rq){
   const x=(rq?TR.rq:TR.S)[i];if(!confirm(`${x.sid} ${x.nm} 학생의 PIN을 초기화할까요?\n학생이 다음에 로그인할 때 쓰는 PIN이 새 PIN이 돼요.`))return;
   try{await DB.doc('eLogins/'+x.key).update({v:firebase.firestore.FieldValue.increment(1)});alert('초기화했어요. 학생에게 새 PIN으로 로그인하라고 알려 주세요.')}catch(e){alert('초기화하지 못했어요.')}
 }
 function tCsv(){
-  const rows=[['학번','이름','띠','탐정 레벨','메달','분개 정답률','계정 정답률','최근 접속']].concat(TR.S.map(x=>[x.sid,x.nm,x.s.belt,x.s.det,x.s.med,x.s.jr,x.s.ar,x.day||'']));
+  const pf=(x,u,m)=>{const r=pfRec(x,u,m);return r&&r.s?[r.c||0,r.c?r.n+'/'+r.N:'',r.c?r.l+'/'+r.N:'',r.s-(r.c||0)]:[0,'','',0]};
+  const ph=PERF.flatMap(pu=>['카드 놓기','직접 쓰기'].flatMap(m=>[`수행평가 ${pu.u} ${m} 완료 횟수`,`${m} 최고`,`${m} 최근`,`${m} 중단 횟수`]));
+  const rows=[['학번','이름','띠','탐정 레벨','메달','분개 정답률','계정 정답률','최근 접속',...ph]].concat(TR.S.map(x=>[x.sid,x.nm,x.s.belt,x.s.det,x.s.med,x.s.jr,x.s.ar,x.day||'',...PERF.flatMap(pu=>['card','write'].flatMap(m=>pf(x,pu.u,m)))]));
   const csv='﻿'+rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\r\n');
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=TR.r.nm+'.csv';a.click();
 }
