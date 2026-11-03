@@ -29,6 +29,7 @@ button,input{font-family:inherit}
 .btn.bl{background:#2458b5;color:#fff}.btn.wk{background:var(--card);color:#5b47c9;border:2px solid #b9aef0}
 @media (prefers-color-scheme:dark){.btn.wk{color:#b3a6ff;border-color:#4b3fa0}}
 .btn.sub{background:var(--acs);color:var(--ac)}.btn.gh{background:transparent;color:var(--mut);border:1px solid var(--ln)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.g2 .btn{margin:0;font-size:15px;padding:12px 4px;word-break:keep-all;line-height:1.3}.g2>.btn:last-child:nth-child(odd){grid-column:span 2}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.row2 .btn{margin-top:10px;font-size:16px;padding:13px 6px}
 .logo{text-align:center;padding:18px 8px 6px}.logo b{font-size:30px;letter-spacing:-.5px;background:linear-gradient(90deg,var(--ac),#c2255c);-webkit-background-clip:text;background-clip:text;color:transparent}
 .gtag{display:inline-block;font-size:13px;font-weight:700;color:var(--ac);background:var(--acs);border-radius:999px;padding:2px 10px}
@@ -125,7 +126,7 @@ ul.ex{font-family:"Gowun Dodum",sans-serif;margin:8px 0 0;padding-left:20px;font
 .ob.ok{border-color:var(--ok);background:var(--oks)}.ob.ng{border-color:var(--ng);background:var(--ngs)}
 .bk{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:6px}.bk>*{grid-column:span 2}.bk>:nth-child(4){grid-column:2/span 2}.bk .ob{text-align:center;padding:12px 4px;font-size:19px;line-height:1.4}
 .ma{background:var(--card);border-radius:12px;padding:10px 12px}.ma b{font-weight:400;font-size:21px;margin-right:6px}.ma .gw{margin-top:6px;font-size:16px}
-.lvrow{display:flex;justify-content:center;gap:3px;margin:10px 0 4px}.lvrow span{display:flex;flex-direction:column;align-items:center;width:52px;gap:2px}.lvrow i{display:block;width:46px;height:46px;border-radius:50%;overflow:hidden;background:#fff;border:1px solid var(--ln)}.lvrow img{display:block;width:124%;margin:-2px 0 0 -12%;filter:grayscale(1);opacity:.35}.lvrow small{font-size:11px;color:var(--mut)}.lvrow span.on img{filter:none;opacity:1}.lvrow span.cur i{border:3px solid #000}
+.lvrow{display:flex;justify-content:center;gap:3px;margin:10px 0 4px}.lvrow span{display:flex;flex-direction:column;align-items:center;width:52px;gap:2px}.lvrow i{display:block;width:46px;height:46px;border-radius:50%;overflow:hidden;background:#fff;border:1px solid var(--ln)}.lvrow img{display:block;width:124%;margin:-2px 0 0 -12%;filter:grayscale(1);opacity:.35}.lvrow small{font-size:11px;color:var(--mut)}.lvrow span.on img{filter:none;opacity:1}.lvrow span.cur i{border:3px solid #000}.lvrow span:nth-child(3) img{width:106%;margin:2px 0 0 -3%}
 .fj{font-family:Jua,sans-serif;font-weight:400}
 .pick{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
 .pick button{border:2px solid var(--ln);border-radius:14px;background:#fff;padding:6px;cursor:pointer}.pick button.on{border-color:var(--ac);outline:2px solid var(--ac)}
@@ -761,8 +762,7 @@ function finish(){
     h=`<div class="card c"><div class="big cheer">${medal(n)||'🥋'}</div>
       <h2 class="say">${say}</h2><div class="mut">${CUP[st-1][0]} ${st}. ${CUP[st-1][1]}</div>
       <div class="stat"><div><b>${n}/20</b>정답</div><div><b>${tm(sec)}</b>걸린 시간</div><div><b>${best?'🆕':(medal(U.cup[st].n)||'-')}</b>${best?'최고 기록!':'최고 '+U.cup[st].n+'/20'}</div></div>
-      <button class="btn" onclick="cup(${st})">다시 출전하기</button>
-      ${resBtns()}</div>`;
+      <div class="g2"><button class="btn" onclick="cup(${st})">다시 출전하기</button>${st<CUP.length?`<button class="btn bl" onclick="cup(${st+1})">다음 대회 출전하기</button>`:''}<button class="btn sub" onclick="wrongPg()">틀린 문제 확인하기${WR.length?` (${WR.length})`:''}</button><button class="btn sub" onclick="home()">체육관으로 돌아가기</button></div></div>`;
   }else{
     h=`<div class="card c"><div class="big">🎯</div><h2>훈련 끝! ${G.N}문제 중 ${G.ok}개 정답</h2>
       <div class="mut">훈련 결과도 내 약점 기록에 들어가요. 띠에는 영향을 주지 않아요.</div>
@@ -809,7 +809,7 @@ function weak(){
   scrollTo(0,0);
 }
 // ───────── 미스터리 사건파일 (계정과목 게임)
-// 미스터리 사건파일 계정과목 80개: [계정, 요소, 처음 나오는 단계(1~4), 설명(교과서 뜻), 자본 분류]
+// 미스터리 사건파일 계정과목 81개: [계정, 요소, 처음 나오는 단계(1~4), 설명(교과서 뜻), 자본 분류]
 // 요소: 자산·부채·자본·수익·비용. 설명에는 계정 이름을 그대로 쓰지 않는다. 단계 4 = 주식회사 자본.
 // 원본: 단계별 문제 정리.xlsx '사건파일 계정' 시트(사용자가 고친 단계·설명)
 const MA=[
@@ -820,7 +820,7 @@ const MA=[
 ['외상매출금','자산',2,'상품을 외상으로 매출하고 아직 받지 못한 금액'],
 ['받을어음','자산',2,'상품을 매출하고 그 대금으로 받은 약속어음상의 채권'],
 ['매출채권','자산',3,'상품을 매출하고 1년 이내 회수하는 외상매출금과 받을어음'],
-['미수금','자산',2,'상품이 아닌 자산을 처분하고 아직 받지 못한 금액'],
+['미수금','자산',3,'상품이 아닌 자산을 처분하고 아직 받지 못한 금액'],
 ['선급금','자산',3,'상품을 매입하기로 계약하고 미리 지급한 계약금'],
 ['상품','자산',1,'판매할 목적으로 구입한 물품'],
 ['토지','자산',1,'영업용으로 사용하기 위한 땅'],
@@ -831,7 +831,7 @@ const MA=[
 ['지급어음','부채',2,'상품을 매입하고 그 대금으로 발행해 준 약속어음상의 채무'],
 ['매입채무','부채',3,'상품을 매입하고 1년 이내 지급할 예정인 외상매입금과 지급어음'],
 ['단기차입금','부채',2,'1년 이내에 갚을 목적으로 남에게서 빌려온 돈'],
-['미지급금','부채',2,'상품이 아닌 물건을 외상으로 구입하고 아직 지급하지 않은 금액'],
+['미지급금','부채',3,'상품이 아닌 물건을 외상으로 구입하고 아직 지급하지 않은 금액'],
 ['선수금','부채',3,'상품을 매출하기로 계약하고 미리 받은 계약금'],
 ['자본금','자본',1,'영업을 시작할 때 기업주가 출자한 현금이나 물품'],
 ['이자수익','수익',1,'빌려준 돈이나 은행 예금에서 받은 이자'],
@@ -845,7 +845,7 @@ const MA=[
 ['통신비','비용',1,'우표·전화·인터넷 요금 등'],
 ['보험료','비용',1,'상품·건물·자동차 등의 보험에 가입하고 지급한 금액'],
 ['소모품','자산',3,'볼펜·복사 용지 같은 사무용품을 구입한 대가를 자산으로 처리하는 경우'],
-['소모품비','비용',3,'볼펜·복사 용지 같은 사무용품을 구입한 대가를 비용으로 처리하는 경우'],
+['소모품비','비용',2,'볼펜·복사 용지 같은 사무용품을 구입한 대가를 비용으로 처리하는 경우'],
 ['이자비용','비용',1,'빌려온 돈이나 사채에 대해 지급한 이자'],
 ['세금과공과','비용',2,'재산세·자동차세·상공회의소 회비 등'],
 ['단기금융상품','자산',3,'금융기관에서 취급하는 만기 1년 이내의 정기예금·정기적금 등'],
@@ -860,6 +860,7 @@ const MA=[
 ['도서인쇄비','비용',1,'신문 구독료·명함 인쇄비 등'],
 ['수수료비용','비용',1,'용역(서비스)을 제공받고 지급한 대가'],
 ['잡손실','비용',2,'영업 활동 이외에서 생기는 적은 금액의 손실'],
+['수선비','비용',2,'건물, 기계장치 등 유형자산의 본래 기능을 유지하거나 원상회복하기 위해 지출한 수익적 지출'],
 ['건설중인자산','자산',1,'영업용 건물을 짓는 동안 지급한 계약금·중도금 등의 공사비'],
 ['기계장치','자산',1,'영업용으로 사용하는 기계·운송 설비와 부속 설비'],
 ['영업권','자산',3,'합병·영업 양수 때 받은 순자산의 공정가치보다 더 지급한 금액'],
@@ -909,7 +910,8 @@ const MSTN={1:'바구니 분류',2:'새 계정 분류',3:'계정 찾기',4:'용�
 // g 바구니 · o3/o5 설명 보고 고르기(3개·5개) · w 직접 쓰기(초성 단서) · wn 직접 쓰기(단서 없음) · c 자본 분류
 const MPLAN={1:[['g',[1],15]],2:[['g',[1],5],['g',[2],10]],3:[['o3',[1],4],['o3',[2],6],['g',[3],5]],
 4:[['o5',[1],6],['o5',[2],9]],5:[['w',[1],2],['w',[2],9],['o5',[3],4]],6:[['c',[4],1],['wn',[1,2,3],14]]};
-const MN=15;
+const MN=15,MOK=12; // 사건 고르기는 12문제 이상 맞히면 해결(진열장 아이콘이 컬러로)
+const MUST={1:['외상매입금']}; // 단계마다 꼭 내는 계정
 const GRPS=['자산','부채','자본','수익','비용'],CAPS=['자본금','자본잉여금','자본조정','기타포괄손익누계액','이익잉여금'];
 const GICON={'자산':'💰','부채':'🧾','자본':'🏦','수익':'📈','비용':'💸'};
 // 헷갈리는 용의자
@@ -919,7 +921,7 @@ const MCONF={'현금':'당좌예금 보통예금','당좌예금':'보통예금 �
 '단기대여금':'단기차입금 미수금','단기차입금':'단기대여금 장기차입금','장기차입금':'단기차입금 사채','사채':'장기차입금 퇴직급여충당부채',
 '상품':'비품 소모품','소모품':'소모품비 비품','비품':'상품 기계장치','건물':'건설중인자산 토지','토지':'건물 광업권','차량운반구':'비품 차량유지비','기계장치':'비품 차량운반구','건설중인자산':'건물 기계장치',
 '이자수익':'이자비용 수수료수익','이자비용':'이자수익 수수료비용','임대료':'임차료 임차보증금','임차료':'임대료 임차보증금','수수료수익':'수수료비용 임대료','수수료비용':'수수료수익 이자비용',
-'잡이익':'잡손실 수수료수익','잡손실':'잡이익 기부금','복리후생비':'기업업무추진비 급여','기업업무추진비':'복리후생비 기부금','기부금':'기업업무추진비 잡손실',
+'수선비':'차량유지비 소모품비','잡이익':'잡손실 수수료수익','잡손실':'잡이익 기부금','복리후생비':'기업업무추진비 급여','기업업무추진비':'복리후생비 기부금','기부금':'기업업무추진비 잡손실',
 '급여':'복리후생비 퇴직급여충당부채','여비교통비':'차량유지비 운반비','차량유지비':'여비교통비 세금과공과','운반비':'여비교통비 차량유지비','통신비':'수도광열비 도서인쇄비','수도광열비':'통신비 세금과공과',
 '세금과공과':'보험료 차량유지비','보험료':'세금과공과 수수료비용','소모품비':'소모품 도서인쇄비','도서인쇄비':'소모품비 광고선전비','광고선전비':'도서인쇄비 기업업무추진비',
 '자본금':'인출금 보통주자본금','인출금':'자본금 단기대여금',
@@ -954,7 +956,9 @@ function mpick(st){
   const mx=st===5?3:2,L=[];
   // 1~3단계는 바구니 고르기가 쉬운 수익·비용보다 자산·부채 계정을 더 자주(무게 3:1로 뽑기)
   const wt=a=>st<=3&&(a[1]==='자산'||a[1]==='부채')?3:1;
-  MPLAN[st].forEach(([t,ds,n])=>MA.filter(a=>ds.includes(a[2])&&!L.some(q=>q.a===a)).map(a=>[Math.pow(Math.random(),1/wt(a)),a]).sort((x,y)=>y[0]-x[0]).slice(0,n).forEach(([,a])=>L.push(mq(t,a,mx))));
+  MPLAN[st].forEach(([t,ds,n])=>{
+    const must=(MUST[st]||[]).map(k=>MBY[k]).filter(a=>a&&ds.includes(a[2])&&!L.some(q=>q.a===a));must.forEach(a=>L.push(mq(t,a,mx)));
+    MA.filter(a=>ds.includes(a[2])&&!L.some(q=>q.a===a)).map(a=>[Math.pow(Math.random(),1/wt(a)),a]).sort((x,y)=>y[0]-x[0]).slice(0,n-must.length).forEach(([,a])=>L.push(mq(t,a,mx)))});
   return shuf(L);
 }
 let MG=null,MRES='',MWR=[];
@@ -1025,7 +1029,7 @@ function mfinish(){
   }else{
     const b=my.best[st];if(!b||MG.ok>b)my.best[st]=MG.ok;
     h=`<div class="card c">${detH(st)}<h2 class="say">${N}건 중 ${MG.ok}건 해결!</h2>
-      <div class="mut">${MLV[st][1]} 사건 · 최고 기록 ${my.best[st]}/${N}</div>${mbtns(['다시 도전하기',`mstart('case',${st})`])}</div>`;
+      <div class="mut">${MLV[st][1]} 사건 · 최고 기록 ${my.best[st]}/${N}</div><div class="g2"><button class="btn" onclick="mstart('case',${st})">다시 연습하기</button>${st<MTOP?`<button class="btn bl" onclick="mstart('case',${st+1})">다음 단계 연습하기</button>`:''}<button class="btn sub" onclick="mwrongPg()">틀린 사건 확인하기${MWR.length?` (${MWR.length})`:''}</button><button class="btn sub" onclick="mystery()">수사 본부로 돌아가기</button></div></div>`;
   }
   save();MRES=h;app.innerHTML=h;scrollTo(0,0);if(up)confetti();MG=null;
 }
@@ -1059,8 +1063,8 @@ function mystery(){
   <div class="two">
     <div class="card c tbox" style="cursor:pointer" onclick="mcaseList()">
       <h3>🗂️ 사건 고르기<br><span class="sm mut" style="font-weight:400">(단계별 연습모드)</span></h3>
-      <div class="shelf five big">${[1,2,3,4,5,6].map(k=>{const b=my.best[k];return `<span class="${b!=null?'':'no'}">${MLV[k][0]}<small>${b!=null?b+'/'+MN:k}</small></span>`}).join('')}</div>
-      <div class="sm mut">해결한 사건 ${Object.keys(my.best).length}개 / 6개</div>
+      <div class="shelf five big">${[1,2,3,4,5,6].map(k=>{const b=my.best[k];return `<span class="${b>=MOK?'':'no'}">${MLV[k][0]}<small>${b!=null?b+'/'+MN:k}</small></span>`}).join('')}</div>
+      <div class="sm mut">해결한 사건 ${Object.values(my.best).filter(b=>b>=MOK).length}개 / 6개</div>
       <button class="btn bl" onclick="event.stopPropagation();mcaseList()">사건 고르기!</button>
     </div>
     <div class="card c tbox">
