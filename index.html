@@ -1565,13 +1565,14 @@ async function stSignup(J,code,sex){
   const key=J.sc+'_'+J.sid,rs=await DB.doc('eRooms/'+code).get();
   if(!rs.exists)throw {code:'room'};const r=rs.data();
   if(r.sc!==J.sc)throw {code:'school'};if(r.closed)throw {code:'closed'};
-  const em=stEmail(key,1),pw=stPw(J.pin);
-  try{await FBA.createUserWithEmailAndPassword(em,pw)}
-  catch(e){if(e.code!=='auth/email-already-in-use')throw e;try{await FBA.signInWithEmailAndPassword(em,pw)}catch(e2){throw {code:'taken'}}}
+  const pw=stPw(J.pin);let v=1;
+  for(;;v++){const em=stEmail(key,v);
+    try{await FBA.createUserWithEmailAndPassword(em,pw);break}
+    catch(e){if(e.code!=='auth/email-already-in-use')throw e;try{await FBA.signInWithEmailAndPassword(em,pw);break}catch(e2){if(v>=20)throw {code:'taken'}}}}
   // 이 기기에서 하던 기록(로그인 없이 한 기록)이 있으면 그대로 가져간다
   if(!(U.me&&!U.me.key))U=fresh();const g=gameData();
   const b=DB.batch();
-  b.set(DB.doc('eLogins/'+key),{v:1});
+  b.set(DB.doc('eLogins/'+key),{v});
   b.set(DB.doc('eStudents/'+key),{sid:J.sid,nm:J.nm,sex,sc:J.sc,scn:J.scn,code:null,tu:null,cn:'',rq:code,rqt:r.owner,rqn:r.nm,rj:false,t:Date.now(),day:today(),U:g});
   await b.commit();await stLoad(key);
 }
@@ -1594,7 +1595,9 @@ async function boot(){
   app.innerHTML='<div class="logo"><b>Econ Play</b><div class="mut sm">불러오는 중…</div></div>';
   if(/^#teacher/.test(location.hash)){await fbInit();return tpage()}
   const ok=await fbInit(),u=ok&&FBA.currentUser;
-  if(isStudent(u)){const key=u.email.replace(SDOM,'').replace(/-v\d+$/,'');try{await stLoad(key)}catch(e){}}
+  if(isStudent(u)){const key=u.email.replace(SDOM,'').replace(/-v\d+$/,'');try{await stLoad(key)}catch(e){
+    // 선생님이 삭제한 학생: 로그아웃하고 이 기기 기록도 비움(다시 회원 가입 가능)
+    if(e&&e.code==='no-record'){try{await FBA.signOut()}catch(_){}U=fresh();try{localStorage.removeItem(KEY)}catch(_){}}}}
   else if(U.me&&U.me.key){U=fresh()} // 로그아웃된 학생 기록은 이 기기에 남기지 않는다
   main();
 }
@@ -1831,7 +1834,7 @@ async function tRoom(code,quiet){
     <button class="btn" onclick="tReq(TR.rq.map((x,i)=>i),1)">✅ 모두 허용</button></div>`:''}
   ${S.length?`
   ${tTg('mg',`👥 학생 관리 (${S.length}명)`,`<div class="tw"><table class="tt2"><tr><th>학번</th><th>이름</th><th>최근 접속</th><th></th></tr>
-    ${S.map((x,i)=>`<tr><td>${esc(x.sid)}</td><td>${esc(x.nm)}</td><td>${x.day?esc(x.day.slice(5).replace('-','/')):'-'}</td><td><button class="mini2" onclick="tMove(${i})">반 바꾸기</button> <button class="mini2" onclick="tPin(${i})">PIN 초기화</button></td></tr>`).join('')}</table></div>
+    ${S.map((x,i)=>`<tr><td>${esc(x.sid)}</td><td>${esc(x.nm)}</td><td>${x.day?esc(x.day.slice(5).replace('-','/')):'-'}</td><td><button class="mini2" onclick="tMove(${i})">반 바꾸기</button> <button class="mini2" onclick="tPin(${i})">PIN 초기화</button> <button class="mini2" style="color:var(--ng)" onclick="tDelSt(${i})">🗑️ 삭제</button></td></tr>`).join('')}</table></div>
     <button class="btn gh" onclick="tCsv()">📥 엑셀(CSV) 내려받기</button>`)}
   ${tTg('lv','🏅 학생 레벨',`${tLvCnt(S)}${tTg('lvl','👤 학생별 레벨',`<div class="tw"><table class="tt2"><tr><th>학번</th><th>이름</th><th>🥋 태권도 급수</th><th>🕵️ 탐정 레벨</th></tr>
     ${S.map(x=>`<tr><td>${esc(x.sid)}</td><td>${esc(x.nm)}</td><td>${x.s.rank}</td><td>${x.s.det}</td></tr>`).join('')}</table></div>`,1)}`)}
@@ -1890,6 +1893,13 @@ function tPerf(S,pu){
   return tTg('pf_'+pu.u,esc(pu.nm),`<div class="tw"><table class="tt2"><tr><th>학번</th><th>이름</th><th>따라하기·혼자하기</th><th>대단원 실습</th></tr>
     ${S.map(x=>`<tr><td>${esc(x.sid)}</td><td>${esc(x.nm)}</td><td>${cell(x,'fh')}</td><td>${cell(x,'ex')}</td></tr>`).join('')}</table></div>
     <div class="sm mut" style="margin-top:6px">Easy Mode = 카드 놓기 · Hard Mode = 직접 쓰기 · 1단계·2단계를 모두 마치면 통과</div>`,1);
+}
+// 학생 한 명 삭제: 기록 문서와 로그인 판 문서를 지우고 반 인원을 줄임(같은 학번으로 다시 가입 가능)
+async function tDelSt(i){
+  const x=TR.S[i];if(!x)return;
+  if(!confirm(`${x.sid} ${x.nm} 학생을 삭제할까요?\n띠·탐정 레벨·수행평가 등 이 학생의 기록이 모두 지워지고 되돌릴 수 없어요.\n학생은 같은 학번으로 다시 회원 가입할 수 있어요.`))return;
+  try{const b=DB.batch();b.delete(DB.doc('eLogins/'+x.key));b.delete(DB.doc('eStudents/'+x.key));b.update(DB.doc('eRooms/'+TR.r.code),{n:firebase.firestore.FieldValue.increment(-1)});await b.commit();tRoom(TR.r.code,1)}
+  catch(e){alert('삭제하지 못했어요. 다시 해 주세요.')}
 }
 async function tClose(v){try{await DB.doc('eRooms/'+TR.r.code).update({closed:v})}catch(e){}tRoom(TR.r.code)}
 async function tPin(i,rq){
