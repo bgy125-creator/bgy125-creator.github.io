@@ -371,7 +371,7 @@ function home(){
   app.innerHTML=`
   <div class="top"><div class="tb"><button class="x" onclick="main()">← 처음 화면</button><span>🥋 체육관</span><span></span></div></div>
   <div class="card c">
-    <div class="who" style="margin:0">${esc(U.me.nm)} · ${d.best===6?d.dan+'단':BELT[d.best].g} · ${BELT[d.best].nm}</div>
+    <div class="who" style="margin:0">${BELT[d.best].nm}(${d.best===6?d.dan+'단':BELT[d.best].g}) ${esc(U.me.nm)}</div>
     ${beltBar()}
   </div>
   <div class="two">
@@ -382,7 +382,7 @@ function home(){
       <button class="btn bl" onclick="event.stopPropagation();cupList()">대회 출전!</button>
     </div>
     <div class="card c tbox">
-      <h3>🥋 승급 도전하기<br><span class="sm mut" style="font-weight:400">(${testName(d.cur)}: ${STG[d.cur]})</span></h3>
+      <h3>🥋 승급 도전<br><span class="sm mut" style="font-weight:400">(${testName(d.cur)}: ${STG[d.cur]})</span></h3>
       <img class="char" src="${charImg(d.best)}" alt="${b.nm} 캐릭터">
       <button class="btn" onclick="dojo()">${d.best===6?'승단 도전!':'승급 도전!'}</button>
     </div>
@@ -1021,7 +1021,7 @@ function mfinish(){
       let msg;if(st>my.clear){my.clear=st;up=true;msg=`${esc(U.me.nm)} ${MLV[st][1]} 승진!`}else msg='사건 해결! 다음 수사로!';
       my.lives=LIVES;
       h=`<div class="card c">${detH(my.clear,up)}<h2 class="say">${msg}</h2>
-        <div class="who">${MLV[my.clear][1]}</div>${mlvRow()}${mbtns(my.clear>=MTOP?null:['수사 계속하기','mtest()'])}</div>`;
+        <div class="who">${MLV[my.clear][1]}</div>${mlvRow()}${mbtns(my.clear>=MTOP?null:['🚨 정식 사건 수사하기','mtest()'])}</div>`;
     }
   }else if(MG.mode==='train'){
     h=`<div class="card c">${detH(my.clear)}<h2 class="say">약점 수사 끝! ${N}건 중 ${MG.ok}건 해결!</h2>
@@ -1058,19 +1058,19 @@ function mystery(){
   const my=MY(),nx=Math.min(MTOP,my.clear+1);
   app.innerHTML=`<div class="top"><div class="tb"><button class="x" onclick="main()">← 처음 화면</button><span>🕵️ 수사 본부</span><span></span></div></div>
   <div class="card c">
-    <div class="who" style="margin:0">${esc(U.me.nm)} · ${MLV[my.clear][1]}</div>${mlvRow()}
+    <div class="who" style="margin:0">${MLV[my.clear][1]} ${esc(U.me.nm)}</div>${mlvRow()}
   </div>
   <div class="two">
     <div class="card c tbox" style="cursor:pointer" onclick="mcaseList()">
       <h3>🗂️ 사건 고르기<br><span class="sm mut" style="font-weight:400">(단계별 연습모드)</span></h3>
       <div class="shelf five big">${[1,2,3,4,5,6].map(k=>{const b=my.best[k];return `<span class="${b>=MOK?'':'no'}">${MLV[k][0]}<small>${b!=null?b+'/'+MN:k}</small></span>`}).join('')}</div>
       <div class="sm mut">해결한 사건 ${Object.values(my.best).filter(b=>b>=MOK).length}개 / 6개</div>
-      <button class="btn bl" onclick="event.stopPropagation();mcaseList()">사건 고르기!</button>
+      <button class="btn bl" onclick="event.stopPropagation();mcaseList()">🗂️ 모의 사건<br>수사하기</button>
     </div>
     <div class="card c tbox">
-      <h3>🕵️ 나의 수사 기록<br><span class="sm mut" style="font-weight:400">(${my.clear>=MTOP?'모든 승진 통과!':MLV[nx][1]+' 승진 시험: '+MSTN[nx]})</span></h3>
+      <h3>🕵️ 수사 기록<br><span class="sm mut" style="font-weight:400">(${my.clear>=MTOP?'모든 승진 통과!':MLV[nx][1]+' 승진 시험'})</span></h3>
       ${detH(my.clear)}
-      ${my.clear>=MTOP?'<div class="sm mut" style="margin-top:auto">사건 고르기로<br>실력을 다져 봐요!</div>':'<button class="btn" onclick="mtest()">수사 계속하기</button>'}
+      ${my.clear>=MTOP?'<div class="sm mut" style="margin-top:auto">모의 사건 수사로<br>실력을 다져 봐요!</div>':'<button class="btn" onclick="mtest()">🚨 정식 사건<br>수사하기</button>'}
     </div>
   </div>
   <button class="btn wk" onclick="mweak()">📊 내 약점 파악하기</button>`;
