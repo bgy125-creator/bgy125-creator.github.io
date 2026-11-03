@@ -115,6 +115,9 @@ ul.ex{font-family:"Gowun Dodum",sans-serif;margin:8px 0 0;padding-left:20px;font
 .br .v{text-align:right;color:var(--mut);white-space:nowrap}
 .ovr{display:flex;flex-wrap:wrap;gap:6px;padding:4px 0 10px}.ovr span{font-size:14px;background:var(--oks);color:var(--ok);border-radius:999px;padding:3px 10px}
 .tg{background:var(--card);border-radius:14px;margin:10px 0;box-shadow:0 1px 3px rgba(0,0,0,.08)}.tg>summary{list-style:none;cursor:pointer;padding:14px 16px;font-weight:700;font-size:16px;display:flex;justify-content:space-between;align-items:center}.tg>summary::-webkit-details-marker{display:none}.tg .ar{transition:transform .2s;color:var(--mut)}.tg[open]>summary .ar{transform:rotate(180deg)}.tg .tgb{padding:0 14px 14px}.tg.sub{box-shadow:none;border:1px solid var(--ln);margin:6px 0}.tg.sub>summary{font-size:14px;padding:10px 12px}
+.pfc{display:flex;align-items:center;gap:4px;justify-content:flex-start;font-size:12px}.pdot{display:inline-block;width:11px;height:11px;border-radius:50%;border:2px solid #b5b8c2;flex:none}.pdot.on{background:var(--ok);border-color:var(--ok)}
+.cntrow{display:flex;justify-content:space-between;gap:2px;margin-bottom:6px}.cntrow span{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0}.cntrow b{font-size:14px}.cntrow i{display:block;width:100%;max-width:40px;height:14px;border-radius:6px;border:1px solid rgba(0,0,0,.25)}.cntrow small{font-size:10px;color:var(--mut);white-space:nowrap}.cntrow span.z{opacity:.4}
+.cntrow.det i{width:38px;max-width:38px;height:38px;border-radius:50%;overflow:hidden;background:#fff;border:1px solid var(--ln)}.cntrow.det img{display:block;width:124%;margin:-2px 0 0 -12%}.cntrow.det i.g img{filter:grayscale(1)}.cntrow.det span:nth-child(4) img{width:106%;margin:2px 0 0 -3%}
 .gd{border-top:1px solid var(--ln)}.gd:first-of-type{border-top:0}.gd summary{list-style:none;cursor:pointer}.gd summary::-webkit-details-marker{display:none}.gd[open] summary .v{color:var(--ac)}
 .lb{font-size:14px;color:var(--mut);margin:14px 0 6px;font-weight:700}
 .field{width:100%;border:1px solid var(--ln);border-radius:12px;padding:12px;font-size:17px;background:var(--sl);color:var(--tx);font-family:inherit}
@@ -1796,7 +1799,7 @@ function stSum(x){
   const sum=o=>Object.values(o||{}).reduce((a,v)=>[a[0]+(v.c||0),a[1]+(v.n||0)],[0,0]);
   const tg={};Object.values((u.st||{}).tag||{}).forEach(o=>Object.entries(o).forEach(([k,v])=>{tg[k]=tg[k]||{c:0,n:0};tg[k].c+=v.c;tg[k].n+=v.n}));
   const j=sum(tg),a=sum((my.st||{}).grp),pc=s=>s[1]?Math.round(s[0]/s[1]*100)+'%':'-';
-  return {rank:d.best===6?`검은띠(${d.dan||1}단)`:`${BELT[d.best||0].nm}(${BELT[d.best||0].g})`,belt:d.best===6?(d.dan||1)+'단 검은띠':BELT[d.best||0].nm,det:MLV[mclr(my)][1],
+  return {bi:d.best||0,di:mclr(my),rank:d.best===6?`검은띠(${d.dan||1}단)`:`${BELT[d.best||0].nm}(${BELT[d.best||0].g})`,belt:d.best===6?(d.dan||1)+'단 검은띠':BELT[d.best||0].nm,det:MLV[mclr(my)][1],
     med:Object.values(u.cup||{}).filter(c=>medal(c.n)).length,jr:pc(j),ar:pc(a),tg,pf:u.perf||{}};
 }
 let TR=null; // 지금 보는 반
@@ -1818,9 +1821,9 @@ async function tRoom(code,quiet){
   TR={r,S,rq};
   // 반 전체 부분별 정답률
   const tg={};S.forEach(x=>Object.entries(x.s.tg).forEach(([k,v])=>{tg[k]=tg[k]||{c:0,n:0};tg[k].c+=v.c;tg[k].n+=v.n}));
-  const url=location.href.split('#')[0]+'#teacher/'+code,auto=(()=>{try{return localStorage.getItem('ep_auto')==='1'}catch(e){return false}})(),now=new Date();
+  const url=location.href.split('#')[0]+'#teacher/'+code,now=new Date();
   app.innerHTML=tTop('tHome()','📚 반 관리')+`
-  <div class="card sm" id="trbar" style="display:flex;flex-wrap:wrap;align-items:center;gap:8px"><button class="mini2" onclick="tRoom('${code}',1)">🔄 새로고침</button><label style="display:flex;align-items:center;gap:4px"><input type="checkbox" ${auto?'checked':''} onchange="tAuto(this.checked)">30초마다 자동</label><span class="mut">마지막 확인 ${now.toLocaleTimeString('ko-KR')}</span>
+  <div class="card sm" id="trbar" style="display:flex;flex-wrap:wrap;align-items:center;gap:8px"><button class="mini2" onclick="tRoom('${code}',1)">🔄 새로고침</button><span class="mut">마지막 확인 ${now.toLocaleTimeString('ko-KR')}</span>
     <div style="flex-basis:100%" class="mut">이 반 바로 가기: <b style="word-break:break-all">${esc(url)}</b> <button class="mini2" onclick="navigator.clipboard&&navigator.clipboard.writeText('${url}').then(()=>this.textContent='복사됨!')">주소 복사</button></div></div>
   <div class="card c"><div class="who" style="margin:0">${esc(r.nm)}</div><div class="sm mut">학생 ${r.n}/${r.lim}명 · 학생은 회원 가입 때 이 반을 골라 가입 요청을 보내요</div>
     <button class="btn ${r.closed?'':'gh'}" onclick="tClose(${!r.closed})">${r.closed?'🔓 새 학생 다시 받기':'🔒 새 학생 받지 않기'}</button></div>
@@ -1830,13 +1833,12 @@ async function tRoom(code,quiet){
   ${tTg('mg',`👥 학생 관리 (${S.length}명)`,`<div class="tw"><table class="tt2"><tr><th>학번</th><th>이름</th><th>최근 접속</th><th></th></tr>
     ${S.map((x,i)=>`<tr><td>${esc(x.sid)}</td><td>${esc(x.nm)}</td><td>${x.day?esc(x.day.slice(5).replace('-','/')):'-'}</td><td><button class="mini2" onclick="tMove(${i})">반 바꾸기</button> <button class="mini2" onclick="tPin(${i})">PIN 초기화</button></td></tr>`).join('')}</table></div>
     <button class="btn gh" onclick="tCsv()">📥 엑셀(CSV) 내려받기</button>`)}
-  ${tTg('lv','🏅 학생 레벨',`<div class="tw"><table class="tt2"><tr><th>학번</th><th>이름</th><th>🥋 태권도 급수</th><th>🕵️ 탐정 레벨</th></tr>
+  ${tTg('lv','🏅 학생 레벨',`${tLvCnt(S)}<div class="tw"><table class="tt2"><tr><th>학번</th><th>이름</th><th>🥋 태권도 급수</th><th>🕵️ 탐정 레벨</th></tr>
     ${S.map(x=>`<tr><td>${esc(x.sid)}</td><td>${esc(x.nm)}</td><td>${x.s.rank}</td><td>${x.s.det}</td></tr>`).join('')}</table></div>`)}
   ${tTg('pf','📝 수행평가 연습',PERF.map(pu=>tPerf(S,pu)).join(''))}`:'<div class="card sm mut">아직 반에 들어온 학생이 없어요. 학생이 회원 가입 때 이 반을 고르면 위에 가입 요청이 떠요.</div>'}
   ${Object.keys(tg).length?`<div class="card"><h3>📊 우리 반 분개 정답률</h3>${Object.keys(TAGS).filter(k=>tg[k]).map(k=>{const p=Math.round(tg[k].c/tg[k].n*100);return `<div class="br"><span>${TAGS[k]}</span><div class="t"><i style="width:${p}%;background:${p>=80?'var(--ok)':p>=60?'#3b82f6':'var(--ng)'}"></i></div><span class="v">${p}% · ${tg[k].n}건</span></div>`}).join('')}</div>`:''}
   <div class="msg" id="msg"></div>
   <button class="btn gh" style="color:var(--ng)" onclick="tDelRoom()">🗑️ 이 반 지우기</button>`;
-  if(auto&&!TRT)tAuto(1);
 }
 // 가입 요청 허용(ok=1)·거절(ok=0)
 async function tReq(ix,ok){
@@ -1873,12 +1875,18 @@ const pfRec=(x,u,m)=>x.s.pf[u+'|'+m]; // m = 묶음|방식(fh|card 등)
 const PFC=[['fh|card','따라하기·혼자하기 Easy'],['fh|write','따라하기·혼자하기 Hard'],['ex|card','대단원 실습 Easy'],['ex|write','대단원 실습 Hard']];
 function pfCell(r){if(!r||!r.s)return '<span class="mut">미도전</span>';
   const q=r.s-(r.c||0);return r.lt?`${r.c?r.c+'회 통과':r.p1?'<span style="color:#b7791f">1단계 통과 · 2단계 도전 중</span>':'<span style="color:var(--ng)">아직 통과 못 함</span>'} · 최고 <b>${r.n}/${r.N}</b><br><span class="sm mut">최근 ${r.l}/${r.N} (${tdate(r.lt)})${q>0?' · 실패·중단 '+q+'회':''}</span>`:`<span class="sm mut">시작 ${r.s}회 · 아직 끝까지 안 풂</span>`}
+// 학생 레벨 상자 위: 띠 색(체육관 띠 막대 모양)과 탐정 얼굴마다 몇 명인지
+function tLvCnt(S){
+  const bc=BELT.map((b,i)=>S.filter(x=>x.s.bi===i).length),dc=MLV.map((m,i)=>S.filter(x=>x.s.di===i).length);
+  return `<div class="sm mut" style="margin:2px 0 4px">🥋 태권도 띠</div><div class="cntrow">${BELT.map((b,i)=>`<span class="${bc[i]?'':'z'}"><b>${bc[i]}명</b><i style="background:${b.c}"></i><small>${b.nm}</small></span>`).join('')}</div>
+    <div class="sm mut" style="margin:10px 0 4px">🕵️ 탐정 레벨</div><div class="cntrow det">${MLV.map((m,i)=>`<span class="${dc[i]?'':'z'}"><b>${dc[i]}명</b><i class="${i?'':'g'}"><img src="${IMG['d_m'+Math.max(1,i)]}" alt=""></i><small>${['지망생','견습','초보','정식','명탐정','수사 반장','전설'][i]}</small></span>`).join('')}</div>`;
+}
 // 펼치고 접는 상자: 열림 상태를 기억해 새로고침해도 그대로(학생 관리는 처음에 닫힘)
-const TOPEN={mg:false,lv:true,pf:true};
+const TOPEN={mg:false,lv:false,pf:false};
 const tTg=(k,title,body,sub)=>`<details class="tg${sub?' sub':''}" ${(k in TOPEN?TOPEN[k]:true)?'open':''} ontoggle="TOPEN['${k}']=this.open"><summary>${title}<span class="ar">▾</span></summary><div class="tgb">${body}</div></details>`;
 function tPerf(S,pu){
   const pc=(x,set,m)=>{const r=pfRec(x,pu.u,set+'|'+m);return r&&r.c||0};
-  const cell=(x,set)=>{const e=pc(x,set,'card'),h=pc(x,set,'write');return `<span class="${e?'':'mut'}">Easy ${e}회 통과</span><br><span class="${h?'':'mut'}">Hard ${h}회 통과</span>`};
+  const dot=n=>`<span class="pdot${n?' on':''}"></span>`,cell=(x,set)=>{const e=pc(x,set,'card'),h=pc(x,set,'write');return `<div class="pfc">${dot(e)}<span class="${e?'':'mut'}">Easy ${e}회 통과</span></div><div class="pfc">${dot(h)}<span class="${h?'':'mut'}">Hard ${h}회 통과</span></div>`};
   return tTg('pf_'+pu.u,esc(pu.nm),`<div class="tw"><table class="tt2"><tr><th>학번</th><th>이름</th><th>따라하기·혼자하기</th><th>대단원 실습</th></tr>
     ${S.map(x=>`<tr><td>${esc(x.sid)}</td><td>${esc(x.nm)}</td><td>${cell(x,'fh')}</td><td>${cell(x,'ex')}</td></tr>`).join('')}</table></div>
     <div class="sm mut" style="margin-top:6px">Easy Mode = 카드 놓기 · Hard Mode = 직접 쓰기 · 1단계·2단계를 모두 마치면 통과</div>`,1);
