@@ -120,6 +120,11 @@ ul.ex{font-family:"Gowun Dodum",sans-serif;margin:8px 0 0;padding-left:20px;font
 .cntrow.det i{width:38px;max-width:38px;height:38px;border-radius:50%;overflow:hidden;background:#fff;border:1px solid var(--ln)}.cntrow.det img{display:block;width:124%;margin:-2px 0 0 -12%}.cntrow.det i.g img{filter:grayscale(1)}.cntrow.det span:nth-child(4) img{width:106%;margin:2px 0 0 -3%}
 .bsw{display:inline-block;width:40px;height:14px;border-radius:6px;border:1px solid rgba(0,0,0,.25);vertical-align:middle;font-style:normal;font-size:9px;line-height:13px;color:#fff;text-align:center;font-weight:700}
 .slot.fx{border-style:solid;background:#eef1f6;color:#444;cursor:default}
+.cd.p{color:#7c4dcc;border-color:#c7b3ee}.slot.p{min-height:34px;font-size:13px;border-color:#b9a3e6;margin-bottom:0}.slot.p.f:not(.ok):not(.ng){background:#f6f1ff;color:#7c4dcc;border-color:#7c4dcc;font-size:15px}
+.slot.p.ok{border-color:var(--ok)}.slot.p.ng{border-color:var(--ng)}.inp.pt.ok{border-color:var(--ok)}.inp.pt.ng{border-color:var(--ng)}
+.pln{display:flex;align-items:center;gap:6px;margin-top:2px}.pln>span{font-size:12px;color:#7c4dcc;white-space:nowrap}.pln .slot,.pln .inp{flex:1;min-width:0}
+.inp.pt{border-color:#c7b3ee}.ptg{font-size:13px;color:#7c4dcc;margin:2px 0 6px;font-weight:700}
+.ptp{display:inline-block;font-style:normal;font-size:12px;padding:1px 8px;border-radius:99px;background:#efe8fb;color:#7c4dcc;margin-left:4px}
 .gd{border-top:1px solid var(--ln)}.gd:first-of-type{border-top:0}.gd summary{list-style:none;cursor:pointer}.gd summary::-webkit-details-marker{display:none}.gd[open] summary .v{color:var(--ac)}
 .lb{font-size:14px;color:var(--mut);margin:14px 0 6px;font-weight:700}
 .field{width:100%;border:1px solid var(--ln);border-radius:12px;padding:12px;font-size:17px;background:var(--sl);color:var(--tx);font-family:inherit}
@@ -448,6 +453,7 @@ function home(){
 // g = 교과서 묶음(따라하기·혼자하기 / 대단원 실습), lv = 1 상대적으로 쉬운 문제·2 어려운 문제(계정 3개, 증빙 서류, 낯선 계정 등), dt = 날짜
 // doc = 증빙 서류 그림(app.html docH): t = pay 급여 명세서·bk 예금 거래 내역·rc 영수증·bill 청구서·trf 이체확인증·tax 자동차세 신고납부서·ccs 신용 카드 매출 전표·cash 현금영수증·slip 카드 매출전표·ins 자동차보험증권·ct 월세 계약서
 // 계정 이름은 KcLep의 (판) 같은 괄호를 뺀 이름. 은행·카드사·세무서·기관 이름도 모두 가상의 이름으로 바꿈.
+// 정답 줄의 셋째 칸 = 거래처(채권·채무 계정에서 거래처가 분명할 때만, 예수금처럼 거래처가 분명하지 않으면 비움). 수행평가 연습에서만 거래처 채점.
 const PERF=[{u:'Ⅲ',nm:'Ⅲ. 손익 계산서 계정의 회계정보처리',list:[
 // ── III-2 따라하기 01 판매비와 관리비 거래(교과서 133쪽)
 {g:'따라하기',lv:2,dt:'10월 2일',q:'거래처 직원의 결혼식 청첩장을 받고 축하금 ₩50,000을 현금으로 지급하다.',d:[['기업업무추진비',50000]],k:[['현금',50000]]},
@@ -468,7 +474,7 @@ const PERF=[{u:'Ⅲ',nm:'Ⅲ. 손익 계산서 계정의 회계정보처리',lis
 // ── III-3 따라하기 02 영업 외 수익 거래(138쪽)
 {g:'따라하기',lv:1,dt:'11월 3일',q:'단기 대여금에 대한 이자 ₩36,000을 현금으로 수령하다.',d:[['현금',36000]],k:[['이자수익',36000]]},
 {g:'따라하기',lv:2,dt:'11월 5일',q:'보유 중인 유가 증권에 대한 배당금 ₩300,000을 현금으로 수령하였다.',d:[['현금',300000]],k:[['배당금수익',300000]]},
-{g:'따라하기',lv:2,dt:'11월 8일',q:'(주)대한토지의 미지급금 잔액 ₩20,000 중 ₩18,500은 한결은행 보통 예금 통장에서 이체하고, 나머지 금액은 면제받다.',d:[['미지급금',20000]],k:[['보통예금',18500],['채무면제이익',1500]]},
+{g:'따라하기',lv:2,dt:'11월 8일',q:'(주)대한토지의 미지급금 잔액 ₩20,000 중 ₩18,500은 한결은행 보통 예금 통장에서 이체하고, 나머지 금액은 면제받다.',d:[['미지급금',20000,'(주)대한토지']],k:[['보통예금',18500],['채무면제이익',1500]]},
 // ── III-3 혼자하기 02 영업 외 수익 거래(139쪽)
 {g:'혼자하기',lv:1,dt:'10월 1일',q:'업무용 건물 일부를 1년간 임대하고 임대료 ₩18,000을 현금으로 받다.',d:[['현금',18000]],k:[['임대료',18000]]},
 {g:'혼자하기',lv:2,dt:'10월 10일',q:'특수 관계자인 대주주로부터 토지 ₩30,000을 무상으로 기증받다.',d:[['토지',30000]],k:[['자산수증이익',30000]]},
@@ -485,17 +491,17 @@ const PERF=[{u:'Ⅲ',nm:'Ⅲ. 손익 계산서 계정의 회계정보처리',lis
 {g:'대단원 실습',lv:1,dt:'5월 7일',q:'불특정 다수를 대상으로 거리 홍보를 위한 광고용 전단을 인쇄하여 배포하고 인쇄 대금 ₩280,000을 현금으로 지급하다.',d:[['광고선전비',280000]],k:[['현금',280000]]},
 {g:'대단원 실습',lv:2,dt:'5월 10일',q:'당월분 직원 급여를 다음과 같이 당사 보통 예금 계좌에서 종업원 급여 계좌로 이체하여 지급하다.',doc:{'t':'pay','mon':'5월','name':'김하늘','date':'20××. 5. 10.','pay':[['기본급여',20000],['직책수당',2000],['상여금',5000],['특별수당',1000],['차량유지비',1000],['교육 지원 수당',1000]],'ded':[['소득세',2000],['지방소득세',1000],['고용보험',1000],['국민연금',2000],['건강보험',1000],['동료회비',1000]]},d:[['급여',30000]],k:[['예수금',8000],['보통예금',22000]]},
 {g:'대단원 실습',lv:1,dt:'5월 13일',q:'거래처 다온상사의 영업부 사원 결혼 축의금 ₩50,000을 현금으로 지급하다.',d:[['기업업무추진비',50000]],k:[['현금',50000]]},
-{g:'대단원 실습',lv:2,dt:'5월 15일',q:'가람뱅크에서 ₩80,000을 3개월간 차입하고, 선이자 ₩800을 공제한 잔액이 당사 보통 예금 통장에 계좌 이체되었다.',d:[['보통예금',79200],['이자비용',800]],k:[['단기차입금',80000]]},
+{g:'대단원 실습',lv:2,dt:'5월 15일',q:'가람뱅크에서 ₩80,000을 3개월간 차입하고, 선이자 ₩800을 공제한 잔액이 당사 보통 예금 통장에 계좌 이체되었다.',d:[['보통예금',79200],['이자비용',800]],k:[['단기차입금',80000,'가람뱅크']]},
 {g:'대단원 실습',lv:2,dt:'5월 17일',q:'5월분 급여 지급 시 원천 징수한 소득세 등을 누리은행 보통 예금 계좌에서 이체하여 지급하다.',doc:{'t':'trf','h':'이체확인증','dt':'20××-05-17 13:49:24','r':[['입금은행','하늘은행'],['입금계좌번호','452-04-230350'],['예금주','가온세무서'],['이체금액',8000],['수수료',0],['출금계좌','110-146-980558'],['송금인','(주)한빛컴퓨터']]},d:[['예수금',8000]],k:[['보통예금',8000]]},
 {g:'대단원 실습',lv:2,dt:'5월 20일',q:'업무용 화물차의 자동차세를 현금으로 납부하다.',doc:{'t':'tax','payer':'한가온','addr':'가온시 중앙로 290','car':'266노 4215 (화물차)','period':'20××.1.1. ~ 20××.6.30.','amt':120000,'date':'20××년 5월 20일'},d:[['세금과공과',120000]],k:[['현금',120000]]},
-{g:'대단원 실습',lv:2,dt:'5월 25일',q:'사무실의 온풍기를 수리하고 그 대금은 별빛 카드로 결제하다. (수익적 지출로 처리할 것)',doc:{'t':'ccs','shop':'따뜻한공조','biz':'210-81-36512','ceo':'박온유','addr':'가온시 여의로 356','tm':'20××-05-25 16:27:32','card':'1234-1111-****-5555','exp':'08/20××','mno':'123412341','acq':'별빛카드(전자서명전표)','amt':210000},d:[['수선비',210000]],k:[['미지급금',210000]]},
+{g:'대단원 실습',lv:2,dt:'5월 25일',q:'사무실의 온풍기를 수리하고 그 대금은 별빛 카드로 결제하다. (수익적 지출로 처리할 것)',doc:{'t':'ccs','shop':'따뜻한공조','biz':'210-81-36512','ceo':'박온유','addr':'가온시 여의로 356','tm':'20××-05-25 16:27:32','card':'1234-1111-****-5555','exp':'08/20××','mno':'123412341','acq':'별빛카드(전자서명전표)','amt':210000},d:[['수선비',210000]],k:[['미지급금',210000,'별빛카드']]},
 {g:'대단원 실습',lv:1,dt:'5월 28일',q:'회사 창립 기념일을 맞이하여 종업원에게 지급할 선물(올리브유 세트)을 새봄마트에서 구입하고 대금은 현금으로 지급하다.',doc:{'t':'cash','biz':'202-81-36578','shop':'(주)새봄마트','ceo':'정새봄','addr':'가온시 신림로 250','item':'올리브유 세트','no':'05930','date':'20××.5.28','amt':400000},d:[['복리후생비',400000]],k:[['현금',400000]]},
-{g:'대단원 실습',lv:2,dt:'5월 30일',q:'당사가 자금난에 처하자 1차 밴더 공급업체인 당사를 위하여 거래처 해든 전자로부터 당사가 지급해야 할 외상 매입금 ₩30,000을 면제한다는 통보를 받다.',d:[['외상매입금',30000]],k:[['채무면제이익',30000]]},
+{g:'대단원 실습',lv:2,dt:'5월 30일',q:'당사가 자금난에 처하자 1차 밴더 공급업체인 당사를 위하여 거래처 해든 전자로부터 당사가 지급해야 할 외상 매입금 ₩30,000을 면제한다는 통보를 받다.',d:[['외상매입금',30000,'해든전자']],k:[['채무면제이익',30000]]},
 {g:'대단원 실습',lv:1,dt:'6월 1일',q:'업무용 차량 보험료(1년분)를 보통 예금 계좌에서 이체하여 지급하다. (보험료는 비용으로 처리할 것)',doc:{'t':'ins','no':'20××-32249767','date':'20××년 6월 1일','insured':'(주)한빛컴퓨터','car':'266노 4215 (연식: 2022)','name':'화물차','period':'20××.6.1. ~ 다음 해 5.31.','prem':960000},d:[['보험료',960000]],k:[['보통예금',960000]]},
-{g:'대단원 실습',lv:2,dt:'6월 4일',q:'가람뱅크에서 차입한 단기 차입금 ₩120,000이 만기가 되어, 차입이자 ₩1,800과 원금은 당좌 수표를 발행하여 지급하다.',d:[['단기차입금',120000],['이자비용',1800]],k:[['당좌예금',121800]]},
+{g:'대단원 실습',lv:2,dt:'6월 4일',q:'가람뱅크에서 차입한 단기 차입금 ₩120,000이 만기가 되어, 차입이자 ₩1,800과 원금은 당좌 수표를 발행하여 지급하다.',d:[['단기차입금',120000,'가람뱅크'],['이자비용',1800]],k:[['당좌예금',121800]]},
 {g:'대단원 실습',lv:1,dt:'6월 7일',q:'단기 여유 자금 활용을 위해 취득한 누리전자 주식의 분기 배당금 ₩400,000을 현금으로 수령하다.',d:[['현금',400000]],k:[['배당금수익',400000]]},
 {g:'대단원 실습',lv:1,dt:'6월 10일',q:'본사 건물의 유휴 공간 사무실을 임대하고 1년분 임대료를 보통 예금 계좌로 이체받다.',doc:{'t':'ct','addr':'가온시 여의로 302','str':'철근콘크리트조','use':'사무실','area':'45㎡','dep':500000,'rent':1500,'year':18000,'pay':'20××년 6월 10일'},d:[['보통예금',18000]],k:[['임대료',18000]]},
-{g:'대단원 실습',lv:2,dt:'6월 14일',q:'신제품 판매 촉진과 사기 진작을 위하여 영업부 전체 회식을 실시하고 식사비를 별빛 카드로 결제하다.',doc:{'t':'slip','kind':'별빛카드','tm':'20××.6.14. 20:13:42','card':'2112-3535-****-67**','appr':'20××0614100023','inst':'일시불','amt':380000,'shop':'든든한 식당','ceo':'윤든든','biz':'603-13-34065','addr':'가온시 구로로 8','sign':'한빛컴퓨터'},d:[['복리후생비',380000]],k:[['미지급금',380000]]},
+{g:'대단원 실습',lv:2,dt:'6월 14일',q:'신제품 판매 촉진과 사기 진작을 위하여 영업부 전체 회식을 실시하고 식사비를 별빛 카드로 결제하다.',doc:{'t':'slip','kind':'별빛카드','tm':'20××.6.14. 20:13:42','card':'2112-3535-****-67**','appr':'20××0614100023','inst':'일시불','amt':380000,'shop':'든든한 식당','ceo':'윤든든','biz':'603-13-34065','addr':'가온시 구로로 8','sign':'한빛컴퓨터'},d:[['복리후생비',380000]],k:[['미지급금',380000,'별빛카드']]},
 {g:'대단원 실습',lv:2,dt:'6월 16일',q:'당월 영업부 업무용 휴대폰 요금 ₩120,000, 수도 사용료 ₩150,000을 현금으로 납부하다.',d:[['통신비',120000],['수도광열비',150000]],k:[['현금',270000]]},
 {g:'대단원 실습',lv:1,dt:'6월 23일',q:'사무실에서 사용할 소모품 ₩80,000을 하늘문구에서 구입하고 대금은 하늘은행 보통 예금 계좌와 연결된 체크카드로 결제하다. (단, 구입 시 비용으로 회계 처리할 것.)',d:[['소모품비',80000]],k:[['보통예금',80000]]},
 {g:'대단원 실습',lv:2,dt:'6월 25일',q:'매출처 구매 부서 직원과 식사를 하고 현금을 지급하다.',doc:{'t':'rc','c':'#222','to':'(주)한빛컴퓨터','biz':'206-81-85791','shop':'든든한 식당','ceo':'오맛나','addr':'가온시 신림로 95','up':'음식','jm':'한식','date':'20××. 6. 25','items':[['6/25','식대',90000]]},d:[['기업업무추진비',90000]],k:[['현금',90000]],x:'예전 이름은 접대비예요(지금 이름: 기업업무추진비).'}
@@ -784,7 +790,8 @@ function mk(p,st){
     C.slots=[...C.ans.d.map(()=>({side:'d',kind:'e',v:null})),...C.ans.k.map(()=>({side:'k',kind:'e',v:null}))];
     C.cards=EL8.map((t,i)=>({id:i,kind:'e',t,used:false}));
   }else if(st===7){
-    C.type='s';C.inp={d:p.d.map(()=>({a:'',m:''})),k:p.k.map(()=>({a:'',m:''}))};
+    C.type='s';C.inp={d:p.d.map(()=>({a:'',m:'',p:''})),k:p.k.map(()=>({a:'',m:'',p:''}))};
+    C.pt=typeof G!=='undefined'&&G&&G.mode==='perf'&&hasPt(p); // 수행평가: 거래처도 씀
   }else{
     C.type='j';const cf=CFG[st];
     C.slots=[];for(const s of['d','k'])p[s].forEach((x,li)=>{C.slots.push({side:s,kind:'a',line:li,v:null},{side:s,kind:'m',line:li,v:null})});
@@ -809,6 +816,7 @@ function mk(p,st){
     C.fixM=p.d.length===1&&p.k.length===1&&p.d[0][1]===p.k[0][1]&&qa.length===1&&qa[0]===p.d[0][1];
     let id=0;C.cards=[...accs.slice().sort((x,y)=>ordOf(x)-ordOf(y)||x.localeCompare(y,'ko')).map(t=>({id:id++,kind:'a',t,used:false})),...(C.fixM?[p.d[0][1]]:am.slice().sort((x,y)=>x-y)).map(v=>({id:id++,kind:'m',t:fmt(v),v,used:false}))];
     if(C.fixM)C.slots.forEach(x=>{if(x.kind==='m'){x.v=C.cards.length-1;x.fix=1}});
+    C.pt=st===9&&hasPt(p); // 수행평가: 분개를 다 놓으면 거래처 카드가 나옴
   }
   return C;
 }
@@ -866,16 +874,18 @@ function render(){
   if(C.type==='s'){
     const col=s=>C.inp[s].map((r,li)=>{const mk=dn?dn.mark[s][li]:null;return `<div class="ln">
       <input class="inp ${mk?(mk.a?'ok':'ng'):''}" data-cx="${s==='d'?0:2}" data-cy="${li}" placeholder="계정과목" lang="ko" autocomplete="off" autocapitalize="off" spellcheck="false" value="${esc(r.a)}" ${dn?'disabled':''} oninput="this.value=e2k(this.value);G.cur.inp.${s}[${li}].a=this.value">
-      <input class="inp r ${mk?(mk.m?'ok':'ng'):''}" data-cx="${s==='d'?1:3}" data-cy="${li}" inputmode="numeric" placeholder="금액" value="${r.m}" ${dn?'disabled':''} oninput="this.value=num(this.value)?fmt(num(this.value)):'';G.cur.inp.${s}[${li}].m=this.value;mirM('${s}',this.value)"></div>`}).join('');
+      <input class="inp r ${mk?(mk.m?'ok':'ng'):''}" data-cx="${s==='d'?1:3}" data-cy="${li}" inputmode="numeric" placeholder="금액" value="${r.m}" ${dn?'disabled':''} oninput="this.value=num(this.value)?fmt(num(this.value)):'';G.cur.inp.${s}[${li}].m=this.value;mirM('${s}',this.value)">
+      ${C.pt?`<div class="pln"><span>거래처</span><input class="inp pt ${mk&&mk.p!=null?(mk.p?'ok':'ng'):''}" data-cx="${s==='d'?0:2}" data-cy="${li+.5}" placeholder="필요할 때만" lang="ko" autocomplete="off" spellcheck="false" value="${esc(r.p)}" ${dn?'disabled':''} oninput="this.value=e2k(this.value);G.cur.inp.${s}[${li}].p=this.value"></div>`:''}</div>`}).join('');
     body=`<div class="tf"><div><div class="side">차변</div>${col('d')}</div><div><div class="side">대변</div>${col('k')}</div></div>`;
   }else if(C.type!=="w"){
     const sl=s=>{const idx=C.slots.map((x,i)=>i).filter(i=>C.slots[i].side===s);
       if(C.type==='e')return idx.map(i=>slotH(i)).join('');
       const lines=[...new Set(idx.map(i=>C.slots[i].line))];
-      return lines.map(li=>`<div class="ln">${idx.filter(i=>C.slots[i].line===li).map(i=>slotH(i)).join('')}</div>`).join('');};
+      return lines.map(li=>`<div class="ln">${idx.filter(i=>C.slots[i].line===li&&C.slots[i].kind!=='p').map(i=>slotH(i)).join('')}${idx.filter(i=>C.slots[i].line===li&&C.slots[i].kind==='p').map(i=>`<div class="pln"><span>거래처</span>${slotH(i)}</div>`).join('')}</div>`).join('');};
     body=`<div class="tf"><div><div class="side">차변${C.type==='e'?' 요소':''}</div>${sl('d')}</div><div><div class="side">대변${C.type==='e'?' 요소':''}</div>${sl('k')}</div></div>`;
   }
   const tray=C.type==='s'||C.type==='w'||dn?'':`<div class="tray"><h3>보기 · 카드를 끌어다 빈칸에 놓거나, 카드를 누른 뒤 빈칸을 눌러요</h3>
+    ${C.ptOn?`<div class="ptg">🏢 거래처 카드를 거래처가 필요한 줄에 놓고 [확인]을 눌러요. 필요 없는 줄은 비워 둬요.</div><div class="cards">${C.cards.filter(c=>c.kind==='p').map(cardH).join('')}</div>`:''}
     ${C.type==='e'?`<div class="cards g4">${C.cards.map(cardH).join('')}</div>`:`<div class="cards">${C.cards.filter(c=>c.kind==='a').map(cardH).join('')}</div>${C.fixM?'':`<div class="cards">${C.cards.filter(c=>c.kind==='m').map(cardH).join('')}</div>`}`}</div>`;
   app.innerHTML=`
   <div class="top"><div class="tb"><button class="x" onclick="quit()">← 그만하기</button><span>${G.i+1} / ${G.N}</span><span>${right}</span></div>
@@ -886,8 +896,8 @@ function render(){
     ${C.type==='w'?`<div class="wq">${C.ch.map((c,i)=>{const on=C.on.includes(i);const cl=dn?(on?(c.k>=0?'ok':'ng'):(c.k>=0?'miss':'')):(on?'on':'');return c.k===-2?esc(c.post):`${esc(c.pre)}<span class="wd ${cl}" onclick="tapW(${i})">${esc(c.t)}</span>${c.post?`<span class="pt">${esc(c.post)}</span>`:''}`}).join(' ')}</div>
       ${dn?'':`<div class="tbar"><i id="tw"></i></div><div class="sm gw" id="tws" style="text-align:right"></div>`}
       <div class="sm mut gw" style="margin-top:6px">계정과목을 알려 주는 단서 ${p.w.length}개를 눌러 동그라미!</div>`:`${p.dt?`<div class="sm mut">${p.dt}</div>`:''}<div class="q">${esc(p.q)}</div>${p.doc?docH(p.doc,p.dt):''}`}
-    ${C.type==='e'?'<div class="sm mut gw" style="margin-top:4px">이 거래의 차변 요소와 대변 요소를 찾아 놓아요.</div>':C.type==='s'?'<div class="sm mut gw" style="margin-top:4px">계정과목과 금액을 직접 써요.</div>':''}</div>
-  ${C.type==='w'?'':`<div class="card" id="bd">${body}${dn||C.type!=='s'?'':`<div class="msg" id="msg"></div><button class="btn" onclick="check()">확인</button>`}</div>`}
+    ${C.type==='e'?'<div class="sm mut gw" style="margin-top:4px">이 거래의 차변 요소와 대변 요소를 찾아 놓아요.</div>':C.type==='s'?`<div class="sm mut gw" style="margin-top:4px">계정과목과 금액을 직접 써요.${C.pt?' 거래처가 필요한 줄에는 거래처도 써요(필요 없는 줄은 비워 둬요).':''}</div>`:''}</div>
+  ${C.type==='w'?'':`<div class="card" id="bd">${body}${dn||!(C.type==='s'||C.ptOn)?'':`<div class="msg" id="msg"></div><button class="btn" onclick="check()">확인</button>`}</div>`}
   ${dn?fbH():''}${tray}`;
   bind();
   if(C.type==='s'&&!dn&&typeof matchMedia==='function'&&matchMedia('(pointer:fine)').matches){const f=[...document.querySelectorAll('input[data-cx]')].find(i=>!i.value);if(f)f.focus()}
@@ -897,6 +907,34 @@ function render(){
     if(left<=0&&!C.done&&G&&G.cur===C){clearInterval(TW);C.timeout=true;check()}};tick();TW=setInterval(tick,200)}
   if(G.mode==='cup'){clearInterval(T);if(!dn)T=setInterval(()=>{const e=document.getElementById('tm');if(e)e.textContent=tm(Math.floor((Date.now()-G.t0)/1000))},1000)}
 }
+// ───────── 거래처(수행평가 연습만): 정답 줄의 셋째 칸. 거래처가 분명하지 않은 계정(예수금 등)은 비워 둠
+const hasPt=p=>[...p.d,...p.k].some(x=>x[2]);
+const pnorm=x=>String(x||'').replace(/\s|\(주\)|주식회사/g,'');
+const PTX=['(주)한빛컴퓨터','한결은행','누리은행','바다은행','가온세무서','별빛카드','가람뱅크'];
+function ptCards(p){
+  const right=[...new Set([...p.d,...p.k].filter(x=>x[2]).map(x=>x[2]))];
+  const all=[...new Set([...PERF.flatMap(u=>u.list.flatMap(q=>[...q.d,...q.k].filter(x=>x[2]).map(x=>x[2]))),...PTX])].filter(n=>!right.some(r=>pnorm(r)===pnorm(n)));
+  const txt=pnorm(p.q+JSON.stringify(p.doc||''));
+  const cand=shuf(all).sort((a,b)=>(txt.includes(pnorm(b))?1:0)-(txt.includes(pnorm(a))?1:0)); // 문장·서류에 나온 이름을 먼저 헷갈리는 보기로
+  return shuf([...right,...cand.slice(0,2)]);
+}
+// 분개 칸을 다 채우면 줄마다 거래처 칸을 붙이고 거래처 카드를 보기에 더함
+function ptOpen(C){
+  C.ptOn=1;const ln=[];C.slots.forEach(x=>{if(x.kind==='a')ln.push([x.side,x.line])});
+  ln.forEach(([sd,li])=>C.slots.push({side:sd,kind:'p',line:li,v:null,opt:1}));
+  ptCards(C.p).forEach(t=>C.cards.push({id:C.cards.length,kind:'p',t,used:false}));
+}
+// 거래처 채점: 거래처를 넣은 줄(쪽·계정·거래처)이 정답과 똑같아야 함
+const ptKey=(sd,a,n)=>sd+'|'+norm(a)+'|'+pnorm(n);
+function ptOK(user,p){
+  const A=[],U=[];for(const sd of['d','k']){p[sd].forEach(x=>{if(x[2])A.push(ptKey(sd,x[0],x[2]))});user[sd].forEach(x=>{if(x[2])U.push(ptKey(sd,x[0],x[2]))})}
+  return A.length===U.length&&A.every(k=>U.includes(k));
+}
+function ptMark(sd,u,p){ // 줄 하나의 거래처 표시: 맞음 true / 틀림 false / 표시 없음 null
+  const need=p[sd].find(x=>norm(x[0])===norm(u[0])&&x[2]);
+  if(u[2])return !!need&&pnorm(need[2])===pnorm(u[2]);
+  return need?false:null;
+}
 function mirM(s,v){
   const C=G.cur;if(C.p.d.length!==1||C.p.k.length!==1)return;
   C.inp[s][0].auto=0;const o=s==='d'?'k':'d',r=C.inp[o][0];
@@ -904,8 +942,8 @@ function mirM(s,v){
 }
 function slotH(i){
   const C=G.cur,s=C.slots[i],c=s.v!=null?C.cards[s.v]:null,mk=C.done?C.done.mark[i]:null;
-  const ph=s.kind==='a'?'계정과목':s.kind==='m'?'금액':'요소';
-  return `<div class="slot ${s.kind==='m'?'m':''} ${s.fix?'fx':''} ${c?'f':''} ${mk===true?'ok':mk===false?'ng':''}" data-s="${i}">${c?esc(c.t):ph}</div>`;
+  const ph=s.kind==='a'?'계정과목':s.kind==='m'?'금액':s.kind==='p'?'필요할 때만':'요소';
+  return `<div class="slot ${s.kind==='m'?'m':s.kind==='p'?'p':''} ${s.fix?'fx':''} ${c?'f':''} ${mk===true?'ok':mk===false?'ng':''}" data-s="${i}">${c?esc(c.t):ph}</div>`;
 }
 const cardH=c=>`<button class="cd ${c.kind} ${c.used?'used':''} ${G.cur.sel===c.id?'sel':''}" data-c="${c.id}">${esc(c.t)}</button>`;
 
@@ -946,25 +984,30 @@ function bind(){
 // 끌던 카드 복사본이 화면에 남지 않게
 const clearGhost=()=>document.querySelectorAll('.ghost').forEach(g=>g.remove());
 // 빈칸을 다 채우면 바로 채점
-function full(){const C=G&&G.cur;if(C&&!C.done&&C.slots&&C.slots.every(s=>s.v!=null))setTimeout(check,250)}
+function full(){const C=G&&G.cur;if(!C||C.done||!C.slots||!C.slots.every(s=>s.v!=null||s.opt))return;
+  if(C.pt&&!C.ptOn){ptOpen(C);render();return}
+  if(!C.ptOn)setTimeout(check,250)} // 거래처 단계는 [확인] 버튼으로 채점
 // 빈칸 하나를 비움. 계정 카드는 다른 칸에 없으면 보기로 돌아감(금액 카드는 늘 보기에 남아 있음)
 function unplaceSlot(si){
   const C=G.cur,s=C.slots[si];if(s.v==null)return;
   const c=C.cards[s.v];s.v=null;
-  if(c.kind!=='m'&&!C.slots.some(x=>x.v===c.id))c.used=false;
+  if((c.kind==='a'||c.kind==='e')&&!C.slots.some(x=>x.v===c.id))c.used=false;
 }
 // 카드를 빈칸에 놓음. 계정 카드는 한 번만 쓰고(다른 칸에 있으면 옮김), 금액 카드는 같은 금액을 여러 칸에 쓸 수 있음.
 // 빈칸에서 끌어온 카드면 옮기고, 놓을 칸에 카드가 있으면 서로 자리를 바꿈
 function place(cid,si,from){
   const C=G.cur,c=C.cards[cid],s=C.slots[si];
   if(c.kind!==s.kind||s.fix)return;
-  if(from==null&&c.kind!=='m'){const k=C.slots.findIndex(x=>x.v===cid);if(k>=0)from=k}
+  if(from==null&&(c.kind==='a'||c.kind==='e')){const k=C.slots.findIndex(x=>x.v===cid);if(k>=0)from=k}
   if(from===si)return;
   const f=from!=null?C.slots[from]:null,old=s.v;
-  s.v=cid;if(c.kind!=='m')c.used=true;
+  s.v=cid;if(c.kind==='a'||c.kind==='e')c.used=true;
   if(f)f.v=old!=null&&old!==cid?old:null;
-  else if(old!=null&&old!==cid&&C.cards[old].kind!=='m'&&!C.slots.some(x=>x.v===old))C.cards[old].used=false;
-  if(c.kind==='m'&&C.p.d.length===1&&C.p.k.length===1){const o=C.slots.find(x=>x.kind==='m'&&x.side!==s.side);if(o&&o.v==null)o.v=cid}
+  else if(old!=null&&old!==cid&&(C.cards[old].kind==='a'||C.cards[old].kind==='e')&&!C.slots.some(x=>x.v===old))C.cards[old].used=false;
+  // 대차 평균의 원리: 금액 칸이 하나만 남으면 (반대쪽 합계 - 같은 쪽 합계) 금액 카드를 자동으로 넣음
+  if(c.kind==='m'){const ms=C.slots.filter(x=>x.kind==='m'),em=ms.filter(x=>x.v==null);
+    if(em.length===1){const e=em[0],sum=sd=>ms.filter(x=>x.side===sd&&x.v!=null).reduce((t,x)=>t+C.cards[x.v].v,0),need=sum(e.side==='d'?'k':'d')-sum(e.side);
+      const cc=C.cards.find(x=>x.kind==='m'&&x.v===need);if(need>0&&cc)e.v=cc.id}}
 }
 
 // ───────── 영문 자판으로 친 글자를 한글로(두벌식). 계정과목 칸은 한글 자판으로 바꾸지 않아도 한글이 됨
@@ -1019,20 +1062,20 @@ function check(){
     mark=C.slots.map(s=>C.ans[s.side].includes(C.cards[s.v].t));
     ok=['d','k'].every(s=>user[s].length===C.ans[s].length&&C.ans[s].every(e=>user[s].includes(e)));
   }else if(C.type==='j'){
-    if(C.slots.some(s=>s.v==null)){msg.textContent=SAY.empty;return}
+    if(C.slots.some(s=>s.v==null&&!s.opt)){if(msg)msg.textContent=SAY.empty;return}
     user={d:[],k:[]};
-    for(const s of['d','k'])p[s].forEach((_,li)=>{const a=C.slots.find(x=>x.side===s&&x.line===li&&x.kind==='a'),m=C.slots.find(x=>x.side===s&&x.line===li&&x.kind==='m');user[s].push([C.cards[a.v].t,C.cards[m.v].v])});
-    ok=same(mp(user.d),mp(p.d))&&same(mp(user.k),mp(p.k));
+    for(const s of['d','k'])p[s].forEach((_,li)=>{const a=C.slots.find(x=>x.side===s&&x.line===li&&x.kind==='a'),m=C.slots.find(x=>x.side===s&&x.line===li&&x.kind==='m');const q=C.slots.find(x=>x.side===s&&x.line===li&&x.kind==='p');user[s].push([C.cards[a.v].t,C.cards[m.v].v,q&&q.v!=null?C.cards[q.v].t:''])});
+    ok=same(mp(user.d),mp(p.d))&&same(mp(user.k),mp(p.k))&&(!C.pt||ptOK(user,p));
     // 칸마다 표시: 계정이 그쪽 정답에 있으면 ○, 금액은 같은 줄 계정의 정답 금액과 같으면 ○
     const A={d:mp(p.d),k:mp(p.k)};
-    mark=C.slots.map(s=>{const u=user[s.side][s.line];return s.kind==='a'?A[s.side][u[0]]!==undefined:A[s.side][u[0]]===u[1]||(A[s.side][u[0]]===undefined&&Object.values(A[s.side]).includes(u[1]))});
+    mark=C.slots.map(s=>{const u=user[s.side][s.line];return s.kind==='p'?ptMark(s.side,u,p):s.kind==='a'?A[s.side][u[0]]!==undefined:A[s.side][u[0]]===u[1]||(A[s.side][u[0]]===undefined&&Object.values(A[s.side]).includes(u[1]))});
   }else{
     const I=C.inp;
     if(['d','k'].some(s=>I[s].some(r=>!r.a.trim()||!num(r.m)))){msg.textContent=SAY.empty;return}
-    user={d:I.d.map(r=>[norm(r.a),num(r.m)]),k:I.k.map(r=>[norm(r.a),num(r.m)])};
+    user={d:I.d.map(r=>[norm(r.a),num(r.m),C.pt?String(r.p||'').trim():'']),k:I.k.map(r=>[norm(r.a),num(r.m),C.pt?String(r.p||'').trim():''])};
     const A={d:mp(p.d.map(([a,v])=>[norm(a),v])),k:mp(p.k.map(([a,v])=>[norm(a),v]))};
-    ok=same(mp(user.d),A.d)&&same(mp(user.k),A.k);
-    mark={d:user.d.map(u=>({a:A.d[u[0]]!==undefined,m:A.d[u[0]]===u[1]})),k:user.k.map(u=>({a:A.k[u[0]]!==undefined,m:A.k[u[0]]===u[1]}))};
+    ok=same(mp(user.d),A.d)&&same(mp(user.k),A.k)&&(!C.pt||ptOK(user,p));
+    mark={d:user.d.map(u=>({a:A.d[u[0]]!==undefined,m:A.d[u[0]]===u[1],p:C.pt?ptMark('d',u,p):null})),k:user.k.map(u=>({a:A.k[u[0]]!==undefined,m:A.k[u[0]]===u[1],p:C.pt?ptMark('k',u,p):null}))};
   }
   C.done={ok,mark};
   // 기록
@@ -1069,13 +1112,13 @@ function ansH(p,type,A){
   if(type==='w')ans=`<div class="wa">${p.w.map(([ph,a])=>`<span>${esc(ph)} ➜ ${a}</span>`).join('')}</div>`;
   else if(type==='e'){const acc=(sd,e)=>p[sd].filter(x=>el(x[0],sd)===e).map(x=>x[0]).join(', ');
     ans=`<div class="ab">${col('d','차변 요소',A.d.map(x=>`<div class="ai"><b>${x}</b><small>(${acc('d',x)})</small></div>`))}${col('k','대변 요소',A.k.map(x=>`<div class="ai"><b>${x}</b><small>(${acc('k',x)})</small></div>`))}</div>`}
-  else{const it=l=>l.map(x=>`<div class="ai"><b>${x[0]}</b><span>${fmt(x[1])}</span></div>`);ans=`<div class="ab">${col('d','차변',it(p.d))}${col('k','대변',it(p.k))}</div>`}
+  else{const it=l=>l.map(x=>`<div class="ai"><b>${x[0]}</b><span>${fmt(x[1])}</span>${x[2]?`<em class="ptp">${esc(x[2])}</em>`:''}</div>`);ans=`<div class="ab">${col('d','차변',it(p.d))}${col('k','대변',it(p.k))}</div>`}
   return `<div class="sm" style="font-weight:700;margin-bottom:6px">${type==='w'?'정답 단서':'정답'}</div>${ans}${p.x?`<div class="gw" style="margin-top:10px;font-size:16px">💡 ${p.x}</div>`:''}`;
 }
 function myH(w){
   if(w.type==='w')return w.user.length?w.user.map(esc).join(', '):'(고르지 않음)';
   if(w.type==='e')return `차변 ${w.user.d.join(', ')} / 대변 ${w.user.k.join(', ')}`;
-  const f=a=>a.map(x=>`${esc(x[0])} ${fmt(x[1])}`).join(', ');
+  const f=a=>a.map(x=>`${esc(x[0])} ${fmt(x[1])}${x[2]?` [${esc(x[2])}]`:''}`).join(', ');
   return `(차) ${f(w.user.d)} / (대) ${f(w.user.k)}`;
 }
 function quit(){
