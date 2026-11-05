@@ -125,6 +125,7 @@ ul.ex{font-family:"Gowun Dodum",sans-serif;margin:8px 0 0;padding-left:20px;font
 .pln{display:flex;align-items:center;gap:6px;margin-top:2px}.pln>span{font-size:12px;color:#7c4dcc;white-space:nowrap}.pln .slot,.pln .inp{flex:1;min-width:0}
 .inp.pt{border-color:#c7b3ee}.ptg{font-size:13px;color:#7c4dcc;margin:2px 0 6px;font-weight:700}
 .ptp{display:inline-block;font-style:normal;font-size:12px;padding:1px 8px;border-radius:99px;background:#efe8fb;color:#7c4dcc;margin-left:4px}
+[data-side].hovs{background:var(--acs);border-radius:10px}
 .gd{border-top:1px solid var(--ln)}.gd:first-of-type{border-top:0}.gd summary{list-style:none;cursor:pointer}.gd summary::-webkit-details-marker{display:none}.gd[open] summary .v{color:var(--ac)}
 .lb{font-size:14px;color:var(--mut);margin:14px 0 6px;font-weight:700}
 .field{width:100%;border:1px solid var(--ln);border-radius:12px;padding:12px;font-size:17px;background:var(--sl);color:var(--tx);font-family:inherit}
@@ -453,6 +454,7 @@ function home(){
 // g = 교과서 묶음(따라하기·혼자하기 / 대단원 실습), lv = 1 상대적으로 쉬운 문제·2 어려운 문제(계정 3개, 증빙 서류, 낯선 계정 등), dt = 날짜
 // doc = 증빙 서류 그림(app.html docH): t = pay 급여 명세서·bk 예금 거래 내역·rc 영수증·bill 청구서·trf 이체확인증·tax 자동차세 신고납부서·ccs 신용 카드 매출 전표·cash 현금영수증·slip 카드 매출전표·ins 자동차보험증권·ct 월세 계약서
 // 계정 이름은 KcLep의 (판) 같은 괄호를 뺀 이름. 은행·카드사·세무서·기관 이름도 모두 가상의 이름으로 바꿈.
+// am = 금액 보기를 정해 둔 문제(서류에 나온 금액들, 카드 놓기에서 이 금액만 보기로)
 // 정답 줄의 셋째 칸 = 거래처(채권·채무 계정에서 거래처가 분명할 때만, 예수금처럼 거래처가 분명하지 않으면 비움). 수행평가 연습에서만 거래처 채점.
 const PERF=[{u:'Ⅲ',nm:'Ⅲ. 손익 계산서 계정의 회계정보처리',list:[
 // ── III-2 따라하기 01 판매비와 관리비 거래(교과서 133쪽)
@@ -485,8 +487,8 @@ const PERF=[{u:'Ⅲ',nm:'Ⅲ. 손익 계산서 계정의 회계정보처리',lis
 // ── III-3 혼자하기 03 영업 외 비용 거래(139쪽, 사채 이자 문제는 뺌)
 {g:'혼자하기',lv:1,dt:'10월 24일',q:'사회 복지 공동체에 ₩300,000을 현금으로 기부하다.',d:[['기부금',300000]],k:[['현금',300000]]},
 // ── 대단원 실습 손익 계산서 계정 종합(144쪽)
-{g:'대단원 실습',lv:1,dt:'5월 1일',q:'당점 거래 은행의 보통 예금 계좌(누리은행)에 이자가 입금됨을 확인하고 회계 처리하다.',doc:{'t':'bk','bank':'누리은행','acct':'851-11-073757','owner':'(주)한빛컴퓨터','date':'20××-05-01','kind':'입금','memo':'예금 이자','amt':98000,'bal':5960800,'br':'가온'},d:[['보통예금',98000]],k:[['이자수익',98000]]},
-{g:'대단원 실습',lv:1,dt:'5월 3일',q:'영업용 화물차의 엔진 오일 등을 쌩쌩카센터에서 교체하고, 교체 대금을 현금으로 지급하다.',doc:{'t':'rc','to':'(주)한빛컴퓨터','biz':'213-81-40562','shop':'쌩쌩카센터','ceo':'최정비','addr':'가온시 강변대로 823','up':'서비스업','jm':'자동차정비','date':'20××.05.03.','items':[['05/03','엔진오일',120000],['05/03','오일필터',50000],['05/03','에어컨필터',30000]]},d:[['차량유지비',200000]],k:[['현금',200000]]},
+{g:'대단원 실습',lv:1,dt:'5월 1일',q:'당점 거래 은행의 보통 예금 계좌(누리은행)에 이자가 입금됨을 확인하고 회계 처리하다.',doc:{'t':'bk','bank':'누리은행','acct':'851-11-073757','owner':'(주)한빛컴퓨터','date':'20××-05-01','kind':'입금','memo':'예금 이자','amt':9000,'bal':200000,'br':'가온'},am:[9000,200000],d:[['보통예금',9000]],k:[['이자수익',9000]]},
+{g:'대단원 실습',lv:1,dt:'5월 3일',q:'영업용 화물차의 엔진 오일 등을 쌩쌩카센터에서 교체하고, 교체 대금을 현금으로 지급하다.',doc:{'t':'rc','to':'(주)한빛컴퓨터','biz':'213-81-40562','shop':'쌩쌩카센터','ceo':'최정비','addr':'가온시 강변대로 823','up':'서비스업','jm':'자동차정비','date':'20××.05.03.','items':[['05/03','엔진오일',120000],['05/03','오일필터',50000],['05/03','에어컨필터',30000]]},am:[30000,50000,120000,200000],d:[['차량유지비',200000]],k:[['현금',200000]]},
 {g:'대단원 실습',lv:1,dt:'5월 6일',q:'4월분 인터넷 사용요금이 당사 보통 예금 계좌에서 자동 이체됨을 확인하다.',doc:{'t':'bill','co':'(주)누리통신','mon':'5월','period':'4월1일 ~ 4월30일','items':[['통신요금',38000],['부가사용요금',0],['통신기기비',0],['미납요금',0]],'amt':38000,'note':'당월 할인금액 -5,000원'},d:[['통신비',38000]],k:[['보통예금',38000]]},
 {g:'대단원 실습',lv:1,dt:'5월 7일',q:'불특정 다수를 대상으로 거리 홍보를 위한 광고용 전단을 인쇄하여 배포하고 인쇄 대금 ₩280,000을 현금으로 지급하다.',d:[['광고선전비',280000]],k:[['현금',280000]]},
 {g:'대단원 실습',lv:2,dt:'5월 10일',q:'당월분 직원 급여를 다음과 같이 당사 보통 예금 계좌에서 종업원 급여 계좌로 이체하여 지급하다.',doc:{'t':'pay','mon':'5월','name':'김하늘','date':'20××. 5. 10.','pay':[['기본급여',20000],['직책수당',2000],['상여금',5000],['특별수당',1000],['차량유지비',1000],['교육 지원 수당',1000]],'ded':[['소득세',2000],['지방소득세',1000],['고용보험',1000],['국민연금',2000],['건강보험',1000],['동료회비',1000]]},d:[['급여',30000]],k:[['예수금',8000],['보통예금',22000]]},
@@ -497,10 +499,10 @@ const PERF=[{u:'Ⅲ',nm:'Ⅲ. 손익 계산서 계정의 회계정보처리',lis
 {g:'대단원 실습',lv:2,dt:'5월 25일',q:'사무실의 온풍기를 수리하고 그 대금은 별빛 카드로 결제하다. (수익적 지출로 처리할 것)',doc:{'t':'ccs','shop':'따뜻한공조','biz':'210-81-36512','ceo':'박온유','addr':'가온시 여의로 356','tm':'20××-05-25 16:27:32','card':'1234-1111-****-5555','exp':'08/20××','mno':'123412341','acq':'별빛카드(전자서명전표)','amt':210000},d:[['수선비',210000]],k:[['미지급금',210000,'별빛카드']]},
 {g:'대단원 실습',lv:1,dt:'5월 28일',q:'회사 창립 기념일을 맞이하여 종업원에게 지급할 선물(올리브유 세트)을 새봄마트에서 구입하고 대금은 현금으로 지급하다.',doc:{'t':'cash','biz':'202-81-36578','shop':'(주)새봄마트','ceo':'정새봄','addr':'가온시 신림로 250','item':'올리브유 세트','no':'05930','date':'20××.5.28','amt':400000},d:[['복리후생비',400000]],k:[['현금',400000]]},
 {g:'대단원 실습',lv:2,dt:'5월 30일',q:'당사가 자금난에 처하자 1차 밴더 공급업체인 당사를 위하여 거래처 해든 전자로부터 당사가 지급해야 할 외상 매입금 ₩30,000을 면제한다는 통보를 받다.',d:[['외상매입금',30000,'해든전자']],k:[['채무면제이익',30000]]},
-{g:'대단원 실습',lv:1,dt:'6월 1일',q:'업무용 차량 보험료(1년분)를 보통 예금 계좌에서 이체하여 지급하다. (보험료는 비용으로 처리할 것)',doc:{'t':'ins','no':'20××-32249767','date':'20××년 6월 1일','insured':'(주)한빛컴퓨터','car':'266노 4215 (연식: 2022)','name':'화물차','period':'20××.6.1. ~ 다음 해 5.31.','prem':960000},d:[['보험료',960000]],k:[['보통예금',960000]]},
+{g:'대단원 실습',lv:1,dt:'6월 1일',q:'업무용 차량 보험료(1년분)를 보통 예금 계좌에서 이체하여 지급하다. (보험료는 비용으로 처리할 것)',doc:{'t':'ins','no':'20××-32249767','date':'20××년 6월 1일','insured':'(주)한빛컴퓨터','car':'266노 4215 (연식: 2022)','name':'화물차','period':'20××.6.1. ~ 다음 해 5.31.','val':300000,'acc':50000,'prem':100000},am:[50000,100000,300000],d:[['보험료',100000]],k:[['보통예금',100000]]},
 {g:'대단원 실습',lv:2,dt:'6월 4일',q:'가람뱅크에서 차입한 단기 차입금 ₩120,000이 만기가 되어, 차입이자 ₩1,800과 원금은 당좌 수표를 발행하여 지급하다.',d:[['단기차입금',120000,'가람뱅크'],['이자비용',1800]],k:[['당좌예금',121800]]},
 {g:'대단원 실습',lv:1,dt:'6월 7일',q:'단기 여유 자금 활용을 위해 취득한 누리전자 주식의 분기 배당금 ₩400,000을 현금으로 수령하다.',d:[['현금',400000]],k:[['배당금수익',400000]]},
-{g:'대단원 실습',lv:1,dt:'6월 10일',q:'본사 건물의 유휴 공간 사무실을 임대하고 1년분 임대료를 보통 예금 계좌로 이체받다.',doc:{'t':'ct','addr':'가온시 여의로 302','str':'철근콘크리트조','use':'사무실','area':'45㎡','dep':500000,'rent':1500,'year':18000,'pay':'20××년 6월 10일'},d:[['보통예금',18000]],k:[['임대료',18000]]},
+{g:'대단원 실습',lv:1,dt:'6월 10일',q:'본사 건물의 유휴 공간 사무실을 임대하고 1년분 임대료를 보통 예금 계좌로 이체받다.',doc:{'t':'ct','addr':'가온시 여의로 302','str':'철근콘크리트조','use':'사무실','area':'45㎡','dep':500000,'rent':2000,'year':24000,'pay':'20××년 6월 10일'},am:[2000,24000,500000],d:[['보통예금',24000]],k:[['임대료',24000]]},
 {g:'대단원 실습',lv:2,dt:'6월 14일',q:'신제품 판매 촉진과 사기 진작을 위하여 영업부 전체 회식을 실시하고 식사비를 별빛 카드로 결제하다.',doc:{'t':'slip','kind':'별빛카드','tm':'20××.6.14. 20:13:42','card':'2112-3535-****-67**','appr':'20××0614100023','inst':'일시불','amt':380000,'shop':'든든한 식당','ceo':'윤든든','biz':'603-13-34065','addr':'가온시 구로로 8','sign':'한빛컴퓨터'},d:[['복리후생비',380000]],k:[['미지급금',380000,'별빛카드']]},
 {g:'대단원 실습',lv:2,dt:'6월 16일',q:'당월 영업부 업무용 휴대폰 요금 ₩120,000, 수도 사용료 ₩150,000을 현금으로 납부하다.',d:[['통신비',120000],['수도광열비',150000]],k:[['현금',270000]]},
 {g:'대단원 실습',lv:1,dt:'6월 23일',q:'사무실에서 사용할 소모품 ₩80,000을 하늘문구에서 구입하고 대금은 하늘은행 보통 예금 계좌와 연결된 체크카드로 결제하다. (단, 구입 시 비용으로 회계 처리할 것.)',d:[['소모품비',80000]],k:[['보통예금',80000]]},
@@ -609,13 +611,13 @@ function docH(d){
     const L={f:'#eceef6',c:'#2b3a7a',s:11};let y=66;
     [['계 약 번 호',d.no],['계 약 일',d.date],['기명피보험자',d.insured],['계 약 자',d.insured]].forEach(([k,v])=>{row(8,y,[100,224],26,[[k,L],v],{st:'#c6c9de'});y+=26});
     y+=20;T(170,y,'보험 가입 자동차',{a:'middle',s:13,b:1,c:'#2b3a7a'});
-    [['차 량 번 호',d.car],['차       명',d.name],['보 험 기 간',d.period]].forEach(([k,v])=>{y+=24;T(16,y,k,{s:12,c:'#2b3a7a'});T(110,y,v,{s:12})});
+    [['차 량 번 호',d.car],['차       명',d.name],['보 험 기 간',d.period],...(d.val?[['차 량 가 액',won(d.val)],['부속품 가액',won(d.acc)]]:[])].forEach(([k,v])=>{y+=24;T(16,y,k,{s:12,c:'#2b3a7a'});T(110,y,v,{s:12})});
     y+=34;g+=`<rect x="8" y="${y-22}" width="324" height="34" fill="#f3f5fb" stroke="#123c96"/>`;T(18,y,'연간적용보험료',{s:13,b:1,c:'#2b3a7a'});T(322,y,won(d.prem),{a:'end',s:16,b:1});H=y+22;B(0,0,340,H,{st:'#bbb'});
   }else if(d.t==='ct'){
     T(14,40,'(사무실) 월세계약서',{s:21,b:1});T(330,22,'■ 임대인용',{a:'end',s:11});T(330,38,'□ 임차인용',{a:'end',s:11});T(330,54,'□ 사무소보관용',{a:'end',s:11});
     let y=64;row(6,y,[64,58,206],26,['부동산의','소재지',[d.addr,{a:'start'}]]);y+=26;
     row(6,y,[64,58,74,36,62,34],26,['표시','구 조',[d.str,{s:11}],'용도',d.use,[d.area,{s:11}]]);y+=26;
-    row(6,y,[122,206],30,['월 세 보 증 금',[`금 ${fmt(d.dep)}원정  월세 ${fmt(d.rent)}원정`,{a:'start',b:1,s:11}]]);T(134,y+46,`(연 ${fmt(d.year)}원)`,{s:12,b:1});y+=54;
+    row(6,y,[94,234],30,['월세보증금',[`${fmt(d.dep)}원 / 월세 ${fmt(d.rent)}원(연 ${fmt(d.year)}원)`,{a:'start',b:1,s:11}]]);y+=36;
     ['제 1 조  위 부동산의 임대인과 임차인 합의하에 아래와 같이','계약함.','제 2 조  임차인은 보증금을 아래와 같이 지불키로 함.'].forEach(t=>{y+=18;T(10,y,t,{s:11})});y+=8;
     row(6,y,[64,264],26,['잔    금',[`${fmt(d.dep)}원정은 ${d.pay} 지불함.`,{a:'start',s:11}]]);y+=26;
     y+=16;g+=`<path d="${Array.from({length:23},(_,i)=>`${i?'L':'M'}${6+i*14.5} ${y+(i%2?5:0)}`).join(' ')}" fill="none" stroke="#555"/>`;T(170,y+6,'중 략',{a:'middle',s:12,b:1});H=y+20;B(0,0,340,H,{st:'#222',sw:1.5});
@@ -780,6 +782,7 @@ function next(){
   G.cur=mk(p,st);
   render();scrollTo(0,0);
 }
+const PAIR={'이자비용':'이자수익','단기차입금':'단기대여금','장기차입금':'장기대여금'};
 function mk(p,st){
   const C={p,st,sel:null,done:null};
   if(st===1){
@@ -801,6 +804,8 @@ function mk(p,st){
     const others=shuf([...new Set(pool(st).flatMap(q=>[...q.d,...q.k].map(x=>x[0])))].filter(a=>!right.includes(a)&&!cand.includes(a)));
     const nAcc=Math.max(cf.acc,right.length+2)-right.length;
     const accs=[...right,...[...cand,...others].slice(0,nAcc)];
+    for(const a of [...accs]){const b=PAIR[a];if(!b||!GRP[b]||accs.includes(b))continue;
+      const k=accs.findIndex(x=>!right.includes(x)&&!PAIR[x]&&!accs.some(y=>PAIR[y]===x));if(k>=0)accs[k]=b;else accs.push(b)}
     const amts=[...p.d,...p.k].map(x=>x[1]);
     const S=new Set(amts);let ex=[];
     const sum=a=>a.reduce((s,x)=>s+x,0);
@@ -809,7 +814,7 @@ function mk(p,st){
     for(const x of amts)for(const y of amts)if(x>y)ex.push(x-y,x+y);
     ex=shuf([...new Set(ex)].filter(v=>v>0&&v%100===0&&!S.has(v))); // 오답 금액도 100원 단위 아래는 없게
     const nw=st===9?(amts.length<=2?1:Math.max(0,3-S.size)):cf.amt; // 수행평가: 계정 2개면 금액 카드 2장, 3개 이상이면 3장 안팎
-    const am=[...new Set(amts),...ex.slice(0,nw)]; // 같은 금액 카드는 하나만(여러 칸에 쓸 수 있음)
+    const am=p.am?[...new Set([...amts,...p.am])]:[...new Set(amts),...ex.slice(0,nw)]; // 같은 금액 카드는 하나만(여러 칸에 쓸 수 있음), am이 있으면 그 금액만
     // 계정 카드는 자산·부채·자본·수익·비용 순(각각 유동성 순서), 금액 카드는 작은 금액부터
     // 차변·대변이 한 줄씩이고 문장에 나온 금액이 그 금액 하나뿐이면 금액 칸을 미리 채워 둠(금액 카드는 보기에 두지 않음)
     const qa=[...new Set([...String(p.q).matchAll(/₩ ?([0-9][0-9,]*)|([0-9][0-9,]*)원/g)].map(m=>+(m[1]||m[2]).replace(/,/g,'')))];
@@ -882,7 +887,7 @@ function render(){
       if(C.type==='e')return idx.map(i=>slotH(i)).join('');
       const lines=[...new Set(idx.map(i=>C.slots[i].line))];
       return lines.map(li=>`<div class="ln">${idx.filter(i=>C.slots[i].line===li&&C.slots[i].kind!=='p').map(i=>slotH(i)).join('')}${idx.filter(i=>C.slots[i].line===li&&C.slots[i].kind==='p').map(i=>`<div class="pln"><span>거래처</span>${slotH(i)}</div>`).join('')}</div>`).join('');};
-    body=`<div class="tf"><div><div class="side">차변${C.type==='e'?' 요소':''}</div>${sl('d')}</div><div><div class="side">대변${C.type==='e'?' 요소':''}</div>${sl('k')}</div></div>`;
+    body=`<div class="tf"><div data-side="d"><div class="side">차변${C.type==='e'?' 요소':''}</div>${sl('d')}</div><div data-side="k"><div class="side">대변${C.type==='e'?' 요소':''}</div>${sl('k')}</div></div>`;
   }
   const tray=C.type==='s'||C.type==='w'||dn?'':`<div class="tray"><h3>보기 · 카드를 끌어다 빈칸에 놓거나, 카드를 누른 뒤 빈칸을 눌러요</h3>
     ${C.ptOn?`<div class="ptg">🏢 거래처 카드를 거래처가 필요한 줄에 놓고 [확인]을 눌러요. 필요 없는 줄은 비워 둬요.</div><div class="cards">${C.cards.filter(c=>c.kind==='p').map(cardH).join('')}</div>`:''}
@@ -954,7 +959,7 @@ function bind(){
   const drag=(el,id,tap,from)=>{
     el.onpointerdown=e=>{
       clearGhost();
-      const x0=e.clientX,y0=e.clientY;let gh=null,hov=null;
+      const x0=e.clientX,y0=e.clientY;let gh=null,hov=null,hs=null;
       el.setPointerCapture(e.pointerId);
       el.onpointermove=ev=>{
         if(!gh&&Math.hypot(ev.clientX-x0,ev.clientY-y0)<7)return;
@@ -962,12 +967,14 @@ function bind(){
         gh.style.left=ev.clientX+'px';gh.style.top=ev.clientY+'px';
         const t=document.elementFromPoint(ev.clientX,ev.clientY),sl=t&&t.closest('.slot');
         if(hov&&hov!==sl)hov.classList.remove('hov');hov=sl;if(sl&&sl!==el)sl.classList.add('hov');
+        const sd=!sl&&t?t.closest('[data-side]'):null;if(hs&&hs!==sd)hs.classList.remove('hovs');hs=sd;if(sd)sd.classList.add('hovs');
       };
       el.onlostpointercapture=()=>{if(gh){gh.remove();gh=null}};
       el.onpointerup=el.onpointercancel=ev=>{
         el.onpointermove=el.onpointerup=el.onpointercancel=el.onlostpointercapture=null;
         if(gh){gh.remove();
           if(hov&&hov!==el)place(id,+hov.dataset.s,from);
+          else if(!hov&&hs&&autoPlace(id,hs.dataset.side,from)){} // 차변·대변 자리에만 놓아도 알맞은 칸으로
           else if(!hov&&from!=null)unplaceSlot(from); // 빈칸 밖에 놓으면 보기로 돌아감
           render();full();return}
         tap();
@@ -980,6 +987,21 @@ function bind(){
     drag(el,s.v,()=>{if(C.sel!=null&&C.sel!==s.v){place(C.sel,i);C.sel=null;render();full()}else{unplaceSlot(i);C.sel=null;render()}},i);
   });
   document.querySelectorAll('.cd').forEach(el=>{const id=+el.dataset.c;drag(el,id,()=>{C.sel=C.sel===id?null:id;render()})});
+  // 카드를 누른 뒤 차변·대변 자리(빈칸이 아닌 곳)를 눌러도 알맞은 칸으로
+  document.querySelectorAll('[data-side]').forEach(el=>{el.onclick=e=>{if(C.sel==null||e.target.closest('.slot'))return;if(autoPlace(C.sel,el.dataset.side)){C.sel=null;render();full()}}});
+}
+// 차변·대변 자리에 놓은 카드를 그쪽의 알맞은 칸에 넣음: 계정·요소는 빈칸 중 첫 칸,
+// 금액·거래처는 그쪽에 칸이 하나뿐일 때만(두 칸 이상이면 정확한 칸에 놓아야 함 → 안 넣음)
+function autoPlace(cid,side,from){
+  const C=G.cur,c=C.cards[cid];if(!c)return false;
+  if(from!=null&&C.slots[from].side===side&&C.slots[from].kind===c.kind)return true; // 같은 쪽 안에서 조금 움직임
+  const idx=C.slots.map((x,i)=>i).filter(i=>C.slots[i].side===side&&C.slots[i].kind===c.kind&&!C.slots[i].fix);
+  if(!idx.length)return false;
+  let t;
+  if(c.kind==='m'||c.kind==='p'){if(idx.length>1)return false;t=idx[0]}
+  else t=idx.find(i=>C.slots[i].v==null);
+  if(t==null)return false;
+  place(cid,t,from);return true;
 }
 // 끌던 카드 복사본이 화면에 남지 않게
 const clearGhost=()=>document.querySelectorAll('.ghost').forEach(g=>g.remove());
