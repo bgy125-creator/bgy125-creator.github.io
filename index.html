@@ -127,8 +127,8 @@ ul.ex{font-family:"Gowun Dodum",sans-serif;margin:8px 0 0;padding-left:20px;font
 .inp.pt{border-color:#c7b3ee}.ptg{font-size:13px;color:#7c4dcc;margin:2px 0 6px;font-weight:700}
 .ptp{display:inline-block;font-style:normal;font-size:12px;padding:1px 8px;border-radius:99px;background:#efe8fb;color:#7c4dcc;margin-left:4px}
 [data-side].hovs{background:var(--acs);border-radius:10px}
-.okc{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:60}.okc svg{width:min(78vw,340px);height:auto;transform:rotate(-4deg)}
-.okc path{fill:none;stroke:#e5302f;stroke-width:15;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;opacity:.9;animation:pen .5s ease-in-out forwards}
+.okc{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:60}.okc svg{width:min(70vw,300px);height:auto;transform:rotate(-6deg)}
+.okc path{fill:none;stroke:#f0262b;stroke-width:16;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;opacity:.9;animation:pen .5s ease-in-out forwards}
 @keyframes pen{to{stroke-dashoffset:0}}
 .gd{border-top:1px solid var(--ln)}.gd:first-of-type{border-top:0}.gd summary{list-style:none;cursor:pointer}.gd summary::-webkit-details-marker{display:none}.gd[open] summary .v{color:var(--ac)}
 .lb{font-size:14px;color:var(--mut);margin:14px 0 6px;font-weight:700}
@@ -778,7 +778,7 @@ const SST={2:2,3:4,4:5,5:6};
 // 정답이면 화면 가운데 빨간 동그라미를 잠깐 보여 주고 다음 문제로 자동으로 넘어감(틀리면 지금처럼 정답을 보고 직접 넘어감)
 function okGo(still,go){
   if(typeof requestAnimationFrame!=='function')return; // 흐름 점검(가짜 화면)에서는 넘어가지 않음
-  const o=document.createElement('div');o.className='okc';o.innerHTML='<svg viewBox="0 0 300 300"><path pathLength="1" d="M152 266 C90 268 36 216 38 150 C40 86 92 34 152 34 C214 34 264 88 262 152 C260 214 210 268 146 268 C126 268 112 263 100 255"/></svg>';document.body.appendChild(o);
+  const o=document.createElement('div');o.className='okc';o.innerHTML='<svg viewBox="-10 -10 320 360"><path pathLength="1" d="M214 236 C172 252 102 254 58 230 C12 206 6 124 42 72 C82 18 172 0 234 22 C292 44 304 108 290 172 C278 232 248 288 204 338"/></svg>';document.body.appendChild(o);
   setTimeout(()=>{o.remove();if(still())go()},1000);
 }
 function next(){
