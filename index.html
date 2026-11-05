@@ -127,8 +127,9 @@ ul.ex{font-family:"Gowun Dodum",sans-serif;margin:8px 0 0;padding-left:20px;font
 .inp.pt{border-color:#c7b3ee}.ptg{font-size:13px;color:#7c4dcc;margin:2px 0 6px;font-weight:700}
 .ptp{display:inline-block;font-style:normal;font-size:12px;padding:1px 8px;border-radius:99px;background:#efe8fb;color:#7c4dcc;margin-left:4px}
 [data-side].hovs{background:var(--acs);border-radius:10px}
-.okc{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:60}.okc i{width:150px;height:150px;border:16px solid #e5484d;border-radius:50%;animation:okp .45s ease-out both}
-@keyframes okp{0%{transform:scale(.3);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1);opacity:.92}}
+.okc{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:60}.okc svg{width:min(78vw,340px);height:auto;transform:rotate(-8deg)}
+.okc path{fill:none;stroke:#e5302f;stroke-width:15;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;opacity:.9;animation:pen .5s ease-in-out forwards}
+@keyframes pen{to{stroke-dashoffset:0}}
 .gd{border-top:1px solid var(--ln)}.gd:first-of-type{border-top:0}.gd summary{list-style:none;cursor:pointer}.gd summary::-webkit-details-marker{display:none}.gd[open] summary .v{color:var(--ac)}
 .lb{font-size:14px;color:var(--mut);margin:14px 0 6px;font-weight:700}
 .field{width:100%;border:1px solid var(--ln);border-radius:12px;padding:12px;font-size:17px;background:var(--sl);color:var(--tx);font-family:inherit}
@@ -777,7 +778,7 @@ const SST={2:2,3:4,4:5,5:6};
 // 정답이면 화면 가운데 빨간 동그라미를 잠깐 보여 주고 다음 문제로 자동으로 넘어감(틀리면 지금처럼 정답을 보고 직접 넘어감)
 function okGo(still,go){
   if(typeof requestAnimationFrame!=='function')return; // 흐름 점검(가짜 화면)에서는 넘어가지 않음
-  const o=document.createElement('div');o.className='okc';o.innerHTML='<i></i>';document.body.appendChild(o);
+  const o=document.createElement('div');o.className='okc';o.innerHTML='<svg viewBox="0 0 300 300"><path pathLength="1" d="M168 38 C238 40 284 100 268 168 C252 238 150 278 82 236 C28 202 22 112 74 66 C104 40 148 28 196 46"/></svg>';document.body.appendChild(o);
   setTimeout(()=>{o.remove();if(still())go()},1000);
 }
 function next(){
@@ -1131,7 +1132,7 @@ function check(){
 function fbH(){
   const C=G.cur,p=C.p,y=C.done.ok;
   const last=G.i+1>=G.N;
-  if(y&&G.mode==='perf')return `<div class="fb y" style="padding:10px"><button class="btn ok" onclick="next()">✅ 정답! ${last?'결과 보기 🏁':'다음 문제 ▶'}</button></div>`;
+  if(y)return ''; // 정답이면 채점 상자 없이 빨간 동그라미만 보여 주고 다음 문제로(okGo)
   return `<div class="fb ${y?'y':'n'}"><h3>${y?'✅ '+SAY.ok:C.timeout?'⏰ 시간 초과! '+SAY.ng:'❌ '+SAY.ng}</h3>${ansH(p,C.type,C.ans)}
     <button class="btn" onclick="next()">${last?'결과 보기 🏁':'다음 문제 ▶'}</button></div>`;
 }
@@ -1449,7 +1450,7 @@ function mrender(){
   <div class="now" style="background:#1f4e5f"><span style="display:flex;align-items:center;gap:10px"><b>${esc(U.me.nm)}</b></span><span class="blink" style="text-align:right">${mlabel()}</span></div>
   ${MG.mode==='test'&&MY().lives===1&&!dn?`<div class="banner">${MSAY.last}</div>`:''}
   <div class="card" id="bd">${body}</div>
-  ${dn?`<div class="fb ${q.ok?'y':'n'}"><h3>${q.ok?'✅ '+MSAY.ok:'❌ '+MSAY.ng}</h3>${mansH(q)}
+  ${dn&&!q.ok?`<div class="fb ${q.ok?'y':'n'}"><h3>${q.ok?'✅ '+MSAY.ok:'❌ '+MSAY.ng}</h3>${mansH(q)}
     <button class="btn" onclick="mnext()">${MG.i+1>=N?'결과 보기 🏁':'다음 사건 ▶'}</button></div>`:''}`;
   if(q.t==='w'&&!dn){const e=document.getElementById('mw');if(e&&e.focus)e.focus()}
 }
