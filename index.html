@@ -122,6 +122,7 @@ ul.ex{font-family:"Gowun Dodum",sans-serif;margin:8px 0 0;padding-left:20px;font
 .slot.fx{border-style:solid;background:#eef1f6;color:#444;cursor:default}
 .cd.p{color:#7c4dcc;border-color:#c7b3ee}.slot.p{min-height:34px;font-size:13px;border-color:#b9a3e6;margin-bottom:0}.slot.p.f:not(.ok):not(.ng){background:#f6f1ff;color:#7c4dcc;border-color:#7c4dcc;font-size:15px}
 .slot.p.ok{border-color:var(--ok)}.slot.p.ng{border-color:var(--ng)}.inp.pt.ok{border-color:var(--ok)}.inp.pt.ng{border-color:var(--ng)}
+.ptag{font-family:Jua,sans-serif;display:block;text-align:center;margin:2px 0 4px;padding:6px 8px;border-radius:99px;background:#f1eafd;color:#6b3fc2;border:2px solid #7c4dcc;font-size:15px}.ptag.ok{border-color:var(--ok);background:var(--oks);color:var(--tx)}.ptag.ng{border-color:var(--ng);background:var(--ngs);color:var(--tx)}
 .pln{display:flex;align-items:center;gap:6px;margin-top:2px}.pln>span{font-size:12px;color:#7c4dcc;white-space:nowrap}.pln .slot,.pln .inp{flex:1;min-width:0}
 .inp.pt{border-color:#c7b3ee}.ptg{font-size:13px;color:#7c4dcc;margin:2px 0 6px;font-weight:700}
 .ptp{display:inline-block;font-style:normal;font-size:12px;padding:1px 8px;border-radius:99px;background:#efe8fb;color:#7c4dcc;margin-left:4px}
@@ -793,7 +794,7 @@ function mk(p,st){
     C.slots=[...C.ans.d.map(()=>({side:'d',kind:'e',v:null})),...C.ans.k.map(()=>({side:'k',kind:'e',v:null}))];
     C.cards=EL8.map((t,i)=>({id:i,kind:'e',t,used:false}));
   }else if(st===7){
-    C.type='s';C.inp={d:p.d.map(()=>({a:'',m:'',p:''})),k:p.k.map(()=>({a:'',m:'',p:''}))};
+    C.type='s';C.inp={d:p.d.map(()=>({a:'',m:''})),k:p.k.map(()=>({a:'',m:''}))};C.inpP={d:'',k:''};
     C.pt=typeof G!=='undefined'&&G&&G.mode==='perf'&&hasPt(p); // 수행평가: 거래처도 씀
   }else{
     C.type='j';const cf=CFG[st];
@@ -879,18 +880,18 @@ function render(){
   if(C.type==='s'){
     const col=s=>C.inp[s].map((r,li)=>{const mk=dn?dn.mark[s][li]:null;return `<div class="ln">
       <input class="inp ${mk?(mk.a?'ok':'ng'):''}" data-cx="${s==='d'?0:2}" data-cy="${li}" placeholder="계정과목" lang="ko" autocomplete="off" autocapitalize="off" spellcheck="false" value="${esc(r.a)}" ${dn?'disabled':''} oninput="this.value=e2k(this.value);G.cur.inp.${s}[${li}].a=this.value">
-      <input class="inp r ${mk?(mk.m?'ok':'ng'):''}" data-cx="${s==='d'?1:3}" data-cy="${li}" inputmode="numeric" placeholder="금액" value="${r.m}" ${dn?'disabled':''} oninput="this.value=num(this.value)?fmt(num(this.value)):'';G.cur.inp.${s}[${li}].m=this.value;mirM('${s}',this.value)">
-      ${C.pt?`<div class="pln"><span>거래처</span><input class="inp pt ${mk&&mk.p!=null?(mk.p?'ok':'ng'):''}" data-cx="${s==='d'?0:2}" data-cy="${li+.5}" placeholder="필요할 때만" lang="ko" autocomplete="off" spellcheck="false" value="${esc(r.p)}" ${dn?'disabled':''} oninput="this.value=e2k(this.value);G.cur.inp.${s}[${li}].p=this.value"></div>`:''}</div>`}).join('');
+      <input class="inp r ${mk?(mk.m?'ok':'ng'):''}" data-cx="${s==='d'?1:3}" data-cy="${li}" inputmode="numeric" placeholder="금액" value="${r.m}" ${dn?'disabled':''} oninput="this.value=num(this.value)?fmt(num(this.value)):'';G.cur.inp.${s}[${li}].m=this.value;mirM('${s}',this.value)"></div>`}).join('')+(C.pt?`<div class="pln"><span>🏢 거래처</span><input class="inp pt ${dn&&dn.pm?(dn.pm[s]===true?'ok':dn.pm[s]===false?'ng':''):''}" data-cx="${s==='d'?0:2}" data-cy="${C.inp[s].length}" placeholder="필요할 때만" lang="ko" autocomplete="off" spellcheck="false" value="${esc(C.inpP[s])}" ${dn?'disabled':''} oninput="this.value=e2k(this.value);G.cur.inpP.${s}=this.value"></div>`:'');
     body=`<div class="tf"><div><div class="side">차변</div>${col('d')}</div><div><div class="side">대변</div>${col('k')}</div></div>`;
   }else if(C.type!=="w"){
     const sl=s=>{const idx=C.slots.map((x,i)=>i).filter(i=>C.slots[i].side===s);
       if(C.type==='e')return idx.map(i=>slotH(i)).join('');
       const lines=[...new Set(idx.map(i=>C.slots[i].line))];
-      return lines.map(li=>`<div class="ln">${idx.filter(i=>C.slots[i].line===li&&C.slots[i].kind!=='p').map(i=>slotH(i)).join('')}${idx.filter(i=>C.slots[i].line===li&&C.slots[i].kind==='p').map(i=>`<div class="pln"><span>거래처</span>${slotH(i)}</div>`).join('')}</div>`).join('');};
+      const pi=idx.find(i=>C.slots[i].kind==='p'),ps=pi!=null?C.slots[pi]:null,pm=dn&&pi!=null?dn.mark[pi]:null;
+      return lines.filter(li=>li>=0).map(li=>`<div class="ln">${idx.filter(i=>C.slots[i].line===li).map(i=>slotH(i)).join('')}</div>`).join('')+(ps&&ps.v!=null?`<div class="ptag ${pm===true?'ok':pm===false?'ng':''}">🏢 ${esc(C.cards[ps.v].t)}</div>`:'');};
     body=`<div class="tf"><div data-side="d"><div class="side">차변${C.type==='e'?' 요소':''}</div>${sl('d')}</div><div data-side="k"><div class="side">대변${C.type==='e'?' 요소':''}</div>${sl('k')}</div></div>`;
   }
   const tray=C.type==='s'||C.type==='w'||dn?'':`<div class="tray"><h3>보기 · 카드를 끌어다 빈칸에 놓거나, 카드를 누른 뒤 빈칸을 눌러요</h3>
-    ${C.ptOn?`<div class="ptg">🏢 거래처 카드를 거래처가 필요한 줄에 놓고 [확인]을 눌러요. 필요 없는 줄은 비워 둬요.</div><div class="cards">${C.cards.filter(c=>c.kind==='p').map(cardH).join('')}</div>`:''}
+    ${C.ptOn?`<div class="ptg">🏢 거래처 카드를 거래처가 필요한 계정이 있는 쪽(차변 또는 대변)으로 끌어 놓아요.</div><div class="cards">${C.cards.filter(c=>c.kind==='p').map(cardH).join('')}</div>`:''}
     ${C.type==='e'?`<div class="cards g4">${C.cards.map(cardH).join('')}</div>`:`<div class="cards">${C.cards.filter(c=>c.kind==='a').map(cardH).join('')}</div>${C.fixM?'':`<div class="cards">${C.cards.filter(c=>c.kind==='m').map(cardH).join('')}</div>`}`}</div>`;
   app.innerHTML=`
   <div class="top"><div class="tb"><button class="x" onclick="quit()">← 그만하기</button><span>${G.i+1} / ${G.N}</span><span>${right}</span></div>
@@ -901,8 +902,8 @@ function render(){
     ${C.type==='w'?`<div class="wq">${C.ch.map((c,i)=>{const on=C.on.includes(i);const cl=dn?(on?(c.k>=0?'ok':'ng'):(c.k>=0?'miss':'')):(on?'on':'');return c.k===-2?esc(c.post):`${esc(c.pre)}<span class="wd ${cl}" onclick="tapW(${i})">${esc(c.t)}</span>${c.post?`<span class="pt">${esc(c.post)}</span>`:''}`}).join(' ')}</div>
       ${dn?'':`<div class="tbar"><i id="tw"></i></div><div class="sm gw" id="tws" style="text-align:right"></div>`}
       <div class="sm mut gw" style="margin-top:6px">계정과목을 알려 주는 단서 ${p.w.length}개를 눌러 동그라미!</div>`:`${p.dt?`<div class="sm mut">${p.dt}</div>`:''}<div class="q">${esc(p.q)}</div>${p.doc?docH(p.doc,p.dt):''}`}
-    ${C.type==='e'?'<div class="sm mut gw" style="margin-top:4px">이 거래의 차변 요소와 대변 요소를 찾아 놓아요.</div>':C.type==='s'?`<div class="sm mut gw" style="margin-top:4px">계정과목과 금액을 직접 써요.${C.pt?' 거래처가 필요한 줄에는 거래처도 써요(필요 없는 줄은 비워 둬요).':''}</div>`:''}</div>
-  ${C.type==='w'?'':`<div class="card" id="bd">${body}${dn||!(C.type==='s'||C.ptOn)?'':`<div class="msg" id="msg"></div><button class="btn" onclick="check()">확인</button>`}</div>`}
+    ${C.type==='e'?'<div class="sm mut gw" style="margin-top:4px">이 거래의 차변 요소와 대변 요소를 찾아 놓아요.</div>':C.type==='s'?`<div class="sm mut gw" style="margin-top:4px">계정과목과 금액을 직접 써요.${C.pt?' 거래처가 필요한 계정이 있는 쪽에 거래처도 써요.':''}</div>`:''}</div>
+  ${C.type==='w'?'':`<div class="card" id="bd">${body}${dn||C.type!=='s'?'':`<div class="msg" id="msg"></div><button class="btn" onclick="check()">확인</button>`}</div>`}
   ${dn?fbH():''}${tray}`;
   bind();
   if(C.type==='s'&&!dn&&typeof matchMedia==='function'&&matchMedia('(pointer:fine)').matches){const f=[...document.querySelectorAll('input[data-cx]')].find(i=>!i.value);if(f)f.focus()}
@@ -923,23 +924,16 @@ function ptCards(p){
   const cand=shuf(all).sort((a,b)=>(txt.includes(pnorm(b))?1:0)-(txt.includes(pnorm(a))?1:0)); // 문장·서류에 나온 이름을 먼저 헷갈리는 보기로
   return shuf([...right,...cand.slice(0,2)]);
 }
-// 분개 칸을 다 채우면 줄마다 거래처 칸을 붙이고 거래처 카드를 보기에 더함
+// 분개 칸을 다 채우면 거래처 카드를 보기에 더함(차변·대변마다 보이지 않는 거래처 자리 하나)
 function ptOpen(C){
-  C.ptOn=1;const ln=[];C.slots.forEach(x=>{if(x.kind==='a')ln.push([x.side,x.line])});
-  ln.forEach(([sd,li])=>C.slots.push({side:sd,kind:'p',line:li,v:null,opt:1}));
+  C.ptOn=1;['d','k'].forEach(sd=>C.slots.push({side:sd,kind:'p',line:-1,v:null,opt:1}));
   ptCards(C.p).forEach(t=>C.cards.push({id:C.cards.length,kind:'p',t,used:false}));
 }
-// 거래처 채점: 거래처를 넣은 줄(쪽·계정·거래처)이 정답과 똑같아야 함
-const ptKey=(sd,a,n)=>sd+'|'+norm(a)+'|'+pnorm(n);
-function ptOK(user,p){
-  const A=[],U=[];for(const sd of['d','k']){p[sd].forEach(x=>{if(x[2])A.push(ptKey(sd,x[0],x[2]))});user[sd].forEach(x=>{if(x[2])U.push(ptKey(sd,x[0],x[2]))})}
-  return A.length===U.length&&A.every(k=>U.includes(k));
-}
-function ptMark(sd,u,p){ // 줄 하나의 거래처 표시: 맞음 true / 틀림 false / 표시 없음 null
-  const need=p[sd].find(x=>norm(x[0])===norm(u[0])&&x[2]);
-  if(u[2])return !!need&&pnorm(need[2])===pnorm(u[2]);
-  return need?false:null;
-}
+const ptNeed=p=>['d','k'].filter(sd=>p[sd].some(x=>x[2])).length; // 거래처가 필요한 쪽 수
+// 거래처 채점: 쪽(차변·대변)마다 넣은 거래처가 정답과 같아야 함(필요 없는 쪽은 비어 있어야 함)
+const ptAns=(p,sd)=>{const x=p[sd].find(y=>y[2]);return x?x[2]:''};
+const ptSide=(p,sd,v)=>{const a=ptAns(p,sd);return v?(!!a&&pnorm(a)===pnorm(v)):(a?false:null)}; // 맞음 true / 틀림 false / 표시 없음 null
+const ptOK=(p,P)=>['d','k'].every(sd=>pnorm(ptAns(p,sd))===pnorm(P[sd]||''));
 function mirM(s,v){
   const C=G.cur;if(C.p.d.length!==1||C.p.k.length!==1)return;
   C.inp[s][0].auto=0;const o=s==='d'?'k':'d',r=C.inp[o][0];
@@ -973,8 +967,9 @@ function bind(){
       el.onpointerup=el.onpointercancel=ev=>{
         el.onpointermove=el.onpointerup=el.onpointercancel=el.onlostpointercapture=null;
         if(gh){gh.remove();
-          if(hov&&hov!==el)place(id,+hov.dataset.s,from);
-          else if(!hov&&hs&&autoPlace(id,hs.dataset.side,from)){} // 차변·대변 자리에만 놓아도 알맞은 칸으로
+          const okK=hov&&C.slots[+hov.dataset.s].kind===C.cards[id].kind,sdEl=hs||(hov&&hov.closest('[data-side]'));
+          if(hov&&hov!==el&&okK)place(id,+hov.dataset.s,from);
+          else if(!okK&&sdEl&&autoPlace(id,sdEl.dataset.side,from)){} // 차변·대변 자리에만 놓아도 알맞은 칸으로
           else if(!hov&&from!=null)unplaceSlot(from); // 빈칸 밖에 놓으면 보기로 돌아감
           render();full();return}
         tap();
@@ -983,12 +978,12 @@ function bind(){
   };
   document.querySelectorAll('.slot').forEach(el=>{
     const i=+el.dataset.s,s=C.slots[i];if(s.fix)return; // 미리 채운 금액 칸은 고정
-    if(s.v==null){el.onclick=()=>{if(C.sel!=null){place(C.sel,i);C.sel=null;render();full()}};return}
-    drag(el,s.v,()=>{if(C.sel!=null&&C.sel!==s.v){place(C.sel,i);C.sel=null;render();full()}else{unplaceSlot(i);C.sel=null;render()}},i);
+    if(s.v==null){el.onclick=()=>{if(C.sel!=null&&C.cards[C.sel].kind===s.kind){place(C.sel,i);C.sel=null;render();full()}};return}
+    drag(el,s.v,()=>{if(C.sel!=null&&C.cards[C.sel].kind!==s.kind){if(autoPlace(C.sel,s.side)){C.sel=null;render();full()}}else if(C.sel!=null&&C.sel!==s.v){place(C.sel,i);C.sel=null;render();full()}else{unplaceSlot(i);C.sel=null;render()}},i);
   });
   document.querySelectorAll('.cd').forEach(el=>{const id=+el.dataset.c;drag(el,id,()=>{C.sel=C.sel===id?null:id;render()})});
   // 카드를 누른 뒤 차변·대변 자리(빈칸이 아닌 곳)를 눌러도 알맞은 칸으로
-  document.querySelectorAll('[data-side]').forEach(el=>{el.onclick=e=>{if(C.sel==null||e.target.closest('.slot'))return;if(autoPlace(C.sel,el.dataset.side)){C.sel=null;render();full()}}});
+  document.querySelectorAll('[data-side]').forEach(el=>{el.onclick=e=>{const sl=e.target.closest('.slot');if(C.sel==null||(sl&&C.slots[+sl.dataset.s].kind===C.cards[C.sel].kind)||(sl&&C.slots[+sl.dataset.s].v!=null))return;if(autoPlace(C.sel,el.dataset.side)){C.sel=null;render();full()}}});
 }
 // 차변·대변 자리에 놓은 카드를 그쪽의 알맞은 칸에 넣음: 계정·요소는 빈칸 중 첫 칸,
 // 금액·거래처는 그쪽에 칸이 하나뿐일 때만(두 칸 이상이면 정확한 칸에 놓아야 함 → 안 넣음)
@@ -1008,7 +1003,8 @@ const clearGhost=()=>document.querySelectorAll('.ghost').forEach(g=>g.remove());
 // 빈칸을 다 채우면 바로 채점
 function full(){const C=G&&G.cur;if(!C||C.done||!C.slots||!C.slots.every(s=>s.v!=null||s.opt))return;
   if(C.pt&&!C.ptOn){ptOpen(C);render();return}
-  if(!C.ptOn)setTimeout(check,250)} // 거래처 단계는 [확인] 버튼으로 채점
+  if(C.ptOn&&C.slots.filter(x=>x.kind==='p'&&x.v!=null).length<ptNeed(C.p))return; // 거래처 카드를 필요한 수만큼 놓으면 채점
+  setTimeout(check,250)}
 // 빈칸 하나를 비움. 계정 카드는 다른 칸에 없으면 보기로 돌아감(금액 카드는 늘 보기에 남아 있음)
 function unplaceSlot(si){
   const C=G.cur,s=C.slots[si];if(s.v==null)return;
@@ -1086,20 +1082,23 @@ function check(){
   }else if(C.type==='j'){
     if(C.slots.some(s=>s.v==null&&!s.opt)){if(msg)msg.textContent=SAY.empty;return}
     user={d:[],k:[]};
-    for(const s of['d','k'])p[s].forEach((_,li)=>{const a=C.slots.find(x=>x.side===s&&x.line===li&&x.kind==='a'),m=C.slots.find(x=>x.side===s&&x.line===li&&x.kind==='m');const q=C.slots.find(x=>x.side===s&&x.line===li&&x.kind==='p');user[s].push([C.cards[a.v].t,C.cards[m.v].v,q&&q.v!=null?C.cards[q.v].t:''])});
-    ok=same(mp(user.d),mp(p.d))&&same(mp(user.k),mp(p.k))&&(!C.pt||ptOK(user,p));
+    for(const s of['d','k'])p[s].forEach((_,li)=>{const a=C.slots.find(x=>x.side===s&&x.line===li&&x.kind==='a'),m=C.slots.find(x=>x.side===s&&x.line===li&&x.kind==='m');user[s].push([C.cards[a.v].t,C.cards[m.v].v])});
+    const P={};['d','k'].forEach(sd=>{const q=C.slots.find(x=>x.side===sd&&x.kind==='p');P[sd]=q&&q.v!=null?C.cards[q.v].t:'';if(P[sd]&&user[sd][0])user[sd][0][2]=P[sd]});
+    ok=same(mp(user.d),mp(p.d))&&same(mp(user.k),mp(p.k))&&(!C.pt||ptOK(p,P));
     // 칸마다 표시: 계정이 그쪽 정답에 있으면 ○, 금액은 같은 줄 계정의 정답 금액과 같으면 ○
     const A={d:mp(p.d),k:mp(p.k)};
-    mark=C.slots.map(s=>{const u=user[s.side][s.line];return s.kind==='p'?ptMark(s.side,u,p):s.kind==='a'?A[s.side][u[0]]!==undefined:A[s.side][u[0]]===u[1]||(A[s.side][u[0]]===undefined&&Object.values(A[s.side]).includes(u[1]))});
+    mark=C.slots.map(s=>{const u=user[s.side][s.line];return s.kind==='p'?ptSide(p,s.side,s.v!=null?C.cards[s.v].t:''):s.kind==='a'?A[s.side][u[0]]!==undefined:A[s.side][u[0]]===u[1]||(A[s.side][u[0]]===undefined&&Object.values(A[s.side]).includes(u[1]))});
   }else{
     const I=C.inp;
     if(['d','k'].some(s=>I[s].some(r=>!r.a.trim()||!num(r.m)))){msg.textContent=SAY.empty;return}
-    user={d:I.d.map(r=>[norm(r.a),num(r.m),C.pt?String(r.p||'').trim():'']),k:I.k.map(r=>[norm(r.a),num(r.m),C.pt?String(r.p||'').trim():''])};
+    user={d:I.d.map(r=>[norm(r.a),num(r.m)]),k:I.k.map(r=>[norm(r.a),num(r.m)])};
+    const P=C.pt?{d:C.inpP.d.trim(),k:C.inpP.k.trim()}:{d:'',k:''};['d','k'].forEach(sd=>{if(P[sd]&&user[sd][0])user[sd][0][2]=P[sd]});
     const A={d:mp(p.d.map(([a,v])=>[norm(a),v])),k:mp(p.k.map(([a,v])=>[norm(a),v]))};
-    ok=same(mp(user.d),A.d)&&same(mp(user.k),A.k)&&(!C.pt||ptOK(user,p));
-    mark={d:user.d.map(u=>({a:A.d[u[0]]!==undefined,m:A.d[u[0]]===u[1],p:C.pt?ptMark('d',u,p):null})),k:user.k.map(u=>({a:A.k[u[0]]!==undefined,m:A.k[u[0]]===u[1],p:C.pt?ptMark('k',u,p):null}))};
+    ok=same(mp(user.d),A.d)&&same(mp(user.k),A.k)&&(!C.pt||ptOK(p,P));
+    mark={d:user.d.map(u=>({a:A.d[u[0]]!==undefined,m:A.d[u[0]]===u[1]})),k:user.k.map(u=>({a:A.k[u[0]]!==undefined,m:A.k[u[0]]===u[1]}))};
+    if(C.pt)C.pmk={d:ptSide(p,'d',P.d),k:ptSide(p,'k',P.k)};
   }
-  C.done={ok,mark};
+  C.done={ok,mark,pm:C.pmk||null};
   // 기록
   const tag=C.type==='e'?'el':p.t,S=U.st;
   S.tag[tag]=S.tag[tag]||{c:0,n:0};S.tag[tag].n++;if(ok)S.tag[tag].c++;
