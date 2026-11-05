@@ -119,6 +119,7 @@ ul.ex{font-family:"Gowun Dodum",sans-serif;margin:8px 0 0;padding-left:20px;font
 .cntrow{display:flex;justify-content:space-between;gap:2px;margin-bottom:6px}.cntrow span{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0}.cntrow b{font-size:14px}.cntrow i{display:block;width:100%;max-width:40px;height:14px;border-radius:6px;border:1px solid rgba(0,0,0,.25)}.cntrow small{font-size:10px;color:var(--mut);white-space:nowrap}.cntrow span.z{opacity:.4}
 .cntrow.det i{width:38px;max-width:38px;height:38px;border-radius:50%;overflow:hidden;background:#fff;border:1px solid var(--ln)}.cntrow.det img{display:block;width:124%;margin:-2px 0 0 -12%}.cntrow.det i.g img{filter:grayscale(1)}.cntrow.det span:nth-child(4) img{width:106%;margin:2px 0 0 -3%}
 .bsw{display:inline-block;width:40px;height:14px;border-radius:6px;border:1px solid rgba(0,0,0,.25);vertical-align:middle;font-style:normal;font-size:9px;line-height:13px;color:#fff;text-align:center;font-weight:700}
+.slot.fx{border-style:solid;background:#eef1f6;color:#444;cursor:default}
 .gd{border-top:1px solid var(--ln)}.gd:first-of-type{border-top:0}.gd summary{list-style:none;cursor:pointer}.gd summary::-webkit-details-marker{display:none}.gd[open] summary .v{color:var(--ac)}
 .lb{font-size:14px;color:var(--mut);margin:14px 0 6px;font-weight:700}
 .field{width:100%;border:1px solid var(--ln);border-radius:12px;padding:12px;font-size:17px;background:var(--sl);color:var(--tx);font-family:inherit}
@@ -803,7 +804,11 @@ function mk(p,st){
     const nw=st===9?(amts.length<=2?1:Math.max(0,3-S.size)):cf.amt; // 수행평가: 계정 2개면 금액 카드 2장, 3개 이상이면 3장 안팎
     const am=[...new Set(amts),...ex.slice(0,nw)]; // 같은 금액 카드는 하나만(여러 칸에 쓸 수 있음)
     // 계정 카드는 자산·부채·자본·수익·비용 순(각각 유동성 순서), 금액 카드는 작은 금액부터
-    let id=0;C.cards=[...accs.slice().sort((x,y)=>ordOf(x)-ordOf(y)||x.localeCompare(y,'ko')).map(t=>({id:id++,kind:'a',t,used:false})),...am.slice().sort((x,y)=>x-y).map(v=>({id:id++,kind:'m',t:fmt(v),v,used:false}))];
+    // 차변·대변이 한 줄씩이고 문장에 나온 금액이 그 금액 하나뿐이면 금액 칸을 미리 채워 둠(금액 카드는 보기에 두지 않음)
+    const qa=[...new Set([...String(p.q).matchAll(/₩ ?([0-9][0-9,]*)|([0-9][0-9,]*)원/g)].map(m=>+(m[1]||m[2]).replace(/,/g,'')))];
+    C.fixM=p.d.length===1&&p.k.length===1&&p.d[0][1]===p.k[0][1]&&qa.length===1&&qa[0]===p.d[0][1];
+    let id=0;C.cards=[...accs.slice().sort((x,y)=>ordOf(x)-ordOf(y)||x.localeCompare(y,'ko')).map(t=>({id:id++,kind:'a',t,used:false})),...(C.fixM?[p.d[0][1]]:am.slice().sort((x,y)=>x-y)).map(v=>({id:id++,kind:'m',t:fmt(v),v,used:false}))];
+    if(C.fixM)C.slots.forEach(x=>{if(x.kind==='m'){x.v=C.cards.length-1;x.fix=1}});
   }
   return C;
 }
@@ -861,7 +866,7 @@ function render(){
   if(C.type==='s'){
     const col=s=>C.inp[s].map((r,li)=>{const mk=dn?dn.mark[s][li]:null;return `<div class="ln">
       <input class="inp ${mk?(mk.a?'ok':'ng'):''}" data-cx="${s==='d'?0:2}" data-cy="${li}" placeholder="계정과목" lang="ko" autocomplete="off" autocapitalize="off" spellcheck="false" value="${esc(r.a)}" ${dn?'disabled':''} oninput="this.value=e2k(this.value);G.cur.inp.${s}[${li}].a=this.value">
-      <input class="inp r ${mk?(mk.m?'ok':'ng'):''}" data-cx="${s==='d'?1:3}" data-cy="${li}" inputmode="numeric" placeholder="금액" value="${r.m}" ${dn?'disabled':''} oninput="this.value=num(this.value)?fmt(num(this.value)):'';G.cur.inp.${s}[${li}].m=this.value"></div>`}).join('');
+      <input class="inp r ${mk?(mk.m?'ok':'ng'):''}" data-cx="${s==='d'?1:3}" data-cy="${li}" inputmode="numeric" placeholder="금액" value="${r.m}" ${dn?'disabled':''} oninput="this.value=num(this.value)?fmt(num(this.value)):'';G.cur.inp.${s}[${li}].m=this.value;mirM('${s}',this.value)"></div>`}).join('');
     body=`<div class="tf"><div><div class="side">차변</div>${col('d')}</div><div><div class="side">대변</div>${col('k')}</div></div>`;
   }else if(C.type!=="w"){
     const sl=s=>{const idx=C.slots.map((x,i)=>i).filter(i=>C.slots[i].side===s);
@@ -871,7 +876,7 @@ function render(){
     body=`<div class="tf"><div><div class="side">차변${C.type==='e'?' 요소':''}</div>${sl('d')}</div><div><div class="side">대변${C.type==='e'?' 요소':''}</div>${sl('k')}</div></div>`;
   }
   const tray=C.type==='s'||C.type==='w'||dn?'':`<div class="tray"><h3>보기 · 카드를 끌어다 빈칸에 놓거나, 카드를 누른 뒤 빈칸을 눌러요</h3>
-    ${C.type==='e'?`<div class="cards g4">${C.cards.map(cardH).join('')}</div>`:`<div class="cards">${C.cards.filter(c=>c.kind==='a').map(cardH).join('')}</div><div class="cards">${C.cards.filter(c=>c.kind==='m').map(cardH).join('')}</div>`}</div>`;
+    ${C.type==='e'?`<div class="cards g4">${C.cards.map(cardH).join('')}</div>`:`<div class="cards">${C.cards.filter(c=>c.kind==='a').map(cardH).join('')}</div>${C.fixM?'':`<div class="cards">${C.cards.filter(c=>c.kind==='m').map(cardH).join('')}</div>`}`}</div>`;
   app.innerHTML=`
   <div class="top"><div class="tb"><button class="x" onclick="quit()">← 그만하기</button><span>${G.i+1} / ${G.N}</span><span>${right}</span></div>
     <div class="bar"><i style="width:${(G.i+(dn?1:0))/G.N*100}%"></i></div></div>
@@ -892,10 +897,15 @@ function render(){
     if(left<=0&&!C.done&&G&&G.cur===C){clearInterval(TW);C.timeout=true;check()}};tick();TW=setInterval(tick,200)}
   if(G.mode==='cup'){clearInterval(T);if(!dn)T=setInterval(()=>{const e=document.getElementById('tm');if(e)e.textContent=tm(Math.floor((Date.now()-G.t0)/1000))},1000)}
 }
+function mirM(s,v){
+  const C=G.cur;if(C.p.d.length!==1||C.p.k.length!==1)return;
+  C.inp[s][0].auto=0;const o=s==='d'?'k':'d',r=C.inp[o][0];
+  if(r.m===''||r.auto){r.m=v;r.auto=1;const el=document.querySelector(`input[data-cx="${o==='d'?1:3}"][data-cy="0"]`);if(el)el.value=v}
+}
 function slotH(i){
   const C=G.cur,s=C.slots[i],c=s.v!=null?C.cards[s.v]:null,mk=C.done?C.done.mark[i]:null;
   const ph=s.kind==='a'?'계정과목':s.kind==='m'?'금액':'요소';
-  return `<div class="slot ${s.kind==='m'?'m':''} ${c?'f':''} ${mk===true?'ok':mk===false?'ng':''}" data-s="${i}">${c?esc(c.t):ph}</div>`;
+  return `<div class="slot ${s.kind==='m'?'m':''} ${s.fix?'fx':''} ${c?'f':''} ${mk===true?'ok':mk===false?'ng':''}" data-s="${i}">${c?esc(c.t):ph}</div>`;
 }
 const cardH=c=>`<button class="cd ${c.kind} ${c.used?'used':''} ${G.cur.sel===c.id?'sel':''}" data-c="${c.id}">${esc(c.t)}</button>`;
 
@@ -927,7 +937,7 @@ function bind(){
     };
   };
   document.querySelectorAll('.slot').forEach(el=>{
-    const i=+el.dataset.s,s=C.slots[i];
+    const i=+el.dataset.s,s=C.slots[i];if(s.fix)return; // 미리 채운 금액 칸은 고정
     if(s.v==null){el.onclick=()=>{if(C.sel!=null){place(C.sel,i);C.sel=null;render();full()}};return}
     drag(el,s.v,()=>{if(C.sel!=null&&C.sel!==s.v){place(C.sel,i);C.sel=null;render();full()}else{unplaceSlot(i);C.sel=null;render()}},i);
   });
@@ -947,7 +957,7 @@ function unplaceSlot(si){
 // 빈칸에서 끌어온 카드면 옮기고, 놓을 칸에 카드가 있으면 서로 자리를 바꿈
 function place(cid,si,from){
   const C=G.cur,c=C.cards[cid],s=C.slots[si];
-  if(c.kind!==s.kind)return;
+  if(c.kind!==s.kind||s.fix)return;
   if(from==null&&c.kind!=='m'){const k=C.slots.findIndex(x=>x.v===cid);if(k>=0)from=k}
   if(from===si)return;
   const f=from!=null?C.slots[from]:null,old=s.v;
