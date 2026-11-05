@@ -118,6 +118,7 @@ ul.ex{font-family:"Gowun Dodum",sans-serif;margin:8px 0 0;padding-left:20px;font
 .pfc{display:flex;align-items:center;gap:4px;justify-content:flex-start;font-size:12px}.pdot{display:inline-block;width:11px;height:11px;border-radius:50%;border:2px solid #b5b8c2;flex:none}.pdot.on{background:var(--ok);border-color:var(--ok)}
 .cntrow{display:flex;justify-content:space-between;gap:2px;margin-bottom:6px}.cntrow span{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0}.cntrow b{font-size:14px}.cntrow i{display:block;width:100%;max-width:40px;height:14px;border-radius:6px;border:1px solid rgba(0,0,0,.25)}.cntrow small{font-size:10px;color:var(--mut);white-space:nowrap}.cntrow span.z{opacity:.4}
 .cntrow.det i{width:38px;max-width:38px;height:38px;border-radius:50%;overflow:hidden;background:#fff;border:1px solid var(--ln)}.cntrow.det img{display:block;width:124%;margin:-2px 0 0 -12%}.cntrow.det i.g img{filter:grayscale(1)}.cntrow.det span:nth-child(4) img{width:106%;margin:2px 0 0 -3%}
+.bsw{display:inline-block;width:40px;height:14px;border-radius:6px;border:1px solid rgba(0,0,0,.25);vertical-align:middle;font-style:normal;font-size:9px;line-height:13px;color:#fff;text-align:center;font-weight:700}
 .gd{border-top:1px solid var(--ln)}.gd:first-of-type{border-top:0}.gd summary{list-style:none;cursor:pointer}.gd summary::-webkit-details-marker{display:none}.gd[open] summary .v{color:var(--ac)}
 .lb{font-size:14px;color:var(--mut);margin:14px 0 6px;font-weight:700}
 .field{width:100%;border:1px solid var(--ln);border-radius:12px;padding:12px;font-size:17px;background:var(--sl);color:var(--tx);font-family:inherit}
@@ -1818,7 +1819,7 @@ function stSum(x){
   const sum=o=>Object.values(o||{}).reduce((a,v)=>[a[0]+(v.c||0),a[1]+(v.n||0)],[0,0]);
   const tg={};Object.values((u.st||{}).tag||{}).forEach(o=>Object.entries(o).forEach(([k,v])=>{tg[k]=tg[k]||{c:0,n:0};tg[k].c+=v.c;tg[k].n+=v.n}));
   const j=sum(tg),a=sum((my.st||{}).grp),pc=s=>s[1]?Math.round(s[0]/s[1]*100)+'%':'-';
-  return {bi:d.best||0,di:mclr(my),rank:d.best===6?`검은띠(${d.dan||1}단)`:`${BELT[d.best||0].nm}(${BELT[d.best||0].g})`,belt:d.best===6?(d.dan||1)+'단 검은띠':BELT[d.best||0].nm,det:MLV[mclr(my)][1],
+  return {bi:d.best||0,dan:d.dan||1,di:mclr(my),rank:d.best===6?`검은띠(${d.dan||1}단)`:`${BELT[d.best||0].nm}(${BELT[d.best||0].g})`,belt:d.best===6?(d.dan||1)+'단 검은띠':BELT[d.best||0].nm,det:MLV[mclr(my)][1],
     med:Object.values(u.cup||{}).filter(c=>medal(c.n)).length,jr:pc(j),ar:pc(a),tg,pf:u.perf||{}};
 }
 let TR=null; // 지금 보는 반
@@ -1852,8 +1853,8 @@ async function tRoom(code,quiet){
   ${tTg('mg',`👥 학생 관리 (${S.length}명)`,`<div class="tw"><table class="tt2"><tr><th>학번</th><th>이름</th><th>최근 접속</th><th></th></tr>
     ${S.map((x,i)=>`<tr><td>${esc(x.sid)}</td><td>${esc(x.nm)}</td><td>${x.day?esc(x.day.slice(5).replace('-','/')):'-'}</td><td><button class="mini2" onclick="tMove(${i})">반 바꾸기</button> <button class="mini2" onclick="tPin(${i})">PIN 초기화</button> <button class="mini2" style="color:var(--ng)" onclick="tDelSt(${i})">🗑️ 삭제</button></td></tr>`).join('')}</table></div>
     <button class="btn gh" onclick="tCsv()">📥 엑셀(CSV) 내려받기</button>`)}
-  ${tTg('lv','🏅 학생 레벨',`${tLvCnt(S)}${tTg('lvl','👤 학생별 레벨',`<div class="tw"><table class="tt2"><tr><th>학번</th><th>이름</th><th>🥋 태권도 급수</th><th>🕵️ 탐정 레벨</th></tr>
-    ${S.map(x=>`<tr><td>${esc(x.sid)}</td><td>${esc(x.nm)}</td><td>${x.s.rank}</td><td>${x.s.det}</td></tr>`).join('')}</table></div>`,1)}`)}
+  ${tTg('lv','🏅 학생 레벨',`${tLvCnt(S)}${tTg('lvl','👤 학생별 레벨',`<div class="tw"><table class="tt2"><tr><th>학번</th><th>이름</th><th>🥋 태권도 띠</th><th>🕵️ 탐정 레벨</th></tr>
+    ${S.map(x=>`<tr><td>${esc(x.sid)}</td><td>${esc(x.nm)}</td><td><i class="bsw" style="background:${BELT[x.s.bi].c}" title="${x.s.rank}">${x.s.bi===6&&x.s.dan>1?'×'+x.s.dan:''}</i></td><td>${x.s.det}</td></tr>`).join('')}</table></div>`,1)}`)}
   ${tTg('pf','📝 수행평가 연습',PERF.map(pu=>tPerf(S,pu)).join(''))}`:'<div class="card sm mut">아직 반에 들어온 학생이 없어요. 학생이 회원 가입 때 이 반을 고르면 위에 가입 요청이 떠요.</div>'}
   ${Object.keys(tg).length?`<div class="card"><h3>📊 우리 반 분개 정답률</h3>${Object.keys(TAGS).filter(k=>tg[k]).map(k=>{const p=Math.round(tg[k].c/tg[k].n*100);return `<div class="br"><span>${TAGS[k]}</span><div class="t"><i style="width:${p}%;background:${p>=80?'var(--ok)':p>=60?'#3b82f6':'var(--ng)'}"></i></div><span class="v">${p}% · ${tg[k].n}건</span></div>`}).join('')}</div>`:''}
   <div class="msg" id="msg"></div>
