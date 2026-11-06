@@ -130,6 +130,7 @@ ul.ex{font-family:"Gowun Dodum",sans-serif;margin:8px 0 0;padding-left:20px;font
 .okc{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:60}.okc svg{width:min(70vw,300px);height:auto;transform:rotate(-6deg)}
 .okc path{fill:none;stroke:#f0262b;stroke-width:16;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;opacity:.9;animation:pen .5s ease-in-out forwards}
 @keyframes pen{to{stroke-dashoffset:0}}
+.offb{background:#fff3cd;color:#664d03;border-bottom:2px solid #f2b705;padding:10px 14px;text-align:center;font-size:14px;line-height:1.5}.offb a{color:#664d03;font-weight:700}
 .gd{border-top:1px solid var(--ln)}.gd:first-of-type{border-top:0}.gd summary{list-style:none;cursor:pointer}.gd summary::-webkit-details-marker{display:none}.gd[open] summary .v{color:var(--ac)}
 .lb{font-size:14px;color:var(--mut);margin:14px 0 6px;font-weight:700}
 .field{width:100%;border:1px solid var(--ln);border-radius:12px;padding:12px;font-size:17px;background:var(--sl);color:var(--tx);font-family:inherit}
@@ -413,7 +414,8 @@ function main(){
   </div>
   <div class="card sm c" style="margin-top:16px">${U.me.key?`🎒 ${esc(U.me.scn||"")} ${esc(U.me.sid)} ${esc(U.me.nm)} 로그인 중 · 기록은 내 계정에 저장돼요<br>${U.me.code?`📚 ${esc(U.me.cn||"")}${U.me.rq?` · 📮 ${esc(U.me.rqn||"")}(으)로 옮기기 요청 중`:""} <button class="x" style="color:var(--ac)" onclick="stReq()">🔀 반 바꾸기</button>`:U.me.rq?`📮 ${esc(U.me.rqn||"")} 가입 요청 중 (선생님이 허용하면 반에 들어가요) <button class="x" style="color:var(--ac)" onclick="stReq()">🔀 반 바꾸기</button>`:`${U.me.rj?"반 가입 요청이 받아들여지지 않았어요. ":""}<button class="x" style="color:var(--ac)" onclick="stReq()">📮 반 가입 요청하기</button>`}<br><button class="x" style="color:var(--ac)" onclick="stLogout()">로그아웃</button>`:`🧪 ${esc(U.me.nm)} 체험 중 · 기록은 이 기기에만 저장돼요<br><button class="x" style="color:var(--ac)" onclick="setup('join')">회원 가입하고 기록 옮기기</button> · <button class="x" onclick="if(confirm('이 기기에 저장된 이름과 기록을 모두 지울까요?')){U=fresh();save();setup()}">처음부터 다시 하기</button>`}</div>
   <div class="c"><button class="x" onclick="tpage()">🧑‍🏫 관리자 입장하기(교사)</button></div>
-  <div class="c sm mut" style="margin-top:10px">글꼴: 넥슨 Lv.1 고딕(넥슨), 배달의민족 주아(우아한형제들, SIL OFL), 고운돋움(SIL OFL)</div>`;
+  <div class="c sm mut" style="margin-top:10px">글꼴: 넥슨 Lv.1 고딕(넥슨), 배달의민족 주아(우아한형제들, SIL OFL), 고운돋움(SIL OFL)</div>
+  <div class="c sm mut" style="margin-top:4px">${COPY}</div>`;
   scrollTo(0,0);
 }
 // Bull Run 참가 기록(같은 주소의 Bull Run이 이 기기에 남김): 최근 접속일과 데이터 삭제 예정일(방을 만든 날, 혼자 연습은 참가한 날부터 30일)
@@ -1600,6 +1602,11 @@ function confetti(){
     e.style.width=(6+Math.random()*6)+'px';e.style.height=(9+Math.random()*8)+'px';
     document.body.appendChild(e);setTimeout(()=>e.remove(),5000)}
 }
+// 저작권 표시(첫 화면·로그인 화면 아래)
+const COPY='© 2026 Econ Play. 무단 복제·배포를 금지합니다.';
+// 공식 주소가 아닌 곳(복사본)에서 열면 맨 위에 안내(기록이 저장되지 않을 수 있음)
+(function(){const h=location.hostname;if(!h||h==='bgy125-creator.github.io'||h==='localhost'||h==='127.0.0.1')return;
+  const d=document.createElement('div');d.className='offb';d.innerHTML='⚠️ 공식 Econ Play 주소가 아니에요. 기록이 저장되지 않을 수 있어요.<br>공식 주소: <a href="https://bgy125-creator.github.io/">bgy125-creator.github.io</a>';document.body.insertBefore(d,document.body.firstChild)})();
 // ───────── Firebase 연결 (Bull Run과 같은 프로젝트·같은 주소)
 const FB_CFG={apiKey:"AIzaSyDbc2Oay0tG5RdNy6kT3swj0PU9n7NBvzg",authDomain:"bullrun-b29a5.firebaseapp.com",projectId:"bullrun-b29a5",storageBucket:"bullrun-b29a5.firebasestorage.app",messagingSenderId:"736419764381",appId:"1:736419764381:web:3b05ccc733a91665679c74"};
 const MASTER='bgy125@gmail.com',SDOM='@econplay.app',BR_URL='https://bgy125-creator.github.io/bullrun/';
@@ -1735,7 +1742,8 @@ function setup(mode){
     ${mode==='join2'?`<button class="btn gh" onclick="setup('join')">← 이전으로</button>`:''}
     ${mode==='login'?'<div class="sm mut c" style="margin-top:10px">PIN을 잊었으면 선생님께 PIN 초기화를 부탁해요.</div>':''}
   </div>
-  <div class="c"><button class="x" onclick="tpage()">🧑‍🏫 관리자 입장하기(교사)</button></div>`;
+  <div class="c"><button class="x" onclick="tpage()">🧑‍🏫 관리자 입장하기(교사)</button></div>
+  <div class="c sm mut" style="margin-top:10px">${COPY}</div>`;
   const $=id=>document.getElementById(id),m=$('msg');
   if($('pm')){$('pm').onclick=()=>{sex='m';$('pm').classList.add('on');$('pf').classList.remove('on')};$('pf').onclick=()=>{sex='f';$('pf').classList.add('on');$('pm').classList.remove('on')}}
   if(mode==='join'&&JN){$('sid').value=JN.sid;$('nm').value=JN.nm}
