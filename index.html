@@ -647,18 +647,20 @@ function perf(){
   const L=PERF[PU].list,u=PERF[PU].u;
   // 묶음마다 동그라미 4개(Easy 1단계 · Easy 2단계 · Hard 1단계 · Hard 2단계): 통과했으면 빨간 PASS! 도장, 아니면 점선 "도전!". 누르면 바로 시작
   const cell=(k,m,lv)=>{const r=U.perf[u+'|'+k+'|'+m]||{},n=lv===1?(r.p1n||(r.p1?1:0)):(r.c||0);
-    return `<div class="pc4"><span class="pg">${m==='card'?'Easy':'Hard'} ${lv}단계</span><button class="pcir ${n?'ok':'no'}" onclick="perfStart('${k}','${m}',${lv},this)">${n?'<span class="pass">PASS!</span>':'도전!'}</button><span class="pn${n?'':' z'}">${n}번 통과</span></div>`};
+    return `<div class="pc4"><span class="pg">${(m==='write'?2:0)+lv}단계</span><button class="pcir ${n?'ok':'no'}" onclick="perfStart('${k}','${m}',${lv},this)">${n?'<span class="pass">PASS!</span>':'도전!'}</button><span class="pn${n?'':' z'}">${n}번 통과</span></div>`};
   app.innerHTML=`<div class="top"><div class="tb"><button class="x" onclick="${PBACK==='mystery'?'mystery()':'home()'}">← ${PBACK==='mystery'?'수사 본부':'체육관'}</button><span>📝 수행평가 연습</span><span></span></div></div>
   <div>${PERF.map((x,i)=>`<span class="utab" style="${i===PU?'':'opacity:.5'}" onclick="PU=${i};perf()">${esc(x.nm)}</span>`).join(' ')}</div>
   <div class="card" style="margin-top:0;border-top-left-radius:0">
-    <div class="sm mut gw">동그라미를 누르면 바로 시작해요. Easy = 카드 놓기 · Hard = 직접 쓰기 · 단계마다 하트 3개</div>
-    ${Object.entries(PSET).map(([k,[nm,gs,ic]])=>{const P=L.filter(p=>gs.includes(p.g));return `<div class="pset"><div class="pst"><b>${ic} ${nm}</b> <span class="sm mut">1단계 ${P.filter(p=>p.lv===1).length}문제 → 2단계 ${P.filter(p=>p.lv===2).length}문제</span></div>
+    <div class="sm mut gw">동그라미를 누르면 바로 시작해요. 1·2단계 = 카드 놓기 · 3·4단계 = 직접 쓰기 · 단계마다 하트 3개</div>
+    ${Object.entries(PSET).map(([k,[nm,gs,ic]])=>{const P=L.filter(p=>gs.includes(p.g));return `<div class="pset"><div class="pst"><b>${ic} ${nm}</b> <span class="sm mut">쉬운 문제 ${P.filter(p=>p.lv===1).length}개 → 어려운 문제 ${P.filter(p=>p.lv===2).length}개</span></div>
       <div class="prow">${cell(k,'card',1)}${cell(k,'card',2)}${cell(k,'write',1)}${cell(k,'write',2)}</div></div>`}).join('')}
   </div>`;
   scrollTo(0,0);
 }
 // 동그라미를 눌러 시작: 1단계는 1단계부터, 2단계는 1단계를 (Easy·Hard 어느 쪽이든) 통과했으면 2단계부터, 아니면 1단계부터
 // 1단계를 (Easy·Hard 어느 쪽에서도) 통과하지 않았는데 2단계를 누르면 시작하지 않고 그 묶음 아래에 안내
+// 학생 화면의 단계 번호: 카드 놓기 1·2단계, 직접 쓰기 3·4단계(안에서는 방식 PM + 단계 part 1·2)
+const pstg=part=>(PM==='write'?2:0)+part;
 function perfStart(k,m,lv,el){
   PS=k;PM=m;
   if(lv===2&&!perfP1()){
@@ -905,7 +907,7 @@ function nowStyle(){if(G.mode!=='dojo')return '';const c=NOWC[BELT[G.st===7?6:G.
 function label(){
   if(G.mode==='dojo')return `🥋 ${testName(G.st)} 중`;
   if(G.mode==='cup')return `${CUP[G.st-1][0]} ${CUP[G.st-1][1]} 출전 중`;
-  if(G.mode==='perf')return `📝 ${PST.part}단계(${PST.part===1?'쉬운 문제':'어려운 문제'}) 중`;
+  if(G.mode==='perf')return `📝 ${pstg(PST.part)}단계(${PST.part===1?'쉬운 문제':'어려운 문제'}) 중`;
   return '🎯 약점 집중 훈련 중';
 }
 const tm=s=>`${Math.floor(s/60)}분 ${String(s%60).padStart(2,'0')}초`;
@@ -1238,16 +1240,16 @@ function finish(){
     if(PST.lives>0&&PST.part===1){ // 1단계 통과: 기록하고 2단계로(틀린 문제도 함께, 하트 3개로 다시)
       const r1=U.perf[PKEY()],w1=[...new Set(G.wrong.map(w=>w.p.ix))];r1.p1=1;r1.p1n=(r1.p1n||0)+1;r1.w1=w1;save();actLog('perf',PS+'|'+PM,G.ok,G.N,'p1');
       PST.part=2;PST.lives=3;PST.L2=perfL2(w1);PST.N=G.N+PST.L2.length;
-      h=`<div class="card c"><div class="big cheer">🎉</div><h2 class="say">1단계 통과!</h2>
+      h=`<div class="card c"><div class="big cheer">🎉</div><h2 class="say">${pstg(1)}단계 통과!</h2>
         <div class="mut">${G.N}문제 중 ${G.ok}문제 정답</div>
         <div class="hearts" style="font-size:28px;margin:10px 0">${ph(3,3)}</div>
-        <div class="gw">이제 2단계, 조금 더 어려운 문제${w1.length?`와 1단계에서 틀린 문제 ${w1.length}개`:''}까지 ${PST.L2.length}문제예요.<br>하트 3개로 시작해요.</div>
-        <button class="btn" onclick="perfPart2()">2단계 시작!</button></div>`;
+        <div class="gw">이제 ${pstg(2)}단계, 조금 더 어려운 문제${w1.length?`와 ${pstg(1)}단계에서 틀린 문제 ${w1.length}개`:''}까지 ${PST.L2.length}문제예요.<br>하트 3개로 시작해요.</div>
+        <button class="btn" onclick="perfPart2()">${pstg(2)}단계 시작!</button></div>`;
     }else{
       const pass=PST.lives>0,n=PST.ok,N=PST.N,k=PKEY(),r=U.perf[k]=U.perf[k]||{n:0,N,c:0,s:1},best=r.lt==null||n>r.n;
       if(best)r.n=n;r.N=N;if(pass)r.c=(r.c||0)+1;r.l=n;r.lt=Date.now();save();actLog('perf',PS+'|'+PM,n,N,pass?'pass':'fail');WR=PST.wrong;G.up=pass;
       h=`<div class="card c"><div class="big ${pass?'cheer':''}">${pass?'🏆':'💪'}</div><h2 class="say">${pass?'수행평가 연습 통과!':'하트를 모두 잃었어요'}</h2>
-        <div class="mut">${pass?'':PST.part+'단계에서 멈췄어요 · '}${N}문제 중 ${n}문제 정답 · ${best?'🆕 최고 기록!':'최고 '+r.n+'/'+r.N}<br>${PERF[PU].nm} · ${PSET[PS][0]} · ${PM==='card'?'🟢 Easy Mode':'🔴 Hard Mode'}</div>
+        <div class="mut">${pass?'':pstg(PST.part)+'단계에서 멈췄어요 · '}${N}문제 중 ${n}문제 정답 · ${best?'🆕 최고 기록!':'최고 '+r.n+'/'+r.N}<br>${PERF[PU].nm} · ${PSET[PS][0]} · ${PM==='card'?'1·2단계(카드 놓기)':'3·4단계(직접 쓰기)'}</div>
         <div class="g2"><button class="btn" onclick="perfGo()">다시 풀기</button><button class="btn sub" onclick="wrongPg()">틀린 문제 확인하기${WR.length?` (${WR.length})`:''}</button><button class="btn sub" onclick="perf()">수행평가 연습으로 돌아가기</button></div></div>`;
     }
   }else{
