@@ -142,6 +142,7 @@ ul.ex{font-family:"Gowun Dodum",sans-serif;margin:8px 0 0;padding-left:20px;font
 .pmsg{margin:8px 0 2px;padding:8px 10px;border-radius:10px;background:var(--wns);color:var(--wn);font-weight:700;text-align:center;font-size:14px}
 .pn{font-size:13px;font-weight:700}.pn.z{color:var(--mut);font-weight:400}
 @media (max-width:370px){.pcir{width:58px;height:58px}.pcir .pass{font-size:12px}}
+.p4{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3px;min-width:120px}.p4 span{font-size:11px;border-radius:6px;padding:2px 4px;background:var(--sl);color:var(--mut);white-space:nowrap}.p4 span b{font-weight:700;margin-right:3px}.p4 span.on{background:var(--oks);color:var(--ok)}
 .gd{border-top:1px solid var(--ln)}.gd:first-of-type{border-top:0}.gd summary{list-style:none;cursor:pointer}.gd summary::-webkit-details-marker{display:none}.gd[open] summary .v{color:var(--ac)}
 .lb{font-size:14px;color:var(--mut);margin:14px 0 6px;font-weight:700}
 .field{width:100%;border:1px solid var(--ln);border-radius:12px;padding:12px;font-size:17px;background:var(--sl);color:var(--tx);font-family:inherit}
@@ -646,7 +647,7 @@ function perf(){
   clearInterval(T);clearInterval(TW);U.perf=U.perf||{};
   const L=PERF[PU].list,u=PERF[PU].u;
   // 묶음마다 동그라미 4개(Easy 1단계 · Easy 2단계 · Hard 1단계 · Hard 2단계): 통과했으면 빨간 PASS! 도장, 아니면 점선 "도전!". 누르면 바로 시작
-  const cell=(k,m,lv)=>{const r=U.perf[u+'|'+k+'|'+m]||{},n=lv===1?(r.p1n||(r.p1?1:0)):(r.c||0);
+  const cell=(k,m,lv)=>{const n=perfStages(U.perf,u,k)[(m==='write'?2:0)+lv-1];
     return `<div class="pc4"><span class="pg">${(m==='write'?2:0)+lv}단계</span><button class="pcir ${n?'ok':'no'}" onclick="perfStart('${k}','${m}',${lv},this)">${n?'<span class="pass">PASS!</span>':'도전!'}</button><span class="pn${n?'':' z'}">${n}번 통과</span></div>`};
   app.innerHTML=`<div class="top"><div class="tb"><button class="x" onclick="${PBACK==='mystery'?'mystery()':'home()'}">← ${PBACK==='mystery'?'수사 본부':'체육관'}</button><span>📝 수행평가 연습</span><span></span></div></div>
   <div>${PERF.map((x,i)=>`<span class="utab" style="${i===PU?'':'opacity:.5'}" onclick="PU=${i};perf()">${esc(x.nm)}</span>`).join(' ')}</div>
@@ -661,14 +662,16 @@ function perf(){
 // 1단계를 (Easy·Hard 어느 쪽에서도) 통과하지 않았는데 2단계를 누르면 시작하지 않고 그 묶음 아래에 안내
 // 학생 화면의 단계 번호: 카드 놓기 1·2단계, 직접 쓰기 3·4단계(안에서는 방식 PM + 단계 part 1·2)
 const pstg=part=>(PM==='write'?2:0)+part;
+// 묶음 하나의 1~4단계 통과 횟수. 예전 기록(1단계 통과 표시 없이 끝까지 통과 c)은 1단계도 1번 통과로 본다
+function perfStages(P,u,k){const a=P[u+'|'+k+'|card']||{},b=P[u+'|'+k+'|write']||{},f=r=>r.p1n||((r.p1||r.c)?1:0);return [f(a),a.c||0,f(b),b.c||0]}
 function perfStart(k,m,lv,el){
-  PS=k;PM=m;
-  if(lv===2&&!perfP1()){
+  const st=(m==='write'?2:0)+lv,S=perfStages(U.perf,PERF[PU].u,k);
+  if(st>1&&!S[st-1]&&!S[st-2]){
     const row=el&&el.closest('.pset');if(!row)return;let d=row.querySelector('.pmsg');
     if(!d){d=document.createElement('div');d.className='pmsg';row.appendChild(d)}
-    d.textContent='🔒 1단계부터 도전하세요!';clearTimeout(d._t);d._t=setTimeout(()=>d.remove(),2500);return;
+    d.textContent=`🔒 ${st-1}단계부터 도전하세요!`;clearTimeout(d._t);d._t=setTimeout(()=>d.remove(),2500);return;
   }
-  lv===2?perfGo():perfGo(1);
+  PS=k;PM=m;lv===2?perfGo(0,1):perfGo(1);
 }
 // 2단계: 풀이 방식 고르기
 function perfMode(set){
@@ -699,11 +702,11 @@ let PST=null;
 const ph=(n,m)=>'❤️'.repeat(Math.max(0,n))+'🤍'.repeat(Math.max(0,m-n));
 function perfL2(w1){const all=PERF[PU].list;return shuf([...plist().filter(p=>p.lv===2),...(w1||[]).map(i=>all[i]).filter(Boolean)]).map(p=>[Object.assign({t:'pl',ix:all.indexOf(p)},p)])}
 // 이 묶음에서 1단계를 통과한 기록(지금 모드 먼저, 없으면 다른 모드)
-function perfP1(){const b=PERF[PU].u+'|'+PS+'|',a=U.perf[b+PM],o=U.perf[b+(PM==='card'?'write':'card')];return a&&a.p1?a:o&&o.p1?o:null}
-function perfGo(from1){
+function perfP1(){const a=U.perf[PERF[PU].u+'|'+PS+'|'+PM];return a&&a.p1?a:null}
+function perfGo(from1,f2){
   const k=PKEY(),L=plist(),all=PERF[PU].list,r=U.perf[k]=U.perf[k]||{n:0,N:L.length,c:0,s:0};r.s=(r.s||0)+1;save();
   PST={part:1,lives:3,ok:0,wrong:[],st:PM==='card'?9:7};
-  const q1=perfP1();if(q1&&!from1){PST.part=2;PST.L2=perfL2(r.p1?r.w1:q1.w1);PST.N=PST.L2.length;return countdown(()=>start('perf',PST.st,PST.L2))}
+  const q1=perfP1()||(f2?{w1:[]}:null);if(q1&&!from1){PST.part=2;PST.L2=perfL2(r.p1?r.w1:q1.w1);PST.N=PST.L2.length;return countdown(()=>start('perf',PST.st,PST.L2))}
   const L1=shuf(L.filter(p=>p.lv===1)).map(p=>[Object.assign({t:'pl',ix:all.indexOf(p)},p)]);PST.N=L.length;
   countdown(()=>start('perf',PST.st,L1));
 }
@@ -1185,7 +1188,7 @@ function myH(w){
 function quit(){
   clearInterval(TW);
   if(G.mode==='dojo'&&!confirm('심사를 그만둘까요? 지금까지 푼 문제는 통과에 들어가지 않아요(목숨은 그대로).'))return;
-  clearInterval(T);const m=G.mode;if(G.res.length)actLog(m,m==='perf'?PS+'|'+PM:G.st,G.ok,G.res.length,'quit');G=null;m==='perf'?perf():home();
+  clearInterval(T);const m=G.mode;if(G.res.length)actLog(m,m==='perf'?PS+'|'+PM+'|'+PST.part:G.st,G.ok,G.res.length,'quit');G=null;m==='perf'?perf():home();
 }
 
 // ───────── 날짜별 활동 기록(선생님 화면 '📅 날짜별 활동'): U.act={'2026-11-06':[[종류,단계,맞힌 수,문제 수,결과,시각(분)]]}, 최근 30일만
@@ -1238,7 +1241,7 @@ function finish(){
   }else if(G.mode==='perf'){
     PST.ok+=G.ok;PST.wrong.push(...G.wrong);
     if(PST.lives>0&&PST.part===1){ // 1단계 통과: 기록하고 2단계로(틀린 문제도 함께, 하트 3개로 다시)
-      const r1=U.perf[PKEY()],w1=[...new Set(G.wrong.map(w=>w.p.ix))];r1.p1=1;r1.p1n=(r1.p1n||0)+1;r1.w1=w1;save();actLog('perf',PS+'|'+PM,G.ok,G.N,'p1');
+      const r1=U.perf[PKEY()],w1=[...new Set(G.wrong.map(w=>w.p.ix))];r1.p1=1;r1.p1n=(r1.p1n||0)+1;r1.w1=w1;save();actLog('perf',PS+'|'+PM+'|1',G.ok,G.N,'p1');
       PST.part=2;PST.lives=3;PST.L2=perfL2(w1);PST.N=G.N+PST.L2.length;
       h=`<div class="card c"><div class="big cheer">🎉</div><h2 class="say">${pstg(1)}단계 통과!</h2>
         <div class="mut">${G.N}문제 중 ${G.ok}문제 정답</div>
@@ -1247,10 +1250,10 @@ function finish(){
         <button class="btn" onclick="perfPart2()">${pstg(2)}단계 시작!</button></div>`;
     }else{
       const pass=PST.lives>0,n=PST.ok,N=PST.N,k=PKEY(),r=U.perf[k]=U.perf[k]||{n:0,N,c:0,s:1},best=r.lt==null||n>r.n;
-      if(best)r.n=n;r.N=N;if(pass)r.c=(r.c||0)+1;r.l=n;r.lt=Date.now();save();actLog('perf',PS+'|'+PM,n,N,pass?'pass':'fail');WR=PST.wrong;G.up=pass;
+      if(best)r.n=n;r.N=N;if(pass)r.c=(r.c||0)+1;r.l=n;r.lt=Date.now();save();actLog('perf',PS+'|'+PM+'|'+PST.part,n,N,pass?'pass':'fail');WR=PST.wrong;G.up=pass;
       h=`<div class="card c"><div class="big ${pass?'cheer':''}">${pass?'🏆':'💪'}</div><h2 class="say">${pass?'수행평가 연습 통과!':'하트를 모두 잃었어요'}</h2>
         <div class="mut">${pass?'':pstg(PST.part)+'단계에서 멈췄어요 · '}${N}문제 중 ${n}문제 정답 · ${best?'🆕 최고 기록!':'최고 '+r.n+'/'+r.N}<br>${PERF[PU].nm} · ${PSET[PS][0]} · ${PM==='card'?'1·2단계(카드 놓기)':'3·4단계(직접 쓰기)'}</div>
-        <div class="g2"><button class="btn" onclick="perfGo()">다시 풀기</button><button class="btn sub" onclick="wrongPg()">틀린 문제 확인하기${WR.length?` (${WR.length})`:''}</button><button class="btn sub" onclick="perf()">수행평가 연습으로 돌아가기</button></div></div>`;
+        <div class="g2"><button class="btn" onclick="perfGo()">다시 풀기</button>${pass&&PM==='card'?`<button class="btn bl" onclick="perfStart('${PS}','write',1)">3단계 도전하기</button>`:''}<button class="btn sub" onclick="wrongPg()">틀린 문제 확인하기${WR.length?` (${WR.length})`:''}</button><button class="btn sub" onclick="perf()">수행평가 연습으로 돌아가기</button></div></div>`;
     }
   }else{
     actLog('train',0,G.ok,G.N,'');
@@ -2007,7 +2010,7 @@ function actTxt(e){
   if(k==='dojo')return [`🥋 ${st===7?'단 심사':BELT[st].nm+' 심사'}${sc}${r==='up'?' 승급!':r==='pass'?' 통과':r==='fail'?' 실패':q}`,r==='up'||r==='pass'?'ok':r==='fail'?'ng':''];
   if(k==='cup')return [`🏆 ${(CUP[st-1]||['',''])[1]}${sc}${r&&r!=='quit'?' '+r:q}`,''];
   if(k==='train')return [`🎯 약점 훈련${sc}${q}`,''];
-  if(k==='perf'){const [ps,pm]=String(st).split('|');return [`📝 수행평가 ${(PSET[ps]||[''])[0]}(${pm==='card'?'Easy':'Hard'})${sc}${r==='p1'?' 1단계 통과':r==='pass'?' 통과':r==='fail'?' 실패':q}`,r==='pass'||r==='p1'?'ok':r==='fail'?'ng':'']}
+  if(k==='perf'){const [ps,pm,pt]=String(st).split('|'),g=pt?((pm==='write'?2:0)+(+pt))+'단계':(pm==='card'?'1·2단계':'3·4단계');return [`📝 수행평가 ${(PSET[ps]||[''])[0]} ${g}${sc}${r==='p1'||r==='pass'?' 통과':r==='fail'?' 실패':q}`,r==='pass'||r==='p1'?'ok':r==='fail'?'ng':'']}
   if(k==='mtest')return [`🕵️ ${(MLV[st]||['',''])[1]} 승진 시험${sc}${r==='up'?' 승진!':r==='pass'?' 통과':r==='fail'?' 실패':q}`,r==='up'||r==='pass'?'ok':r==='fail'?'ng':''];
   if(k==='mcase')return [`🗂️ 모의 사건 ${st}단계${sc}${q}`,''];
   if(k==='mtrain')return [`🔎 약점 수사${sc}${q}`,''];
@@ -2113,15 +2116,11 @@ function tLvCnt(S){
 const TOPEN={mg:false,lv:false,pf:false,lvl:false,act:false};
 const tTg=(k,title,body,sub)=>`<details class="tg${sub?' sub':''}" ${(k in TOPEN?TOPEN[k]:true)?'open':''} ontoggle="TOPEN['${k}']=this.open"><summary>${title}<span class="ar">▾</span></summary><div class="tgb">${body}</div></details>`;
 function tPerf(S,pu){
-  // 방식마다: 2단계까지 통과 = 초록 동그라미 "n회 통과" / 1단계만 통과 = 주황 반쪽 동그라미 "1단계 통과" / 아직 = 회색 빈 동그라미
-  const line=(x,set,m,nm)=>{const r=pfRec(x,pu.u,set+'|'+m)||{},c=r.c||0;
-    return c?`<div class="pfc"><span class="pdot on"></span><span>${nm} ${c}회 통과</span></div>`
-      :r.p1?`<div class="pfc"><span class="pdot half"></span><span class="p1t">${nm} 1단계 통과</span></div>`
-      :`<div class="pfc"><span class="pdot"></span><span class="mut">${nm} 0회 통과</span></div>`};
-  const cell=(x,set)=>line(x,set,'card','Easy')+line(x,set,'write','Hard');
+  // 1~4단계 칸: 통과했으면 초록 칸에 통과 횟수, 아직이면 회색
+  const cell=(x,set)=>`<div class="p4">${perfStages(x.s.pf,pu.u,set).map((n,i)=>`<span class="${n?'on':''}"><b>${i+1}단계</b>${n}번</span>`).join('')}</div>`;
   return tTg('pf_'+pu.u,esc(pu.nm),`<div class="tw"><table class="tt2"><tr><th>학번</th><th>이름</th><th>따라하기·혼자하기</th><th>대단원 실습</th></tr>
     ${S.map(x=>`<tr><td>${esc(x.sid)}</td><td>${esc(x.nm)}</td><td>${cell(x,'fh')}</td><td>${cell(x,'ex')}</td></tr>`).join('')}</table></div>
-    <div class="sm mut" style="margin-top:6px">Easy Mode = 카드 놓기 · Hard Mode = 직접 쓰기 · 1단계·2단계를 모두 마치면 통과 · <span class="pdot on" style="vertical-align:middle"></span> 통과 <span class="pdot half" style="vertical-align:middle"></span> 1단계만 통과</div>`,1);
+    <div class="sm mut" style="margin-top:6px">1·2단계 = 카드 놓기 · 3·4단계 = 직접 쓰기 · 숫자 = 그 단계를 통과한 횟수(초록 = 통과)</div>`,1);
 }
 // 학생 한 명 삭제: 기록 문서와 로그인 판 문서를 지우고 반 인원을 줄임(같은 학번으로 다시 가입 가능)
 async function tDelSt(i){
