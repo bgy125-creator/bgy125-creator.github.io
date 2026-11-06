@@ -135,6 +135,12 @@ ul.ex{font-family:"Gowun Dodum",sans-serif;margin:8px 0 0;padding-left:20px;font
 .tt2 tr.off td{color:var(--mut)}
 #svst{margin:12px 0 4px;padding:9px 12px;border-radius:12px;font-size:14px;text-align:center;line-height:1.5}#svst.ok{color:var(--ok)}#svst.ng{background:var(--ngs);color:var(--ng);border:1px solid var(--ng)}#svst small{color:var(--mut)}#svst button{margin-left:6px;border:1px solid var(--ng);background:#fff;color:var(--ng);border-radius:8px;padding:3px 8px;font:inherit;cursor:pointer}
 .pdot.half{border-color:#d97706;background:linear-gradient(90deg,#d97706 50%,transparent 50%)}.p1t{color:#b45309}
+.pset{border-top:1px solid var(--ln);padding:12px 0 6px;margin-top:8px}.pst b{font-size:16px}
+.prow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin-top:10px}.pc4{display:flex;flex-direction:column;align-items:center;gap:5px}.pg{font-size:12px;color:var(--mut);white-space:nowrap}
+.pcir{width:68px;height:68px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;background:transparent;padding:0;font-family:Jua,sans-serif;-webkit-tap-highlight-color:transparent}.pcir.ok{border:1.5px solid var(--ln)}.pcir.no{border:2.5px dashed #e8590c;color:#e8590c;font-size:17px}.pcir.no:active,.pcir.ok:active{transform:scale(.95)}
+.pcir .pass{border:2.5px solid #d6262b;border-radius:4px;padding:2px 5px;color:#d6262b;font-size:14px;letter-spacing:1px;transform:rotate(-12deg);outline:1px solid #d6262b;outline-offset:2px;font-family:Jua,sans-serif}
+.pn{font-size:13px;font-weight:700}.pn.z{color:var(--mut);font-weight:400}
+@media (max-width:370px){.pcir{width:58px;height:58px}.pcir .pass{font-size:12px}}
 .gd{border-top:1px solid var(--ln)}.gd:first-of-type{border-top:0}.gd summary{list-style:none;cursor:pointer}.gd summary::-webkit-details-marker{display:none}.gd[open] summary .v{color:var(--ac)}
 .lb{font-size:14px;color:var(--mut);margin:14px 0 6px;font-weight:700}
 .field{width:100%;border:1px solid var(--ln);border-radius:12px;padding:12px;font-size:17px;background:var(--sl);color:var(--tx);font-family:inherit}
@@ -637,15 +643,21 @@ function docH(d){
 function perf(){
   if(!U.me)return setup();
   clearInterval(T);clearInterval(TW);U.perf=U.perf||{};
-  const L=PERF[PU].list,best=(s,m)=>{const r=U.perf[PERF[PU].u+'|'+s+'|'+m];return r&&r.lt?`${r.n}/${r.N}`:'-'};
+  const L=PERF[PU].list,u=PERF[PU].u;
+  // 묶음마다 동그라미 4개(Easy 1단계 · Easy 2단계 · Hard 1단계 · Hard 2단계): 통과했으면 빨간 PASS! 도장, 아니면 점선 "도전!". 누르면 바로 시작
+  const cell=(k,m,lv)=>{const r=U.perf[u+'|'+k+'|'+m]||{},n=lv===1?(r.p1n||(r.p1?1:0)):(r.c||0);
+    return `<div class="pc4"><span class="pg">${m==='card'?'Easy':'Hard'} ${lv}단계</span><button class="pcir ${n?'ok':'no'}" onclick="perfStart('${k}','${m}',${lv})">${n?'<span class="pass">PASS!</span>':'도전!'}</button><span class="pn${n?'':' z'}">${n}번 통과</span></div>`};
   app.innerHTML=`<div class="top"><div class="tb"><button class="x" onclick="${PBACK==='mystery'?'mystery()':'home()'}">← ${PBACK==='mystery'?'수사 본부':'체육관'}</button><span>📝 수행평가 연습</span><span></span></div></div>
   <div>${PERF.map((x,i)=>`<span class="utab" style="${i===PU?'':'opacity:.5'}" onclick="PU=${i};perf()">${esc(x.nm)}</span>`).join(' ')}</div>
   <div class="card" style="margin-top:0;border-top-left-radius:0">
-    <h3 style="margin:2px 0 8px">어떤 문제를 풀까요?</h3>
-    <div class="cups">${Object.entries(PSET).map(([k,[nm,gs,ic]])=>`<button class="cup" onclick="perfMode('${k}')"><span class="ic">${ic}</span><span class="nm">${nm}<br><span class="sm mut" style="font-weight:400">${L.filter(p=>gs.includes(p.g)).length}문제 · 쉬운 문제 → 어려운 문제</span></span><span class="rec">최고<br>Easy ${best(k,'card')}<br>Hard ${best(k,'write')}</span></button>`).join('')}</div>
+    <div class="sm mut gw">동그라미를 누르면 바로 시작해요. Easy = 카드 놓기 · Hard = 직접 쓰기 · 단계마다 하트 3개</div>
+    ${Object.entries(PSET).map(([k,[nm,gs,ic]])=>{const P=L.filter(p=>gs.includes(p.g));return `<div class="pset"><div class="pst"><b>${ic} ${nm}</b> <span class="sm mut">1단계 ${P.filter(p=>p.lv===1).length}문제 → 2단계 ${P.filter(p=>p.lv===2).length}문제</span></div>
+      <div class="prow">${cell(k,'card',1)}${cell(k,'card',2)}${cell(k,'write',1)}${cell(k,'write',2)}</div></div>`}).join('')}
   </div>`;
   scrollTo(0,0);
 }
+// 동그라미를 눌러 시작: 1단계는 1단계부터, 2단계는 1단계를 (Easy·Hard 어느 쪽이든) 통과했으면 2단계부터, 아니면 1단계부터
+function perfStart(k,m,lv){PS=k;PM=m;if(lv===2&&perfP1())perfGo();else perfGo(1)}
 // 2단계: 풀이 방식 고르기
 function perfMode(set){
   PS=set;const n=plist().length,rec=m=>{const r=U.perf[PERF[PU].u+'|'+PS+'|'+m];return (r&&r.lt?`최고 ${r.n}/${r.N} · ${r.c||0}회 통과`:'아직 기록이 없어요')+(perfP1()?'<br>✅ 1단계 통과':'')};
@@ -1214,7 +1226,7 @@ function finish(){
   }else if(G.mode==='perf'){
     PST.ok+=G.ok;PST.wrong.push(...G.wrong);
     if(PST.lives>0&&PST.part===1){ // 1단계 통과: 기록하고 2단계로(틀린 문제도 함께, 하트 3개로 다시)
-      const r1=U.perf[PKEY()],w1=[...new Set(G.wrong.map(w=>w.p.ix))];r1.p1=1;r1.w1=w1;save();actLog('perf',PS+'|'+PM,G.ok,G.N,'p1');
+      const r1=U.perf[PKEY()],w1=[...new Set(G.wrong.map(w=>w.p.ix))];r1.p1=1;r1.p1n=(r1.p1n||0)+1;r1.w1=w1;save();actLog('perf',PS+'|'+PM,G.ok,G.N,'p1');
       PST.part=2;PST.lives=3;PST.L2=perfL2(w1);PST.N=G.N+PST.L2.length;
       h=`<div class="card c"><div class="big cheer">🎉</div><h2 class="say">1단계 통과!</h2>
         <div class="mut">${G.N}문제 중 ${G.ok}문제 정답</div>
