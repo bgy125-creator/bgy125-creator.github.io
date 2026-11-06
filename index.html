@@ -134,6 +134,7 @@ ul.ex{font-family:"Gowun Dodum",sans-serif;margin:8px 0 0;padding-left:20px;font
 .apill{display:inline-block;margin:2px 4px 2px 0;padding:2px 9px;border-radius:99px;background:var(--sl);border:1px solid var(--ln);font-size:12px;line-height:1.6}.apill.ok{border-color:var(--ok);background:var(--oks)}.apill.ng{border-color:var(--ng);background:var(--ngs)}.apill small{color:var(--mut);margin-right:4px}
 .tt2 tr.off td{color:var(--mut)}
 #svst{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:70;padding:9px 14px;border-radius:12px;font-size:14px;box-shadow:0 2px 10px rgba(0,0,0,.15);max-width:92vw;text-align:center;display:none}#svst.ok{background:var(--oks);color:var(--ok);border:1px solid var(--ok)}#svst.ng{background:var(--ngs);color:var(--ng);border:1px solid var(--ng)}#svst button{margin-left:6px;border:1px solid var(--ng);background:#fff;color:var(--ng);border-radius:8px;padding:3px 8px;font:inherit;cursor:pointer}
+.pdot.half{border-color:#d97706;background:linear-gradient(90deg,#d97706 50%,transparent 50%)}.p1t{color:#b45309}
 .gd{border-top:1px solid var(--ln)}.gd:first-of-type{border-top:0}.gd summary{list-style:none;cursor:pointer}.gd summary::-webkit-details-marker{display:none}.gd[open] summary .v{color:var(--ac)}
 .lb{font-size:14px;color:var(--mut);margin:14px 0 6px;font-weight:700}
 .field{width:100%;border:1px solid var(--ln);border-radius:12px;padding:12px;font-size:17px;background:var(--sl);color:var(--tx);font-family:inherit}
@@ -2080,11 +2081,15 @@ function tLvCnt(S){
 const TOPEN={mg:false,lv:false,pf:false,lvl:false,act:false};
 const tTg=(k,title,body,sub)=>`<details class="tg${sub?' sub':''}" ${(k in TOPEN?TOPEN[k]:true)?'open':''} ontoggle="TOPEN['${k}']=this.open"><summary>${title}<span class="ar">▾</span></summary><div class="tgb">${body}</div></details>`;
 function tPerf(S,pu){
-  const pc=(x,set,m)=>{const r=pfRec(x,pu.u,set+'|'+m);return r&&r.c||0};
-  const dot=n=>`<span class="pdot${n?' on':''}"></span>`,cell=(x,set)=>{const e=pc(x,set,'card'),h=pc(x,set,'write');return `<div class="pfc">${dot(e)}<span class="${e?'':'mut'}">Easy ${e}회 통과</span></div><div class="pfc">${dot(h)}<span class="${h?'':'mut'}">Hard ${h}회 통과</span></div>`};
+  // 방식마다: 2단계까지 통과 = 초록 동그라미 "n회 통과" / 1단계만 통과 = 주황 반쪽 동그라미 "1단계 통과" / 아직 = 회색 빈 동그라미
+  const line=(x,set,m,nm)=>{const r=pfRec(x,pu.u,set+'|'+m)||{},c=r.c||0;
+    return c?`<div class="pfc"><span class="pdot on"></span><span>${nm} ${c}회 통과</span></div>`
+      :r.p1?`<div class="pfc"><span class="pdot half"></span><span class="p1t">${nm} 1단계 통과</span></div>`
+      :`<div class="pfc"><span class="pdot"></span><span class="mut">${nm} 0회 통과</span></div>`};
+  const cell=(x,set)=>line(x,set,'card','Easy')+line(x,set,'write','Hard');
   return tTg('pf_'+pu.u,esc(pu.nm),`<div class="tw"><table class="tt2"><tr><th>학번</th><th>이름</th><th>따라하기·혼자하기</th><th>대단원 실습</th></tr>
     ${S.map(x=>`<tr><td>${esc(x.sid)}</td><td>${esc(x.nm)}</td><td>${cell(x,'fh')}</td><td>${cell(x,'ex')}</td></tr>`).join('')}</table></div>
-    <div class="sm mut" style="margin-top:6px">Easy Mode = 카드 놓기 · Hard Mode = 직접 쓰기 · 1단계·2단계를 모두 마치면 통과</div>`,1);
+    <div class="sm mut" style="margin-top:6px">Easy Mode = 카드 놓기 · Hard Mode = 직접 쓰기 · 1단계·2단계를 모두 마치면 통과 · <span class="pdot on" style="vertical-align:middle"></span> 통과 <span class="pdot half" style="vertical-align:middle"></span> 1단계만 통과</div>`,1);
 }
 // 학생 한 명 삭제: 기록 문서와 로그인 판 문서를 지우고 반 인원을 줄임(같은 학번으로 다시 가입 가능)
 async function tDelSt(i){
