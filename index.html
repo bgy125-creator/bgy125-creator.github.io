@@ -135,7 +135,7 @@ ul.ex{font-family:"Gowun Dodum",sans-serif;margin:8px 0 0;padding-left:20px;font
 .tt2 tr.off td{color:var(--mut)}
 #svst{margin:12px 0 4px;padding:9px 12px;border-radius:12px;font-size:14px;text-align:center;line-height:1.5}#svst.ok{color:var(--ok)}#svst.ng{background:var(--ngs);color:var(--ng);border:1px solid var(--ng)}#svst small{color:var(--mut)}#svst button{margin-left:6px;border:1px solid var(--ng);background:#fff;color:var(--ng);border-radius:8px;padding:3px 8px;font:inherit;cursor:pointer}
 .pdot.half{border-color:#d97706;background:linear-gradient(90deg,#d97706 50%,transparent 50%)}.p1t{color:#b45309}
-.pset{border-top:1px solid var(--ln);padding:12px 0 6px;margin-top:8px}.pst b{font-size:16px}
+.pset{border-top:1px solid var(--ln);padding:12px 0 6px;margin-top:8px}.pst{text-align:center}.pst b{font-size:16px}.pgd{margin:2px 0 4px;padding-left:20px;font-size:14px;line-height:1.7}.pgd li::marker{color:var(--ac)}
 .prow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin-top:10px}.pc4{display:flex;flex-direction:column;align-items:center;gap:5px}.pg{font-size:12px;color:var(--mut);white-space:nowrap}
 .pcir{width:68px;height:68px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;background:transparent;padding:0;font-family:Jua,sans-serif;-webkit-tap-highlight-color:transparent}.pcir.ok{border:1.5px solid var(--ln)}.pcir.no{border:2.5px dashed #e8590c;color:#e8590c;font-size:17px}.pcir.no:active,.pcir.ok:active{transform:scale(.95)}
 .pcir .pass{border:2.5px solid #d6262b;border-radius:4px;padding:2px 5px;color:#d6262b;font-size:14px;letter-spacing:1px;transform:rotate(-12deg);outline:1px solid #d6262b;outline-offset:2px;font-family:Jua,sans-serif}
@@ -651,8 +651,8 @@ function perf(){
   app.innerHTML=`<div class="top"><div class="tb"><button class="x" onclick="${PBACK==='mystery'?'mystery()':'home()'}">← ${PBACK==='mystery'?'수사 본부':'체육관'}</button><span>📝 수행평가 연습</span><span></span></div></div>
   <div>${PERF.map((x,i)=>`<span class="utab" style="${i===PU?'':'opacity:.5'}" onclick="PU=${i};perf()">${esc(x.nm)}</span>`).join(' ')}</div>
   <div class="card" style="margin-top:0;border-top-left-radius:0">
-    <div class="sm mut gw">동그라미를 누르면 바로 시작해요. 1·2단계 = 카드 놓기 · 3·4단계 = 직접 쓰기 · 단계마다 하트 3개</div>
-    ${Object.entries(PSET).map(([k,[nm,gs,ic]])=>{const P=L.filter(p=>gs.includes(p.g));return `<div class="pset"><div class="pst"><b>${ic} ${nm}</b> <span class="sm mut">쉬운 문제 ${P.filter(p=>p.lv===1).length}개 → 어려운 문제 ${P.filter(p=>p.lv===2).length}개</span></div>
+    <ul class="pgd gw"><li>각 단계별로 하트는 세 개입니다!</li><li>1·2단계: 카드를 옮기는 방식의 게임</li><li>3·4단계: 직접 작성하는 방식의 게임</li></ul>
+    ${Object.entries(PSET).map(([k,[nm,gs,ic]])=>{const P=L.filter(p=>gs.includes(p.g));return `<div class="pset"><div class="pst"><b>${ic} ${nm}</b></div>
       <div class="prow">${cell(k,'card',1)}${cell(k,'card',2)}${cell(k,'write',1)}${cell(k,'write',2)}</div></div>`}).join('')}
   </div>`;
   scrollTo(0,0);
