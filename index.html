@@ -133,6 +133,7 @@ ul.ex{font-family:"Gowun Dodum",sans-serif;margin:8px 0 0;padding-left:20px;font
 .offb{background:#fff3cd;color:#664d03;border-bottom:2px solid #f2b705;padding:10px 14px;text-align:center;font-size:14px;line-height:1.5}.offb a{color:#664d03;font-weight:700}
 .apill{display:inline-block;margin:2px 4px 2px 0;padding:2px 9px;border-radius:99px;background:var(--sl);border:1px solid var(--ln);font-size:12px;line-height:1.6}.apill.ok{border-color:var(--ok);background:var(--oks)}.apill.ng{border-color:var(--ng);background:var(--ngs)}.apill small{color:var(--mut);margin-right:4px}
 .tt2 tr.off td{color:var(--mut)}
+#svst{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:70;padding:9px 14px;border-radius:12px;font-size:14px;box-shadow:0 2px 10px rgba(0,0,0,.15);max-width:92vw;text-align:center;display:none}#svst.ok{background:var(--oks);color:var(--ok);border:1px solid var(--ok)}#svst.ng{background:var(--ngs);color:var(--ng);border:1px solid var(--ng)}#svst button{margin-left:6px;border:1px solid var(--ng);background:#fff;color:var(--ng);border-radius:8px;padding:3px 8px;font:inherit;cursor:pointer}
 .gd{border-top:1px solid var(--ln)}.gd:first-of-type{border-top:0}.gd summary{list-style:none;cursor:pointer}.gd summary::-webkit-details-marker{display:none}.gd[open] summary .v{color:var(--ac)}
 .lb{font-size:14px;color:var(--mut);margin:14px 0 6px;font-weight:700}
 .field{width:100%;border:1px solid var(--ln);border-radius:12px;padding:12px;font-size:17px;background:var(--sl);color:var(--tx);font-family:inherit}
@@ -1641,14 +1642,56 @@ const errMsg=e=>{const c=e&&e.code||'';return c.includes('network')?'인터넷 �
 
 // 학생 기록 저장: 판이 끝날 때(결과 화면)와 앱을 떠날 때만 저장한다
 function save(){try{localStorage.setItem(KEY,JSON.stringify(U))}catch(e){}DIRTY=true}
-async function cloudSave(){
+// 두 기기·두 창에서 같은 계정으로 하면, 늦게 저장한 쪽의 옛 기록이 새 기록을 덮어쓸 수 있다.
+// 그래서 저장할 때 서버 기록을 먼저 읽어 합친다: 횟수·최고 기록·단계는 큰 값, 활동 기록은 합치고, 목숨·연속 정답은 이 기기 값,
+// 수행평가 기록의 최근 점수(l)·문제 수(N)·틀린 문제(w1)·시각(lt)은 더 최근 쪽 값
+const NEWER=['l','N','w1','lt'];
+function mergeU(a,b,path){
+  path=path||'';
+  if(a==null)return b;if(b==null)return a;
+  if(Array.isArray(a)||Array.isArray(b)){
+    if(/^act\./.test(path)&&Array.isArray(a)&&Array.isArray(b)){const s=new Set(),o=[];[...a,...b].forEach(e=>{const k=JSON.stringify(e);if(!s.has(k)){s.add(k);o.push(e)}});return o.sort((x,y)=>(x[5]||0)-(y[5]||0))}
+    return b;
+  }
+  if(typeof a==='number'&&typeof b==='number'){
+    if(/(^|\.)lives$/.test(path))return b;
+    if(!/^perf\./.test(path)&&/(^|\.)(s|ov)$/.test(path))return b;
+    return Math.max(a,b);
+  }
+  if(/^cup\.\d+$/.test(path)&&typeof a==='object'&&typeof b==='object')return (b.n>a.n||(b.n===a.n&&b.t<=a.t))?b:a; // 대회: 더 좋은 기록(맞힌 수, 같으면 짧은 시간)
+  if(typeof a==='object'&&typeof b==='object'){
+    const o={},nb=typeof a.lt==='number'||typeof b.lt==='number'?((b.lt||0)>=(a.lt||0)?b:a):null;
+    new Set([...Object.keys(a),...Object.keys(b)]).forEach(k=>{o[k]=nb&&NEWER.includes(k)?(nb[k]!==undefined?nb[k]:(a[k]!==undefined?a[k]:b[k])):mergeU(a[k],b[k],path?path+'.'+k:k)});
+    return o;
+  }
+  return b;
+}
+let SVT=null;
+function svShow(ok){
+  let e=document.getElementById('svst');if(!e){e=document.createElement('div');e.id='svst';document.body.appendChild(e)}
+  clearTimeout(SVT);e.className=ok?'ok':'ng';
+  e.innerHTML=ok?'☁️ 기록이 저장됐어요':'⚠️ 기록을 저장하지 못했어요. 인터넷 연결을 확인해 주세요. <button onclick="cloudSave(1)">다시 저장</button>';
+  e.style.display='block';if(ok)SVT=setTimeout(()=>{e.style.display='none'},2500);
+}
+async function cloudSave(show){
   if(!DIRTY||!DB||!U.me||!U.me.key||!isStudent(FBA.currentUser))return;
-  DIRTY=false;try{await DB.doc('eStudents/'+U.me.key).update({U:gameData(),day:today(),sex:U.me.sex||'m'})}catch(e){DIRTY=true}
+  DIRTY=false;const ref=DB.doc('eStudents/'+U.me.key);
+  try{
+    const m=await DB.runTransaction(async t=>{const d=await t.get(ref);if(!d.exists)throw {code:'no-record'};
+      const m=mergeU(d.data().U||{},gameData());t.update(ref,{U:m,day:today(),sex:U.me.sex||'m'});return m});
+    // 저장하는 사이에 이 기기에서 더 한 것도 살려서 합친 기록을 이 기기에 둔다
+    const mm=mergeU(m,gameData());Object.keys(mm).forEach(k=>{U[k]=mm[k]});try{localStorage.setItem(KEY,JSON.stringify(U))}catch(e){}
+    if(show)svShow(1);
+  }catch(e){
+    // 합쳐 저장하기가 안 되면 예전 방식(이 기기 기록 그대로)으로라도 저장
+    if(e&&e.code==='no-record'){DIRTY=true;return}
+    try{await ref.update({U:gameData(),day:today(),sex:U.me.sex||'m'});if(show)svShow(1)}catch(e2){DIRTY=true;if(show)svShow(0)}
+  }
 }
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')cloudSave()});
 const _finish=finish,_mfinish=mfinish;
-finish=function(){_finish.apply(this,arguments);cloudSave()};
-mfinish=function(){_mfinish.apply(this,arguments);cloudSave()};
+finish=function(){_finish.apply(this,arguments);cloudSave(1)};
+mfinish=function(){_mfinish.apply(this,arguments);cloudSave(1)};
 
 // 학교 목록(선생님이 등록, 학생은 고르기만): 문서 이름 = 띄어쓰기 뺀 이름, c = 계정에 쓰는 영문 6자리
 let SCH=null;
