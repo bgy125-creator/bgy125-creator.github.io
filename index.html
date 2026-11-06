@@ -131,6 +131,8 @@ ul.ex{font-family:"Gowun Dodum",sans-serif;margin:8px 0 0;padding-left:20px;font
 .okc path{fill:none;stroke:#f0262b;stroke-width:16;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;opacity:.9;animation:pen .5s ease-in-out forwards}
 @keyframes pen{to{stroke-dashoffset:0}}
 .offb{background:#fff3cd;color:#664d03;border-bottom:2px solid #f2b705;padding:10px 14px;text-align:center;font-size:14px;line-height:1.5}.offb a{color:#664d03;font-weight:700}
+.apill{display:inline-block;margin:2px 4px 2px 0;padding:2px 9px;border-radius:99px;background:var(--sl);border:1px solid var(--ln);font-size:12px;line-height:1.6}.apill.ok{border-color:var(--ok);background:var(--oks)}.apill.ng{border-color:var(--ng);background:var(--ngs)}.apill small{color:var(--mut);margin-right:4px}
+.tt2 tr.off td{color:var(--mut)}
 .gd{border-top:1px solid var(--ln)}.gd:first-of-type{border-top:0}.gd summary{list-style:none;cursor:pointer}.gd summary::-webkit-details-marker{display:none}.gd[open] summary .v{color:var(--ac)}
 .lb{font-size:14px;color:var(--mut);margin:14px 0 6px;font-weight:700}
 .field{width:100%;border:1px solid var(--ln);border-radius:12px;padding:12px;font-size:17px;background:var(--sl);color:var(--tx);font-family:inherit}
@@ -1157,9 +1159,17 @@ function myH(w){
 function quit(){
   clearInterval(TW);
   if(G.mode==='dojo'&&!confirm('심사를 그만둘까요? 지금까지 푼 문제는 통과에 들어가지 않아요(목숨은 그대로).'))return;
-  clearInterval(T);const m=G.mode;G=null;m==='perf'?perf():home();
+  clearInterval(T);const m=G.mode;if(G.res.length)actLog(m,m==='perf'?PS+'|'+PM:G.st,G.ok,G.res.length,'quit');G=null;m==='perf'?perf():home();
 }
 
+// ───────── 날짜별 활동 기록(선생님 화면 '📅 날짜별 활동'): U.act={'2026-11-06':[[종류,단계,맞힌 수,문제 수,결과,시각(분)]]}, 최근 30일만
+// 종류: dojo 승급 심사·cup 대회·train 약점 훈련·perf 수행평가·mtest 승진 시험·mcase 모의 사건·mtrain 약점 수사 / 결과: up 승급·pass 통과·fail 실패·p1 1단계 통과·quit 중단·메달
+function actLog(k,st,ok,N,r){
+  const d=new Date(),day=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  const A=U.act=U.act||{},L=A[day]=A[day]||[];if(L.length<80)L.push([k,st,ok,N,r||'',d.getHours()*60+d.getMinutes()]);
+  const ks=Object.keys(A).sort();while(ks.length>30)delete A[ks.shift()];
+  save();
+}
 // ───────── 결과
 let RES='',WR=[];
 function resBtns(first){
@@ -1173,7 +1183,7 @@ function finish(){
   if(G.mode==='dojo'){
     const d=U.dojo,st=G.st;
     if(d.lives<=0){
-      d.lives=LIVES;save();
+      d.lives=LIVES;save();actLog('dojo',st,G.ok,G.N,'fail');
       h=`<div class="card c"><img class="char" src="${charImg(d.best)}" alt="">
         <h2 class="say" style="margin-top:12px">${SAY.fail}</h2>
         <div class="mut">${G.ok}문제 맞히고 목숨을 모두 잃었어요.<br>다시 도전해 보세요!</div>
@@ -1183,7 +1193,7 @@ function finish(){
       if(st===7){d.dan++;msg=`${esc(U.me.nm)} ${d.dan}단 획득!`}
       else if(st>d.best){d.best=st;if(st===6)d.dan=1;msg=`${esc(U.me.nm)} ${BELT[st].nm} 획득!`}
       else{up=false;msg='심사 통과! 그 자세 그대로 다음 심사로!'}
-      G.up=up;d.lives=LIVES;d.cur=Math.min(7,st+1);save();
+      G.up=up;d.lives=LIVES;d.cur=Math.min(7,st+1);save();actLog('dojo',st,G.ok,G.N,up?'up':'pass');
       h=`<div class="card c">${up?'':'<div class="big">👍</div>'}
         <img class="char cheer" src="${charImg(d.best)}" alt="">
         <h2 class="say" style="margin-top:12px">${msg}</h2>
@@ -1193,7 +1203,7 @@ function finish(){
   }else if(G.mode==='cup'){
     const st=G.st,r=U.cup[st],n=G.ok;
     const best=!r||n>r.n||(n===r.n&&sec<r.t);
-    if(best){U.cup[st]={n,t:sec};save()}
+    if(best){U.cup[st]={n,t:sec};save()}actLog('cup',st,n,G.N,medal(n));
     const say=n>=20?SAY.gold:n>=17?SAY.silver:n>=14?SAY.bronze:SAY.none;
     h=`<div class="card c"><div class="big cheer">${medal(n)||'🥋'}</div>
       <h2 class="say">${say}</h2><div class="mut">${CUP[st-1][0]} ${st}. ${CUP[st-1][1]}</div>
@@ -1202,7 +1212,7 @@ function finish(){
   }else if(G.mode==='perf'){
     PST.ok+=G.ok;PST.wrong.push(...G.wrong);
     if(PST.lives>0&&PST.part===1){ // 1단계 통과: 기록하고 2단계로(틀린 문제도 함께, 하트 3개로 다시)
-      const r1=U.perf[PKEY()],w1=[...new Set(G.wrong.map(w=>w.p.ix))];r1.p1=1;r1.w1=w1;save();
+      const r1=U.perf[PKEY()],w1=[...new Set(G.wrong.map(w=>w.p.ix))];r1.p1=1;r1.w1=w1;save();actLog('perf',PS+'|'+PM,G.ok,G.N,'p1');
       PST.part=2;PST.lives=3;PST.L2=perfL2(w1);PST.N=G.N+PST.L2.length;
       h=`<div class="card c"><div class="big cheer">🎉</div><h2 class="say">1단계 통과!</h2>
         <div class="mut">${G.N}문제 중 ${G.ok}문제 정답</div>
@@ -1211,12 +1221,13 @@ function finish(){
         <button class="btn" onclick="perfPart2()">2단계 시작!</button></div>`;
     }else{
       const pass=PST.lives>0,n=PST.ok,N=PST.N,k=PKEY(),r=U.perf[k]=U.perf[k]||{n:0,N,c:0,s:1},best=r.lt==null||n>r.n;
-      if(best)r.n=n;r.N=N;if(pass)r.c=(r.c||0)+1;r.l=n;r.lt=Date.now();save();WR=PST.wrong;G.up=pass;
+      if(best)r.n=n;r.N=N;if(pass)r.c=(r.c||0)+1;r.l=n;r.lt=Date.now();save();actLog('perf',PS+'|'+PM,n,N,pass?'pass':'fail');WR=PST.wrong;G.up=pass;
       h=`<div class="card c"><div class="big ${pass?'cheer':''}">${pass?'🏆':'💪'}</div><h2 class="say">${pass?'수행평가 연습 통과!':'하트를 모두 잃었어요'}</h2>
         <div class="mut">${pass?'':PST.part+'단계에서 멈췄어요 · '}${N}문제 중 ${n}문제 정답 · ${best?'🆕 최고 기록!':'최고 '+r.n+'/'+r.N}<br>${PERF[PU].nm} · ${PSET[PS][0]} · ${PM==='card'?'🟢 Easy Mode':'🔴 Hard Mode'}</div>
         <div class="g2"><button class="btn" onclick="perfGo()">다시 풀기</button><button class="btn sub" onclick="wrongPg()">틀린 문제 확인하기${WR.length?` (${WR.length})`:''}</button><button class="btn sub" onclick="perf()">수행평가 연습으로 돌아가기</button></div></div>`;
     }
   }else{
+    actLog('train',0,G.ok,G.N,'');
     h=`<div class="card c"><div class="big">🎯</div><h2>훈련 끝! ${G.N}문제 중 ${G.ok}개 정답</h2>
       <div class="mut">훈련 결과도 내 약점 기록에 들어가요. 띠에는 영향을 주지 않아요.</div>
       ${resBtns()}</div>`;
@@ -1474,12 +1485,13 @@ function mgrade(ok,v){
   const f=document.querySelector('.fb');if(f)f.scrollIntoView({behavior:'smooth',block:'start'});
   if(ok)okGo(()=>MG&&MG.list[MG.i]===q,mnext);
 }
-function mquit(){if(MG.mode==='test'&&!confirm('승진 시험을 그만둘까요? 지금까지 푼 문제는 통과에 들어가지 않아요(목숨은 그대로).'))return;MG=null;mystery()}
+function mquit(){if(MG.mode==='test'&&!confirm('승진 시험을 그만둘까요? 지금까지 푼 문제는 통과에 들어가지 않아요(목숨은 그대로).'))return;
+  const n=MG.list.filter(q=>q.done).length;if(n)actLog('m'+MG.mode,MG.st,MG.ok,n,'quit');MG=null;mystery()}
 function mfinish(){
-  const my=MY(),st=MG.st,N=MG.list.length;MWR=MG.wrong;let h,up=false;
+  const my=MY(),st=MG.st,N=MG.list.length;MWR=MG.wrong;let h,up=false,mr='pass';
   my.plays=(my.plays||0)+1;
   if(MG.mode==='test'){
-    if(my.lives<=0){my.lives=LIVES;
+    if(my.lives<=0){my.lives=LIVES;mr='fail';
       h=`<div class="card c">${detH(my.clear)}<h2 class="say">${MSAY.fail}</h2>
         <div class="mut">${MG.ok}건 해결하고 목숨을 모두 잃었어요. 다음 시험도 ${MLV[st][1]} 승진 시험이에요.</div>${mbtns(['다시 도전하기','mtest()'])}</div>`;
     }else{
@@ -1496,6 +1508,7 @@ function mfinish(){
     h=`<div class="card c">${detH(st)}<h2 class="say">${N}건 중 ${MG.ok}건 해결!</h2>
       <div class="mut">${MLV[st][1]} 사건 · 최고 기록 ${my.best[st]}/${N}</div><div class="g2"><button class="btn" onclick="mstart('case',${st})">다시 연습하기</button>${st<MTOP?`<button class="btn bl" onclick="mstart('case',${st+1})">다음 단계 연습하기</button>`:''}<button class="btn sub" onclick="mwrongPg()">틀린 사건 확인하기${MWR.length?` (${MWR.length})`:''}</button><button class="btn sub" onclick="mystery()">수사 본부로 돌아가기</button></div></div>`;
   }
+  actLog('m'+MG.mode,st,MG.ok,N,MG.mode==='test'?(up?'up':mr):'');
   save();MRES=h;app.innerHTML=h;scrollTo(0,0);if(up)confetti();MG=null;
 }
 // 결과 화면 첫 버튼: [이름, 할 일]. 전설의 탐정이 된 뒤 승진 시험 버튼은 없음(사건 고르기는 계속 가능)
@@ -1906,6 +1919,31 @@ async function tMkRoom(){
       b.update(DB.doc('teachers/'+TU.uid),{er:firebase.firestore.FieldValue.increment(1)});await b.commit();return tHome()}catch(e){}}
   m.textContent='반 방을 만들지 못했어요. 다시 해 주세요.';
 }
+// 날짜별 활동: 학생마다 그날 끝낸(또는 중단한) 판을 시각 순서로
+let TAD=null;
+function tAct(S){
+  TAD=TAD||today();
+  return `<div class="sm" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:8px">📅 날짜 <input type="date" value="${TAD}" max="${today()}" onchange="TAD=this.value||today();document.getElementById('actb').innerHTML=tActB(TR.S)" style="font:inherit;padding:4px 6px;border:1px solid var(--ln);border-radius:8px"> <button class="mini2" onclick="TAD=today();this.previousElementSibling.value=TAD;document.getElementById('actb').innerHTML=tActB(TR.S)">오늘</button></div><div id="actb">${tActB(S)}</div>`;
+}
+const hm=m=>String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
+function actTxt(e){
+  const [k,st,ok,N,r]=e,sc=` ${ok}/${N}`,q=r==='quit'?' 중단':'';
+  if(k==='dojo')return [`🥋 ${st===7?'단 심사':BELT[st].nm+' 심사'}${sc}${r==='up'?' 승급!':r==='pass'?' 통과':r==='fail'?' 실패':q}`,r==='up'||r==='pass'?'ok':r==='fail'?'ng':''];
+  if(k==='cup')return [`🏆 ${(CUP[st-1]||['',''])[1]}${sc}${r&&r!=='quit'?' '+r:q}`,''];
+  if(k==='train')return [`🎯 약점 훈련${sc}${q}`,''];
+  if(k==='perf'){const [ps,pm]=String(st).split('|');return [`📝 수행평가 ${(PSET[ps]||[''])[0]}(${pm==='card'?'Easy':'Hard'})${sc}${r==='p1'?' 1단계 통과':r==='pass'?' 통과':r==='fail'?' 실패':q}`,r==='pass'||r==='p1'?'ok':r==='fail'?'ng':'']}
+  if(k==='mtest')return [`🕵️ ${(MLV[st]||['',''])[1]} 승진 시험${sc}${r==='up'?' 승진!':r==='pass'?' 통과':r==='fail'?' 실패':q}`,r==='up'||r==='pass'?'ok':r==='fail'?'ng':''];
+  if(k==='mcase')return [`🗂️ 모의 사건 ${st}단계${sc}${q}`,''];
+  if(k==='mtrain')return [`🔎 약점 수사${sc}${q}`,''];
+  return [k+sc,''];
+}
+function tActB(S){
+  const rows=S.map(x=>({x,L:((x.U||{}).act||{})[TAD]||[]})),on=rows.filter(r=>r.L.length),n=on.reduce((a,r)=>a+r.L.length,0);
+  return `<div class="sm" style="margin-bottom:6px"><b>${TAD.slice(5).replace('-','/')}</b> 활동한 학생 <b>${on.length}</b>/${S.length}명 · 모두 ${n}판</div>
+  <div class="tw"><table class="tt2"><tr><th>학번</th><th>이름</th><th style="text-align:left">한 활동</th></tr>
+  ${rows.map(({x,L})=>`<tr class="${L.length?'':'off'}"><td>${esc(x.sid)}</td><td>${esc(x.nm)}</td><td style="text-align:left;white-space:normal;min-width:200px">${L.length?L.map(e=>{const [t,cl]=actTxt(e);return `<span class="apill ${cl}"><small>${hm(e[5])}</small>${t}</span>`}).join(''):'-'}</td></tr>`).join('')}</table></div>
+  <div class="sm mut" style="margin-top:6px">결과 화면까지 끝낸 판과 중간에 그만둔 판이 보여요(2026-11-06부터 쌓임, 최근 30일). 푸는 중인 판은 결과 화면이 나온 뒤에 보여요.</div>`;
+}
 // 학생 기록 요약
 function stSum(x){
   const u=x.U||{},d=u.dojo||{best:0,dan:0},my=u.my||{clear:0,st:{grp:{}}};
@@ -1948,7 +1986,8 @@ async function tRoom(code,quiet){
     <button class="btn gh" onclick="tCsv()">📥 엑셀(CSV) 내려받기</button>`)}
   ${tTg('lv','🏅 학생 레벨',`${tLvCnt(S)}${tTg('lvl','👤 학생별 레벨',`<div class="tw"><table class="tt2"><tr><th>학번</th><th>이름</th><th>🥋 태권도 띠</th><th>🕵️ 탐정 레벨</th></tr>
     ${S.map(x=>`<tr><td>${esc(x.sid)}</td><td>${esc(x.nm)}</td><td><i class="bsw" style="background:${BELT[x.s.bi].c}" title="${x.s.rank}">${x.s.bi===6&&x.s.dan>1?'×'+x.s.dan:''}</i></td><td>${x.s.det}</td></tr>`).join('')}</table></div>`,1)}`)}
-  ${tTg('pf','📝 수행평가 연습',PERF.map(pu=>tPerf(S,pu)).join(''))}`:'<div class="card sm mut">아직 반에 들어온 학생이 없어요. 학생이 회원 가입 때 이 반을 고르면 위에 가입 요청이 떠요.</div>'}
+  ${tTg('pf','📝 수행평가 연습',PERF.map(pu=>tPerf(S,pu)).join(''))}
+  ${tTg('act','📅 날짜별 활동',tAct(S))}`:'<div class="card sm mut">아직 반에 들어온 학생이 없어요. 학생이 회원 가입 때 이 반을 고르면 위에 가입 요청이 떠요.</div>'}
   ${Object.keys(tg).length?`<div class="card"><h3>📊 우리 반 분개 정답률</h3>${Object.keys(TAGS).filter(k=>tg[k]).map(k=>{const p=Math.round(tg[k].c/tg[k].n*100);return `<div class="br"><span>${TAGS[k]}</span><div class="t"><i style="width:${p}%;background:${p>=80?'var(--ok)':p>=60?'#3b82f6':'var(--ng)'}"></i></div><span class="v">${p}% · ${tg[k].n}건</span></div>`}).join('')}</div>`:''}
   <div class="msg" id="msg"></div>
   <button class="btn gh" style="color:var(--ng)" onclick="tDelRoom()">🗑️ 이 반 지우기</button>`;
@@ -1995,7 +2034,7 @@ function tLvCnt(S){
     <div class="sm mut" style="margin:10px 0 4px">🕵️ 탐정 레벨</div><div class="cntrow det">${MLV.map((m,i)=>`<span class="${dc[i]?'':'z'}"><b>${dc[i]}명</b><i class="${i?'':'g'}"><img src="${IMG['d_m'+Math.max(1,i)]}" alt=""></i><small>${['지망생','견습','초보','정식','명탐정','수사 반장','전설'][i]}</small></span>`).join('')}</div>`;
 }
 // 펼치고 접는 상자: 열림 상태를 기억해 새로고침해도 그대로(학생 관리는 처음에 닫힘)
-const TOPEN={mg:false,lv:false,pf:false,lvl:false};
+const TOPEN={mg:false,lv:false,pf:false,lvl:false,act:false};
 const tTg=(k,title,body,sub)=>`<details class="tg${sub?' sub':''}" ${(k in TOPEN?TOPEN[k]:true)?'open':''} ontoggle="TOPEN['${k}']=this.open"><summary>${title}<span class="ar">▾</span></summary><div class="tgb">${body}</div></details>`;
 function tPerf(S,pu){
   const pc=(x,set,m)=>{const r=pfRec(x,pu.u,set+'|'+m);return r&&r.c||0};
