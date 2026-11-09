@@ -1726,33 +1726,47 @@ function mergeU(a,b,path){
 function svShow(ok,code){
   if(G||MG||app.innerHTML.includes('perfPart2()'))return; // 게임이 진행 중이거나 수행평가 1단계 통과 화면(2단계로 이어짐)이면 보여 주지 않음
   let e=document.getElementById('svst');if(!e){e=document.createElement('div');e.id='svst';app.appendChild(e)}
+  if(ok==='busy'){e.className='ok';e.innerHTML='☁️ 저장하는 중…';return}
   e.className=ok?'ok':'ng';
-  const why=/permission|unauth|auth\//.test(code||'')?'로그인이 풀렸을 수 있어요. 첫 화면에서 로그아웃했다가 다시 로그인해 주세요.':'인터넷 연결이 약해요. 연결되면 다음 판이 끝날 때 함께 저장돼요.';
-  e.innerHTML=ok?'☁️ 기록이 저장됐어요':`⚠️ 기록을 아직 저장하지 못했어요. ${why} <button onclick="cloudSave(1)">다시 저장</button>${code?`<br><small>(${esc(String(code)).slice(0,60)})</small>`:''}`;
+  const off=/offline|timeout|unavailable|network|deadline/.test(code||'');
+  const why=/permission|unauth|auth\//.test(code||'')?'로그인이 풀렸을 수 있어요. 첫 화면에서 로그아웃했다가 다시 로그인해 주세요.'
+    :off?'인터넷이 끊겨 있어요. 연결되면 자동으로 저장되고, [다시 저장]을 눌러도 돼요.':'잠시 뒤 [다시 저장]을 눌러 주세요.';
+  e.innerHTML=ok?'☁️ 기록이 저장됐어요':`⚠️ 기록을 아직 저장하지 못했어요. ${why} <button onclick="cloudSave(1)">다시 저장</button>${code&&!off?`<br><small>(${esc(String(code)).slice(0,60)})</small>`:''}`;
 }
+// 인터넷이 끊기면 Firestore는 서버 답을 끝없이 기다리므로 시간 제한을 둔다(끊긴 동안의 저장은 연결되면 다시 시도)
+const withTO=(p,ms)=>Promise.race([p,new Promise((_,j)=>setTimeout(()=>j({code:'timeout'}),ms))]);
+let SAVING=false;
 async function cloudSave(show){
-  if(!DIRTY||!DB||!U.me||!U.me.key||!isStudent(FBA.currentUser))return;
-  DIRTY=false;const ref=DB.doc('eStudents/'+U.me.key);
+  if(!DB||!U.me||!U.me.key||!isStudent(FBA.currentUser))return;
+  if(SAVING){if(show)svShow('busy');return} // 이미 저장하는 중
+  if(!DIRTY){if(show)svShow(1);return}      // 저장할 것이 없음(이미 저장됨)
+  if(navigator.onLine===false){if(show)svShow(0,'offline');return}
+  SAVING=true;DIRTY=false;if(show)svShow('busy');
+  const ref=DB.doc('eStudents/'+U.me.key);
   try{
-    const m=await DB.runTransaction(async t=>{const d=await t.get(ref);if(!d.exists)throw {code:'no-record'};
-      const m=mergeU(d.data().U||{},gameData());t.update(ref,{U:m,day:today(),sex:U.me.sex||'m'});return m});
+    const m=await withTO(DB.runTransaction(async t=>{const d=await t.get(ref);if(!d.exists)throw {code:'no-record'};
+      const m=mergeU(d.data().U||{},gameData());t.update(ref,{U:m,day:today(),sex:U.me.sex||'m'});return m}),12000);
     // 저장하는 사이에 이 기기에서 더 한 것도 살려서 합친 기록을 이 기기에 둔다
     const mm=mergeU(m,gameData());Object.keys(mm).forEach(k=>{U[k]=mm[k]});try{localStorage.setItem(KEY,JSON.stringify(U))}catch(e){}
     if(show)svShow(1);
   }catch(e){
     // 합쳐 저장하기가 안 되면 예전 방식(이 기기 기록 그대로)으로라도 저장. 로그인 표가 만료됐으면 새로 받아 한 번 더
-    if(e&&e.code==='no-record'){DIRTY=true;return}
-    const up=()=>ref.update({U:gameData(),day:today(),sex:U.me.sex||'m'});
-    try{await up();if(show)svShow(1)}
+    if(e&&e.code==='no-record'){DIRTY=true;SAVING=false;return}
+    const up=()=>withTO(ref.update({U:gameData(),day:today(),sex:U.me.sex||'m'}),8000);
+    let c=(e&&(e.code||e.message))||'';
+    try{if(c==='timeout')throw e;await up();if(show)svShow(1)}
     catch(e2){
-      let c=(e2&&(e2.code||e2.message))||'';
-      if(/permission|unauth/.test(c)){try{await FBA.currentUser.getIdToken(true);await up();if(show)svShow(1);return}catch(e3){c=(e3&&(e3.code||e3.message))||c}}
-      DIRTY=true;U.svErr=[String(c).slice(0,80),Date.now()];try{localStorage.setItem(KEY,JSON.stringify(U))}catch(_){} // 다음에 저장될 때 무슨 오류였는지 함께 올라감
+      c=(e2&&(e2.code||e2.message))||c;
+      if(/permission|unauth/.test(c)){try{await FBA.currentUser.getIdToken(true);await up();if(show)svShow(1);SAVING=false;return}catch(e3){c=(e3&&(e3.code||e3.message))||c}}
+      DIRTY=true;if(c!=='timeout'){U.svErr=[String(c).slice(0,80),Date.now()];try{localStorage.setItem(KEY,JSON.stringify(U))}catch(_){}} // 다음에 저장될 때 무슨 오류였는지 함께 올라감
       if(show)svShow(0,c);
     }
   }
+  SAVING=false;
 }
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')cloudSave()});
+// 인터넷이 다시 연결되면 저장하지 못한 기록을 바로 저장(결과 화면이면 알림도)
+if(typeof window!=='undefined')window.addEventListener('online',()=>{if(DIRTY)cloudSave(1)});
 const _finish=finish,_mfinish=mfinish;
 finish=function(){_finish.apply(this,arguments);cloudSave(1)};
 mfinish=function(){_mfinish.apply(this,arguments);cloudSave(1)};
