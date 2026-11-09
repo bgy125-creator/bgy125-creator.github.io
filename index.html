@@ -1206,11 +1206,12 @@ function quit(){
   clearInterval(T);const m=G.mode;if(G.res.length)actLog(m,m==='perf'?PS+'|'+PM+'|'+PST.part:G.st,G.ok,G.res.length,'quit');G=null;m==='perf'||m==='pnote'?perf():home();
 }
 
+// 주의: Firestore는 배열 안에 배열을 저장하지 못한다 → 활동 한 판은 객체 {k 종류, s 단계, o 맞힌 수, n 문제 수, r 결과, m 분}
 // ───────── 날짜별 활동 기록(선생님 화면 '📅 날짜별 활동'): U.act={'2026-11-06':[[종류,단계,맞힌 수,문제 수,결과,시각(분)]]}, 최근 30일만
 // 종류: dojo 승급 심사·cup 대회·train 약점 훈련·perf 수행평가·mtest 승진 시험·mcase 모의 사건·mtrain 약점 수사 / 결과: up 승급·pass 통과·fail 실패·p1 1단계 통과·quit 중단·메달
 function actLog(k,st,ok,N,r){
   const d=new Date(),day=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-  const A=U.act=U.act||{},L=A[day]=A[day]||[];if(L.length<80)L.push([k,st,ok,N,r||'',d.getHours()*60+d.getMinutes()]);
+  const A=U.act=U.act||{},L=A[day]=A[day]||[];if(L.length<80)L.push({k,s:st,o:ok,n:N,r:r||'',m:d.getHours()*60+d.getMinutes()});
   const ks=Object.keys(A).sort();while(ks.length>30)delete A[ks.shift()];
   save();
 }
@@ -1685,7 +1686,13 @@ const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth
 const stEmail=(key,v)=>`${key}-v${v}${SDOM}`,stPw=pin=>'ep'+pin+'#26';
 const isStudent=u=>!!(u&&u.email&&u.email.endsWith(SDOM));
 const fresh=()=>({me:null,dojo:{cur:1,best:0,lives:LIVES,dan:0},cup:{},st:{tag:{},conf:{}}});
-const gameData=()=>{const o=Object.assign({},U);delete o.me;return JSON.parse(JSON.stringify(o))};
+// 활동 한 판: 예전 배열 [종류,단계,맞힌 수,문제 수,결과,분] → 객체(Firestore는 배열 안에 배열을 저장하지 못해 저장 전체가 거부됨)
+const actO=e=>Array.isArray(e)?{k:e[0],s:e[1],o:e[2],n:e[3],r:e[4]||'',m:e[5]||0}:e;
+const gameData=()=>{const o=Object.assign({},U);delete o.me;const g=JSON.parse(JSON.stringify(o));
+  if(g.act)Object.keys(g.act).forEach(d=>{g.act[d]=(g.act[d]||[]).map(actO)});
+  if(U.act)Object.keys(U.act).forEach(d=>{U.act[d]=(U.act[d]||[]).map(actO)});return noNest(g)};
+// 안전장치: 혹시 배열 안에 배열이 또 생기면 글자로 바꿔 저장(저장 전체가 거부되지 않게)
+function noNest(x,inArr){if(Array.isArray(x)){if(inArr)return JSON.stringify(x);return x.map(v=>noNest(v,true))}if(x&&typeof x==='object'){const o={};for(const k in x)o[k]=noNest(x[k],false);return o}return x}
 const errMsg=e=>{const c=e&&e.code||'';return c.includes('network')?'인터넷 연결을 확인해 주세요.':c.includes('too-many')?'잘못 입력한 횟수가 많아요. 잠시 뒤에 다시 해 주세요.':c.includes('permission')?'권한이 없어요.':'잠시 뒤에 다시 해 주세요.'};
 
 // 학생 기록 저장: 판이 끝날 때(결과 화면)와 앱을 떠날 때만 저장한다
@@ -1699,7 +1706,7 @@ function mergeU(a,b,path){
   if(a==null)return b;if(b==null)return a;
   if(/^pnote\./.test(path))return b; // 오답노트(단원별): 복습에서 지운 문제가 되살아나지 않게 이 기기 값
   if(Array.isArray(a)||Array.isArray(b)){
-    if(/^act\./.test(path)&&Array.isArray(a)&&Array.isArray(b)){const s=new Set(),o=[];[...a,...b].forEach(e=>{const k=JSON.stringify(e);if(!s.has(k)){s.add(k);o.push(e)}});return o.sort((x,y)=>(x[5]||0)-(y[5]||0))}
+    if(/^act\./.test(path)&&Array.isArray(a)&&Array.isArray(b)){const s=new Set(),o=[];[...a,...b].map(actO).forEach(e=>{const k=JSON.stringify(e);if(!s.has(k)){s.add(k);o.push(e)}});return o.map(actO).sort((x,y)=>(x.m||0)-(y.m||0))}
     return b;
   }
   if(typeof a==='number'&&typeof b==='number'){
@@ -2027,7 +2034,7 @@ function tAct(S){
 }
 const hm=m=>String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
 function actTxt(e){
-  const [k,st,ok,N,r]=e,sc=` ${ok}/${N}`,q=r==='quit'?' 중단':'';
+  const {k,s:st,o:ok,n:N,r}=actO(e),sc=` ${ok}/${N}`,q=r==='quit'?' 중단':'';
   if(k==='dojo')return [`🥋 ${st===7?'단 심사':BELT[st].nm+' 심사'}${sc}${r==='up'?' 승급!':r==='pass'?' 통과':r==='fail'?' 실패':q}`,r==='up'||r==='pass'?'ok':r==='fail'?'ng':''];
   if(k==='cup')return [`🏆 ${(CUP[st-1]||['',''])[1]}${sc}${r&&r!=='quit'?' '+r:q}`,''];
   if(k==='train')return [`🎯 약점 훈련${sc}${q}`,''];
@@ -2042,7 +2049,7 @@ function tActB(S){
   const rows=S.map(x=>({x,L:((x.U||{}).act||{})[TAD]||[]})),on=rows.filter(r=>r.L.length),n=on.reduce((a,r)=>a+r.L.length,0);
   return `<div class="sm" style="margin-bottom:6px"><b>${TAD.slice(5).replace('-','/')}</b> 활동한 학생 <b>${on.length}</b>/${S.length}명 · 모두 ${n}판</div>
   <div class="tw"><table class="tt2"><tr><th>학번</th><th>이름</th><th style="text-align:left">한 활동</th></tr>
-  ${rows.map(({x,L})=>`<tr class="${L.length?'':'off'}"><td>${esc(x.sid)}</td><td>${esc(x.nm)}</td><td style="text-align:left;white-space:normal;min-width:200px">${L.length?L.map(e=>{const [t,cl]=actTxt(e);return `<span class="apill ${cl}"><small>${hm(e[5])}</small>${t}</span>`}).join(''):'-'}</td></tr>`).join('')}</table></div>
+  ${rows.map(({x,L})=>`<tr class="${L.length?'':'off'}"><td>${esc(x.sid)}</td><td>${esc(x.nm)}</td><td style="text-align:left;white-space:normal;min-width:200px">${L.length?L.map(e=>{const [t,cl]=actTxt(e);return `<span class="apill ${cl}"><small>${hm(actO(e).m)}</small>${t}</span>`}).join(''):'-'}</td></tr>`).join('')}</table></div>
   <div class="sm mut" style="margin-top:6px">결과 화면까지 끝낸 판과 중간에 그만둔 판이 보여요(2026-11-06부터 쌓임, 최근 30일). 푸는 중인 판은 결과 화면이 나온 뒤에 보여요.</div>`;
 }
 // 학생 기록 요약
