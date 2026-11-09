@@ -1699,6 +1699,7 @@ const errMsg=e=>{const c=e&&e.code||'';return c.includes('network')?'인터넷 �
 // 학생 기록 저장: 판이 끝날 때(결과 화면)와 앱을 떠날 때만 저장한다
 // 서버에 아직 못 올린 기록이 있으면 기기에 표시(UNS)를 남긴다 → 앱을 닫았다 열어도 그 기록을 버리지 않고 서버 기록과 합쳐 올린다
 const UNS='ep_unsynced';
+let PEND=null; // 로그인이 풀린 학생의 못 올린 기록(같은 학생이 다시 로그인하면 합쳐 올림)
 function save(){try{localStorage.setItem(KEY,JSON.stringify(U));if(U.me&&U.me.key)localStorage.setItem(UNS,U.me.key)}catch(e){}DIRTY=true}
 let SVFAIL=false; // 실제로 저장에 실패했을 때만 메뉴 화면에 '기록 저장 실패' 표시
 function synced(){SVFAIL=false;try{if(localStorage.getItem(UNS)===(U.me&&U.me.key))localStorage.removeItem(UNS)}catch(e){}const b=document.getElementById('svbar');if(b)b.remove()}
@@ -1734,15 +1735,19 @@ function svShow(ok,code){
   if(ok==='busy'){e.className='ok';e.innerHTML='☁️ 저장하는 중…';return}
   e.className=ok?'ok':'ng';
   const off=/offline|timeout|unavailable|network|deadline/.test(code||'');
-  const why=/permission|unauth|auth\//.test(code||'')?'로그인이 풀렸을 수 있어요. 첫 화면에서 로그아웃했다가 다시 로그인해 주세요.'
+  const why=/permission|unauth|auth\//.test(code||'')?'로그인이 풀렸어요. 사이트를 새로고침해서 다시 로그인해 주세요. 기록은 이 기기에 보관돼 있다가 로그인하면 함께 저장돼요.'
     :off?'인터넷이 끊겨 있어요. 기록은 이 기기에 보관돼 있고, 연결되면 자동으로 저장돼요.':'기록은 이 기기에 보관돼 있어요. 잠시 뒤 [다시 시도!]를 눌러 주세요.';
-  e.innerHTML=ok?'☁️ 기록이 저장됐어요':`⚠️ 기록 저장 실패. <button onclick="cloudSave(1)">다시 시도!</button><br>${why}${code&&!off?`<br><small>(${esc(String(code)).slice(0,60)})</small>`:''}`;
+  e.innerHTML=ok?'☁️ 기록이 저장됐어요':`⚠️ 기록 저장 실패. <button onclick="cloudSave(1)">다시 시도!</button><br>${why}${code&&!off&&code!=='unauth'?`<br><small>(${esc(String(code)).slice(0,60)})</small>`:''}`;
 }
 // 인터넷이 끊기면 Firestore는 서버 답을 끝없이 기다리므로 시간 제한을 둔다(끊긴 동안의 저장은 연결되면 다시 시도)
 const withTO=(p,ms)=>Promise.race([p,new Promise((_,j)=>setTimeout(()=>j({code:'timeout'}),ms))]);
 let SAVING=false;
 async function cloudSave(show){
-  if(!DB||!U.me||!U.me.key||!isStudent(FBA.currentUser))return;
+  if(!U.me||!U.me.key)return; // 체험하기(로그인 없음)는 이 기기에만 저장
+  // 인터넷이 없을 때 사이트를 열어 저장 기능(Firebase)이 아직 안 열렸으면 지금 다시 열어 본다
+  if(!DB&&navigator.onLine!==false&&typeof fbInit==='function'){try{await withTO(fbInit(),8000)}catch(e){}}
+  if(!DB){SVFAIL=true;svBar();if(show)svShow(0,'offline');return}
+  if(!isStudent(FBA&&FBA.currentUser)){SVFAIL=true;svBar();if(show)svShow(0,'unauth');return} // 로그인이 풀림: 안내(기록은 기기에 보관)
   if(SAVING){if(show)svShow('busy');return} // 이미 저장하는 중
   if(!DIRTY){if(show)svShow(1);return}      // 저장할 것이 없음(이미 저장됨)
   if(navigator.onLine===false){SVFAIL=true;svBar();if(show)svShow(0,'offline');return}
@@ -1796,7 +1801,11 @@ const lastSc=v=>{try{if(v)localStorage.setItem('ep_school',v);return localStorag
 async function stLoad(key){
   const d=await DB.doc('eStudents/'+key).get();if(!d.exists)throw {code:'no-record'};
   const x=d.data();let base=x.U||{},un=null;try{un=localStorage.getItem(UNS)}catch(e){}
-  const loc=U&&U.me&&U.me.key===key?gameData():null,pend=!!loc&&un===key;
+  // 이 기기의 같은 학생 기록(로그인이 풀려 맡아 둔 PEND 포함)
+  if(!PEND){try{PEND=JSON.parse(localStorage.getItem('ep_pend'))}catch(e){}}
+  let loc=null;if(U&&U.me&&U.me.key===key)loc=gameData();else if(PEND&&PEND.me&&PEND.me.key===key){const cur=U;U=PEND;loc=gameData();U=cur}
+  const usedPend=!!(PEND&&PEND.me&&PEND.me.key===key);if(usedPend){try{localStorage.removeItem('ep_pend')}catch(e){}}
+  PEND=null;const pend=!!loc&&un===key;
   // 못 올린 기록이 있으면 이 기기 값을 앞세워 합치고(오답노트 등), 아니면 서버 값을 앞세워 합침(큰 값·통과 기록은 어느 쪽이든 남음)
   if(loc)base=pend?mergeU(base,loc):mergeU(loc,base);
   U=Object.assign(fresh(),base);U.dojo.lives=Math.min(LIVES,U.dojo.lives);upU();
@@ -1847,17 +1856,26 @@ async function stReq(){
     const r=L.find(x=>x.code===el.value);
     try{await DB.doc('eStudents/'+U.me.key).update({rq:r.code,rqt:r.owner,rqn:r.nm,rj:false});Object.assign(U.me,{rq:r.code,rqn:r.nm,rj:false});save();main()}catch(e){m.textContent=errMsg(e)}};
 }
-async function stLogout(){await cloudSave();if(DIRTY&&!confirm('아직 서버에 저장하지 못한 기록이 있어요. 로그아웃하면 이 기기에서 지워져요.\n인터넷 연결을 확인한 뒤 다시 해 보는 것을 추천해요. 그래도 로그아웃할까요?'))return;try{localStorage.removeItem(UNS)}catch(e){}try{await FBA.signOut()}catch(e){}U=fresh();try{localStorage.removeItem(KEY)}catch(e){}setup()}
+async function stLogout(){await cloudSave();
+  // 서버에 못 올린 기록은 지우지 않고 이 기기에 맡아 둔다 → 같은 학번으로 다시 로그인하면 합쳐 저장
+  if(DIRTY){if(!confirm('아직 서버에 저장하지 못한 기록이 있어요.\n이 기기에 보관해 두었다가 같은 학번으로 다시 로그인하면 함께 저장돼요.\n로그아웃할까요?'))return;try{localStorage.setItem('ep_pend',JSON.stringify(U))}catch(e){}}
+  else{try{localStorage.removeItem(UNS)}catch(e){}}
+  try{await FBA.signOut()}catch(e){}U=fresh();try{localStorage.removeItem(KEY)}catch(e){}setup()}
 
 // 첫 화면에 들어가기 전: 로그인한 학생이면 클라우드 기록을 불러온다
 async function boot(){
   app.innerHTML='<div class="logo"><b>Econ Play</b><div class="mut sm">불러오는 중…</div></div>';
   if(/^#teacher/.test(location.hash)){await fbInit();return tpage()}
-  const ok=await fbInit(),u=ok&&FBA.currentUser;
+  const ok=await fbInit(),u=ok&&FBA.currentUser;let un=null;try{un=localStorage.getItem(UNS)}catch(e){}
   if(isStudent(u)){const key=u.email.replace(SDOM,'').replace(/-v\d+$/,'');try{await stLoad(key)}catch(e){
     // 선생님이 삭제한 학생: 로그아웃하고 이 기기 기록도 비움(다시 회원 가입 가능)
-    if(e&&e.code==='no-record'){try{await FBA.signOut()}catch(_){}U=fresh();try{localStorage.removeItem(KEY)}catch(_){}}}}
-  else if(U.me&&U.me.key){U=fresh()} // 로그아웃된 학생 기록은 이 기기에 남기지 않는다
+    if(e&&e.code==='no-record'){try{await FBA.signOut()}catch(_){}U=fresh();try{localStorage.removeItem(KEY);localStorage.removeItem(UNS)}catch(_){}}
+    // 인터넷 문제로 서버 기록을 못 읽음: 이 기기 기록으로 계속하고, 못 올린 기록이 있으면 나중에 올림
+    else if(un===key)DIRTY=true}}
+  else if(!ok&&U.me&&U.me.key){if(un===U.me.key)DIRTY=true} // 인터넷 없이 열림(저장 기능이 안 열림): 기기 기록으로 계속(지우지 않음)
+  else if(U.me&&U.me.key){
+    // 로그인이 풀린 학생: 서버에 못 올린 기록이 있으면 버리지 않고 맡아 두었다가, 같은 학생이 다시 로그인하면 합쳐 올림
+    if(un===U.me.key){PEND=U;try{localStorage.setItem('ep_pend',JSON.stringify(U))}catch(e){}}U=fresh()}
   main();
 }
 
