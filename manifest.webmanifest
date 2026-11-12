@@ -1,0 +1,17 @@
+{
+  "name": "Econ Play",
+  "short_name": "Econ Play",
+  "description": "경제 고수를 꿈꾸며, 게임에 도전하세요!",
+  "lang": "ko",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f3f4f8",
+  "theme_color": "#e8590c",
+  "icons": [
+    {"src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}
